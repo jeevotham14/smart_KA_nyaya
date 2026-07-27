@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from app.core.security import hash_password
@@ -86,6 +86,51 @@ KARNATAKA_DIRECTORY = [
     {"name": "Swathi Mahila Sangha", "service_type": "ngo", "district": "Mysuru", "taluk": "Mysuru", "address": "Mysuru - 570001", "phone": "0821-2412321"},
 ]
 
+KARNATAKA_DISTRICTS_FULL = {
+  'Bagalkote': ['Badami', 'Bagalkote', 'Bilagi', 'Hunagunda', 'Ilkal', 'Jamakhandi', 'Mudhol', 'Rabkavi Banhatti', 'Guledgudda'],
+  'Ballari': ['Ballari', 'Kurugodu', 'Kampli', 'Sandur', 'Siruguppa'],
+  'Belagavi': ['Athani', 'Bailhongal', 'Belagavi', 'Chikkodi', 'Gokak', 'Hukkeri', 'Kagawad', 'Khanapur', 'Kittur', 'Mudalagi', 'Nippani', 'Raybag', 'Savadatti', 'Yaragatti'],
+  'Bengaluru Rural': ['Devanahalli', 'Doddaballapura', 'Hoskote', 'Nelamangala'],
+  'Bengaluru Urban': ['Anekal', 'Bengaluru East', 'Bengaluru North', 'Bengaluru South', 'Yelahanka'],
+  'Bidar': ['Aurad', 'Basavakalyan', 'Bhalki', 'Bidar', 'Chitgoppa', 'Humnabad', 'Kamalnagar', 'Hulasur'],
+  'Chamarajanagara': ['Chamarajanagara', 'Gundlupete', 'Hanur', 'Kollegala', 'Yelandur'],
+  'Chikkaballapura': ['Bagepalli', 'Chikkaballapura', 'Chintamani', 'Gauribidanur', 'Gudibanda', 'Sidlaghatta', 'Chelur'],
+  'Chikkamagaluru': ['Ajjamapura', 'Chikkamagaluru', 'Kadur', 'Koppa', 'Mudigere', 'Narasimharajapura', 'Sringeri', 'Tarikere', 'Kalas'],
+  'Chitradurga': ['Challakere', 'Chitradurga', 'Hiriyur', 'Holalkere', 'Hosadurga', 'Molakalmuru'],
+  'Dakshina Kannada': ['Bantwal', 'Belthangady', 'Kadaba', 'Mangaluru', 'Moodabidri', 'Puttur', 'Sullia', 'Mulki', 'Ullal'],
+  'Davangere': ['Channagiri', 'Davangere', 'Harihara', 'Honnali', 'Jagalur', 'Nyamathi'],
+  'Dharwad': ['Alnavar', 'Annigeri', 'Dharwad', 'Hubballi', 'Hubballi City', 'Kalghatgi', 'Kundgol', 'Navalgund'],
+  'Gadag': ['Gadag', 'Gajendragad', 'Lakshmeshwar', 'Mundargi', 'Nargund', 'Ron', 'Shirhatti'],
+  'Hassan': ['Alur', 'Arkalgud', 'Arsikere', 'Belur', 'Channarayapatna', 'Hassan', 'Holenarasipura', 'Sakleshpur'],
+  'Haveri': ['Byadgi', 'Hangal', 'Haveri', 'Hirekerur', 'Ranebennur', 'Rattihalli', 'Savanur', 'Shiggaon'],
+  'Kalaburagi': ['Afzalpur', 'Aland', 'Chincholi', 'Chitapur', 'Kalaburagi', 'Kamalapura', 'Sedam', 'Shahabad', 'Jewargi', 'Yadrami', 'Kalagi'],
+  'Kodagu': ['Madikeri', 'Somwarpet', 'Virajpet', 'Ponnampet', 'Kushalnagar'],
+  'Kolar': ['Bangarapet', 'KGF', 'Kolar', 'Malur', 'Mulbagal', 'Srinivaspur'],
+  'Koppal': ['Gangawati', 'Kanakagiri', 'Karatagi', 'Koppal', 'Kushtagi', 'Yelburga'],
+  'Mandya': ['Krishnarajpet', 'Maddur', 'Malavalli', 'Mandya', 'Nagamangala', 'Pandavapura', 'Shrirangapattana'],
+  'Mysuru': ['Heggadadevankote', 'Hunsur', 'Krishnarajanagara', 'Mysuru', 'Nanjangud', 'Piriyapatna', 'Saligrama', 'T. Narasipura'],
+  'Raichur': ['Devadurga', 'Lingsugur', 'Manvi', 'Maski', 'Raichur', 'Sindhanur', 'Sirwar'],
+  'Ramanagara': ['Channapatna', 'Kanakapura', 'Magadi', 'Ramanagara', 'Harohalli'],
+  'Shivamogga': ['Bhadravati', 'Hosanagara', 'Sagara', 'Shikaripura', 'Shivamogga', 'Soraba', 'Thirthahalli'],
+  'Tumakuru': ['Chikkanayakanahalli', 'Gubbi', 'Koratagere', 'Kunigal', 'Madhugiri', 'Pavagada', 'Sira', 'Tiptur', 'Tumakuru', 'Turuvekere'],
+  'Udupi': ['Brahmavara', 'Byndoor', 'Hebri', 'Karkala', 'Kaup', 'Kundapura', 'Udupi'],
+  'Uttara Kannada': ['Ankola', 'Bhatkal', 'Dandeli', 'Haliyal', 'Honnavar', 'Joida', 'Karwar', 'Kumta', 'Mundgod', 'Siddapur', 'Sirsi', 'Yellapur'],
+  'Vijayapura': ['Basavana Bagevadi', 'Bijapur', 'Indi', 'Muddebihal', 'Sindagi', 'Chadchan', 'Tikota', 'Bableshwar', 'Kolhar', 'Nidagundi', 'Devara Hippargi', 'Talikota'],
+  'Yadgir': ['Gurmitkal', 'Hunasagi', 'Shahapur', 'Shorapur', 'Vadagera', 'Yadgir'],
+  'Vijayanagara': ['Harapanahalli', 'Hoovina Hadagali', 'Hagaribommanahalli', 'Kotturu', 'Kudligi', 'Hosapete']
+}
+
+GENERIC_DIRECTORY = []
+for district, taluks in KARNATAKA_DISTRICTS_FULL.items():
+    for taluk in taluks:
+        GENERIC_DIRECTORY.extend([
+            {"name": f"Principal Civil Judge & JMFC Court, {taluk}", "service_type": "court", "district": district, "taluk": taluk, "address": f"Court Complex, {taluk}, {district}", "phone": "112"},
+            {"name": f"Taluk Legal Services Committee (TLSC), {taluk}", "service_type": "dlsa", "district": district, "taluk": taluk, "address": f"TLSC Desk, Court Complex, {taluk}", "phone": "15100"},
+            {"name": f"Town Police Station, {taluk}", "service_type": "police", "district": district, "taluk": taluk, "address": f"Town Police Station, {taluk}", "phone": "112"},
+        ])
+
+
+
 KARNATAKA_STATUTES = [
     {
         "act_name": "Legal Services Authorities Act, 1987",
@@ -152,8 +197,12 @@ def seed_database(db: Session) -> None:
         ))
 
     # ── Directory services ───────────────────────────────────────────────────
-    if not db.scalar(select(DirectoryService).limit(1)):
-        for entry in KARNATAKA_DIRECTORY:
+    full_directory = KARNATAKA_DIRECTORY + GENERIC_DIRECTORY
+    current_count = db.scalar(select(func.count(DirectoryService.service_id))) or 0
+    
+    if current_count < len(full_directory):
+        db.query(DirectoryService).delete()
+        for entry in full_directory:
             db.add(DirectoryService(
                 name=entry["name"],
                 service_type=entry["service_type"],
@@ -176,7 +225,7 @@ def seed_database(db: Session) -> None:
         db.add(Notification(
             user_id=admin.user_id,
             title="Platform ready",
-            message=f"Smart Karnataka Nyaya seeded with {len(KARNATAKA_DIRECTORY)} directory entries and {len(KARNATAKA_STATUTES)} legal statutes.",
+            message=f"Smart Karnataka Nyaya seeded with {len(full_directory)} directory entries and {len(KARNATAKA_STATUTES)} legal statutes.",
         ))
 
     db.commit()
