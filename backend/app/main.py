@@ -65,6 +65,11 @@ def create_app() -> FastAPI:
             file_path = STATIC_DIR / full_path
             if file_path.is_file():
                 return FileResponse(file_path)
+            # If the browser is asking for an asset that no longer exists, return 404
+            # instead of returning index.html (which causes SyntaxError: Unexpected token '<')
+            if full_path.startswith("assets/"):
+                from fastapi import HTTPException
+                raise HTTPException(status_code=404, detail="Asset not found")
             return FileResponse(STATIC_DIR / "index.html")
 
     return app
