@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import SectionHeader from '../components/SectionHeader.jsx';
-import { districts, taluks } from '../data/mockData.js';
+import { karnatakaDistricts } from '../data/mockData.js';
+const DISTRICT_NAMES = Object.keys(karnatakaDistricts).sort();
 import { authApi, getApiError } from '../services/api.js';
 
 export default function LoginRegister() {
@@ -23,7 +24,15 @@ export default function LoginRegister() {
   const [error, setError] = useState('');
 
   const updateLogin = (event) => setLoginValues((current) => ({ ...current, [event.target.name]: event.target.value }));
-  const updateRegister = (event) => setRegisterValues((current) => ({ ...current, [event.target.name]: event.target.value }));
+  const updateRegister = (event) => {
+    const { name, value } = event.target;
+    setRegisterValues((current) => {
+      const newValues = { ...current, [name]: value };
+      if (name === 'district') newValues.taluk = '';
+      return newValues;
+    });
+  };
+  const availableTaluks = registerValues.district && karnatakaDistricts[registerValues.district] ? [...karnatakaDistricts[registerValues.district]].sort() : [];
 
   const submitLogin = async (event) => {
     event.preventDefault();
@@ -90,10 +99,12 @@ export default function LoginRegister() {
               <option>Kannada + English</option>
             </select>
             <select className="rounded-sm border border-slate-300 px-3 py-3 text-sm" name="district" onChange={updateRegister} value={registerValues.district}>
-              {districts.map((district) => <option key={district}>{district}</option>)}
+              <option value="">Select District</option>
+              {DISTRICT_NAMES.map((district) => <option key={district} value={district}>{district}</option>)}
             </select>
-            <select className="rounded-sm border border-slate-300 px-3 py-3 text-sm" name="taluk" onChange={updateRegister} value={registerValues.taluk}>
-              {taluks.map((taluk) => <option key={taluk}>{taluk}</option>)}
+            <select className="rounded-sm border border-slate-300 px-3 py-3 text-sm" name="taluk" onChange={updateRegister} value={registerValues.taluk} disabled={availableTaluks.length === 0}>
+              <option value="">Select Taluk</option>
+              {availableTaluks.map((taluk) => <option key={taluk} value={taluk}>{taluk}</option>)}
             </select>
             <button className="rounded-sm bg-navy-800 px-5 py-3 text-sm font-bold text-white disabled:opacity-60" disabled={loading === 'register'} type="submit">
               {loading === 'register' ? t('auth.registering') : t('auth.registerBtn')}

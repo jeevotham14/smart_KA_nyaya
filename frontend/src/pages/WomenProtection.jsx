@@ -2,7 +2,8 @@ import { FileWarning, MapPin, Phone, ShieldAlert } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AlertBanner from '../components/AlertBanner.jsx';
 import SectionHeader from '../components/SectionHeader.jsx';
-import { districts, womenSupportCenters } from '../data/mockData.js';
+import { karnatakaDistricts, womenSupportCenters } from '../data/mockData.js';
+const DISTRICT_NAMES = Object.keys(karnatakaDistricts).sort();
 
 
 
@@ -82,7 +83,7 @@ export default function WomenProtection() {
                 <label className="mt-5 block">
                   <span className="text-sm font-semibold text-navy-900">{t('women.districtLabel')}</span>
                   <select className="mt-2 w-full rounded-sm border border-slate-300 px-3 py-3 text-sm">
-                    {districts.map((district) => <option key={district}>{district}</option>)}
+                    {DISTRICT_NAMES.map((district) => <option key={district}>{district}</option>)}
                   </select>
                 </label>
                 <button className="mt-4 rounded-sm bg-navy-800 px-5 py-3 text-sm font-bold text-white" type="button">{t('women.findCenter')}</button>

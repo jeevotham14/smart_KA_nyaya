@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { Mail, MapPin, Phone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import SectionHeader from '../components/SectionHeader.jsx';
-import { districts, taluks } from '../data/mockData.js';
+import { karnatakaDistricts } from '../data/mockData.js';
 import { getApiError, legalApi } from '../services/api.js';
+
+const DISTRICT_NAMES = Object.keys(karnatakaDistricts).sort();
 
 export default function Contact() {
   const { t } = useTranslation();
@@ -22,16 +24,25 @@ export default function Contact() {
     contact: '',
     complaint_type: 'general',
     description: '',
-    district: 'Bengaluru Urban',
-    taluk: 'Bengaluru North',
+    district: '',
+    taluk: '',
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 
   const updateValue = (event) => {
-    setValues((current) => ({ ...current, [event.target.name]: event.target.value }));
+    const { name, value } = event.target;
+    setValues((current) => {
+      const newValues = { ...current, [name]: value };
+      if (name === 'district') newValues.taluk = ''; // reset taluk on district change
+      return newValues;
+    });
   };
+
+  const availableTaluks = values.district && karnatakaDistricts[values.district] 
+    ? [...karnatakaDistricts[values.district]].sort() 
+    : [];
 
   const submitComplaint = async (event) => {
     event.preventDefault();
@@ -76,10 +87,12 @@ export default function Contact() {
             </select>
             <div className="grid gap-4 md:grid-cols-2">
               <select className="rounded-sm border border-slate-300 px-3 py-3 text-sm" name="district" onChange={updateValue} value={values.district}>
-                {districts.map((district) => <option key={district}>{district}</option>)}
+                <option value="">Select District</option>
+                {DISTRICT_NAMES.map((district) => <option key={district} value={district}>{district}</option>)}
               </select>
-              <select className="rounded-sm border border-slate-300 px-3 py-3 text-sm" name="taluk" onChange={updateValue} value={values.taluk}>
-                {taluks.map((taluk) => <option key={taluk}>{taluk}</option>)}
+              <select className="rounded-sm border border-slate-300 px-3 py-3 text-sm" name="taluk" onChange={updateValue} value={values.taluk} disabled={availableTaluks.length === 0}>
+                <option value="">Select Taluk</option>
+                {availableTaluks.map((taluk) => <option key={taluk} value={taluk}>{taluk}</option>)}
               </select>
             </div>
             <textarea className="min-h-36 rounded-sm border border-slate-300 px-3 py-3 text-sm" name="description" onChange={updateValue} placeholder={t('contact.descriptionPlaceholder')} required value={values.description} />

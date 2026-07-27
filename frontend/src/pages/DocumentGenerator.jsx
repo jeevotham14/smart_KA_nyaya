@@ -4,7 +4,8 @@ import { Download, Eye, FileText, Printer, Save } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import FormInput from '../components/FormInput.jsx';
 import SectionHeader from '../components/SectionHeader.jsx';
-import { districts, documentTemplates } from '../data/mockData.js';
+import { karnatakaDistricts, documentTemplates } from '../data/mockData.js';
+const DISTRICT_NAMES = Object.keys(karnatakaDistricts).sort();
 import { getApiError, legalApi } from '../services/api.js';
 
 const documentTypes = Object.keys(documentTemplates);
@@ -72,7 +73,7 @@ export default function DocumentGenerator() {
             </div>
             <div className="mt-6 grid gap-5 md:grid-cols-2">
               <FormInput label={t('docGen.docType')} name="type" register={register} options={documentTypes} />
-              <FormInput label={t('docGen.districtLabel')} name="district" register={register} options={districts} />
+              <FormInput label={t('docGen.districtLabel')} name="district" register={register} options={DISTRICT_NAMES} />
               <FormInput label={t('docGen.applicantName')} name="name" register={register} />
               <FormInput label={t('docGen.oppositeParty')} name="respondent" register={register} />
               <FormInput label={t('docGen.dateOfIssue')} name="issueDate" register={register} type="date" />

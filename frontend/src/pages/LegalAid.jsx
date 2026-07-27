@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { CheckCircle2, ClipboardCheck, FileText, Info, Scale, UserCheck } from 'lucide-react';
 import FormInput from '../components/FormInput.jsx';
 import SectionHeader from '../components/SectionHeader.jsx';
-import { districts, taluks } from '../data/mockData.js';
+import { karnatakaDistricts } from '../data/mockData.js';
+const DISTRICT_NAMES = Object.keys(karnatakaDistricts).sort();
 import { getApiError, legalApi } from '../services/api.js';
 
 export default function LegalAid() {
@@ -29,6 +30,8 @@ export default function LegalAid() {
 
   const incomeOptions = [t('legalAid.incomeBelow1L'), t('legalAid.income1to3L'), t('legalAid.incomeAbove3L')];
   const caseTypes = [t('legalAid.family'), t('legalAid.civil'), t('legalAid.criminal'), t('legalAid.labourCase'), t('legalAid.consumerCase'), t('legalAid.domesticViolence'), t('legalAid.propertyCase')];
+
+  const availableTaluks = currentValues.district && karnatakaDistricts[currentValues.district] ? [...karnatakaDistricts[currentValues.district]].sort() : [];
 
   function getReasons(values) {
     const reasons = [];
@@ -75,8 +78,8 @@ export default function LegalAid() {
               </div>
             </div>
             <div className="mt-6 grid gap-5 md:grid-cols-2">
-              <FormInput label={t('legalAid.districtLabel')} name="district" register={register} options={districts} error={errors.district} required />
-              <FormInput label={t('legalAid.talukLabel')} name="taluk" register={register} options={taluks} error={errors.taluk} required />
+              <FormInput label={t('legalAid.districtLabel')} name="district" register={register} options={DISTRICT_NAMES} error={errors.district} required />
+              <FormInput label={t('legalAid.talukLabel')} name="taluk" register={register} options={availableTaluks} error={errors.taluk} required />
               <FormInput label={t('legalAid.incomeRange')} name="income" register={register} options={incomeOptions} />
               <FormInput label={t('legalAid.gender')} name="gender" register={register} options={[t('legalAid.female'), t('legalAid.male'), t('legalAid.other')]} />
               <FormInput label={t('legalAid.casteCategory')} name="category" register={register} options={[t('legalAid.general'), t('legalAid.scst'), t('legalAid.obc'), t('legalAid.minority')]} />
