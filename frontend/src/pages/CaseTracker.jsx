@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getApiError, legalApi, notificationApi } from '../services/api.js';
+import { karnatakaDistricts } from '../data/mockData.js';
 
 // ── eCourts-style status pipeline ─────────────────────────────────────────────
 const STATUS_STEPS = [
@@ -426,6 +427,7 @@ export default function CaseTracker() {
   const [caseData, setCaseData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [district, setDistrict] = useState('');
   const [docRefresh, setDocRefresh] = useState(0);
 
   const userId = (() => {
@@ -521,6 +523,23 @@ export default function CaseTracker() {
                 {activeTab === 'cnr' && (
                   <p className="mt-1 text-xs text-slate-400">16-character CNR number assigned at time of filing (e.g. KADB010012342026)</p>
                 )}
+                {activeTab !== 'cnr' && (
+                  <div className="mt-4">
+                    <label className="block text-xs font-semibold text-slate-500 mb-1.5">
+                      Select District
+                    </label>
+                    <select
+                      className="w-full rounded border border-slate-300 px-4 py-3 text-sm text-navy-900 outline-none focus:border-legalGold focus:ring-2 focus:ring-legalGold/20 bg-white"
+                      value={district}
+                      onChange={(e) => setDistrict(e.target.value)}
+                    >
+                      <option value="">Select District</option>
+                      {Object.keys(karnatakaDistricts).sort().map((d) => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
               <button
                 className="mt-6 flex items-center gap-2 self-start rounded bg-navy-800 px-6 py-3 text-sm font-bold text-white disabled:opacity-60 hover:bg-navy-700 transition-colors"
@@ -534,11 +553,22 @@ export default function CaseTracker() {
               </button>
             </div>
 
-            {/* Error */}
+            {/* Error & External Fallback */}
             {error && (
-              <div className="mt-4 flex items-start gap-3 rounded border border-red-200 bg-red-50 p-3">
-                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-alertRed" />
-                <p className="text-sm text-alertRed">{error}</p>
+              <div className="mt-6 rounded border border-slate-200 bg-slate-50 p-4 text-center">
+                <AlertCircle className="mx-auto h-6 w-6 text-slate-400 mb-2" />
+                <p className="text-sm font-semibold text-navy-900">Case not found in Smart Nyaya Registry</p>
+                <p className="mt-1 max-w-lg mx-auto text-xs text-slate-500">
+                  We could not find this case in our internal records. If this is a physical court case, please search directly on the official eCourts India portal.
+                </p>
+                <a
+                  href="https://services.ecourts.gov.in/ecourtindia_v6/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-4 inline-flex items-center gap-2 rounded border border-legalGold px-4 py-2 text-xs font-bold text-legalGold hover:bg-legalGold hover:text-navy-900 transition-colors"
+                >
+                  Search on Official eCourts Portal ↗
+                </a>
               </div>
             )}
           </form>
