@@ -256,14 +256,32 @@ function CaseDetailPanel({ caseData, docRefresh, setDocRefresh }) {
 
   // Derive mock hearing/party data from real case fields
   const petitioner = caseData.grievance_text?.split(' ').slice(0, 2).join(' ') || 'Petitioner';
-  const nextHearing = new Date(caseData.created_at);
+  
+  // Safe date parsing to prevent React crashes (RangeError: Invalid time value)
+  const safeDateParse = (dateVal) => {
+    if (!dateVal) return new Date();
+    const d = new Date(dateVal);
+    return isNaN(d.getTime()) ? new Date() : d;
+  };
+  
+  const formatDate = (dateObj) => {
+    if (!dateObj || isNaN(dateObj.getTime())) return 'N/A';
+    try {
+      return dateObj.toLocaleDateString('en-IN');
+    } catch {
+      return 'N/A';
+    }
+  };
+
+  const createdDate = safeDateParse(caseData.created_at);
+  const nextHearing = new Date(createdDate.getTime());
   nextHearing.setDate(nextHearing.getDate() + (caseData.estimated_duration_days || 30));
 
   const hearingHistory = [
-    { date: new Date(caseData.created_at).toLocaleDateString('en-IN'), purpose: 'Filing & Registration', result: 'Admitted' },
-    ...(curStep >= 1 ? [{ date: new Date(new Date(caseData.created_at).getTime() + 7 * 86400000).toLocaleDateString('en-IN'), purpose: 'Scrutiny of Documents', result: 'Under Process' }] : []),
-    ...(curStep >= 2 ? [{ date: new Date(new Date(caseData.created_at).getTime() + 14 * 86400000).toLocaleDateString('en-IN'), purpose: 'First Hearing', result: 'Notice Issued' }] : []),
-    ...(curStep >= 3 ? [{ date: nextHearing.toLocaleDateString('en-IN'), purpose: 'Final Hearing', result: 'Disposed' }] : []),
+    { date: formatDate(createdDate), purpose: 'Filing & Registration', result: 'Admitted' },
+    ...(curStep >= 1 ? [{ date: formatDate(new Date(createdDate.getTime() + 7 * 86400000)), purpose: 'Scrutiny of Documents', result: 'Under Process' }] : []),
+    ...(curStep >= 2 ? [{ date: formatDate(new Date(createdDate.getTime() + 14 * 86400000)), purpose: 'First Hearing', result: 'Notice Issued' }] : []),
+    ...(curStep >= 3 ? [{ date: formatDate(nextHearing), purpose: 'Final Hearing', result: 'Disposed' }] : []),
   ];
 
   return (
@@ -299,12 +317,12 @@ function CaseDetailPanel({ caseData, docRefresh, setDocRefresh }) {
           <div className="mt-4 grid grid-cols-2 gap-3 border-t border-slate-100 pt-4 sm:grid-cols-3">
             <div>
               <p className="text-xs text-slate-400">Filing Date</p>
-              <p className="mt-0.5 text-sm font-semibold text-navy-900">{new Date(caseData.created_at).toLocaleDateString('en-IN')}</p>
+              <p className="mt-0.5 text-sm font-semibold text-navy-900">{formatDate(createdDate)}</p>
             </div>
             <div>
               <p className="text-xs text-slate-400">Next Hearing</p>
               <p className="mt-0.5 text-sm font-semibold text-navy-900">
-                {caseData.status === 'resolved' ? 'Case Closed' : nextHearing.toLocaleDateString('en-IN')}
+                {caseData.status === 'resolved' ? 'Case Closed' : formatDate(nextHearing)}
               </p>
             </div>
             <div>
