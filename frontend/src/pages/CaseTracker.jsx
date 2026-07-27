@@ -21,13 +21,9 @@ function stepIndex(status) {
   return idx === -1 ? 0 : idx;
 }
 
-// ── Search tab config ─────────────────────────────────────────────────────────
 const SEARCH_TABS = [
-  { id: 'cnr',       label: 'CNR Number',    placeholder: 'e.g. KADB010012342026' },
   { id: 'case_no',   label: 'Case Number',   placeholder: 'e.g. CC/00042/2026' },
-  { id: 'party',     label: 'Party Name',    placeholder: 'Enter petitioner or respondent name' },
   { id: 'fir',       label: 'FIR Number',    placeholder: 'e.g. FIR/112/2026' },
-  { id: 'advocate',  label: 'Advocate Name', placeholder: 'Enter advocate name' },
 ];
 
 // ── Notification panel ─────────────────────────────────────────────────────────
@@ -520,11 +516,7 @@ export default function CaseTracker() {
                 {activeTab === 'case_no' && (
                   <p className="mt-1 text-xs text-slate-400">Format: CC/NNNNN/YYYY — as printed on your acknowledgement slip</p>
                 )}
-                {activeTab === 'cnr' && (
-                  <p className="mt-1 text-xs text-slate-400">16-character CNR number assigned at time of filing (e.g. KADB010012342026)</p>
-                )}
-                {activeTab !== 'cnr' && (
-                  <div className="mt-4">
+                <div className="mt-4">
                     <label className="block text-xs font-semibold text-slate-500 mb-1.5">
                       Select District
                     </label>
@@ -539,7 +531,6 @@ export default function CaseTracker() {
                       ))}
                     </select>
                   </div>
-                )}
               </div>
               <button
                 className="mt-6 flex items-center gap-2 self-start rounded bg-navy-800 px-6 py-3 text-sm font-bold text-white disabled:opacity-60 hover:bg-navy-700 transition-colors"
@@ -580,7 +571,7 @@ export default function CaseTracker() {
             <Scale className="mx-auto h-10 w-10 text-slate-200" />
             <p className="mt-3 text-sm font-semibold text-slate-400">Enter your case number to view full case details, hearing history, and upload supporting documents.</p>
             <div className="mt-4 flex flex-wrap justify-center gap-2 text-xs text-slate-400">
-              {['CNR Number', 'Case Number (CC/NNNNN/YYYY)', 'Party Name', 'FIR Number', 'Advocate Name'].map((hint) => (
+              {['Case Number (CC/NNNNN/YYYY)', 'FIR Number'].map((hint) => (
                 <span key={hint} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">{hint}</span>
               ))}
             </div>
