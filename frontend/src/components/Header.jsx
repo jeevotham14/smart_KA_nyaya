@@ -6,8 +6,7 @@ import { useTranslation } from 'react-i18next';
 const navItems = [
   ['nav.home', '/'],
   ['nav.about', '/about'],
-  ['nav.assistant', '/ai-legal-assistant'],
-  ['nav.guidance', '/legal-guidance'],
+  ['nav.aiGuidance', '/ai-legal-guidance'],
   ['nav.women', '/women-protection'],
   ['nav.aid', '/legal-aid'],
   ['nav.docs', '/document-generator'],

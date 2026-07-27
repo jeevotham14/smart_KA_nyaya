@@ -6,7 +6,7 @@ export default function Footer() {
   const { t } = useTranslation();
 
   const links = [
-    [t('footer.legalGuidance'), '/legal-guidance'],
+    [t('footer.aiLegalGuidance'), '/ai-legal-guidance'],
     [t('footer.legalAid'), '/legal-aid'],
     [t('footer.womenProtection'), '/women-protection'],
     [t('footer.directoryLocator'), '/directory'],

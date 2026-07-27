@@ -10,20 +10,19 @@ export default function Home() {
   const { t } = useTranslation();
 
   const actions = [
-    [t('home.actionAI'), '/ai-legal-assistant'],
+    [t('home.actionAI'), '/ai-legal-guidance'],
     [t('home.actionAid'), '/legal-aid'],
     [t('home.actionWomen'), '/women-protection'],
     [t('home.actionDirectory'), '/directory'],
   ];
 
   const translatedServices = [
-    { ...services[0], title: t('services.aiAssistant'), description: t('services.aiAssistantDesc') },
-    { ...services[1], title: t('services.legalGuidance'), description: t('services.legalGuidanceDesc') },
-    { ...services[2], title: t('services.womenProtection'), description: t('services.womenProtectionDesc') },
-    { ...services[3], title: t('services.freeLegalAid'), description: t('services.freeLegalAidDesc') },
-    { ...services[4], title: t('services.documentAssistance'), description: t('services.documentAssistanceDesc') },
-    { ...services[5], title: t('services.directoryLocator'), description: t('services.directoryLocatorDesc') },
-    { ...services[6], title: t('services.caseTracking'), description: t('services.caseTrackingDesc') },
+    { ...services[0], title: t('services.aiGuidance'), description: t('services.aiGuidanceDesc') },
+    { ...services[1], title: t('services.womenProtection'), description: t('services.womenProtectionDesc') },
+    { ...services[2], title: t('services.freeLegalAid'), description: t('services.freeLegalAidDesc') },
+    { ...services[3], title: t('services.documentAssistance'), description: t('services.documentAssistanceDesc') },
+    { ...services[4], title: t('services.directoryLocator'), description: t('services.directoryLocatorDesc') },
+    { ...services[5], title: t('services.caseTracking'), description: t('services.caseTrackingDesc') },
   ];
 
   return (

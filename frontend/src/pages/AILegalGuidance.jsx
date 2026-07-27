@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import AssistantChat from '../components/AssistantChat.jsx';
 import SectionHeader from '../components/SectionHeader.jsx';
 
-export default function AILegalAssistant() {
+export default function AILegalGuidance() {
   const { t } = useTranslation();
 
   const quickNotes = [

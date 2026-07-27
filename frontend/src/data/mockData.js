@@ -12,16 +12,10 @@ import {
 
 export const services = [
   {
-    title: 'AI Legal Assistant',
-    description: 'Ask mock Kannada-English legal awareness questions and get practical next-step guidance.',
+    title: 'AI Legal Guidance',
+    description: 'Ask Kannada-English legal awareness questions and understand civil, criminal, family, and property issues.',
     icon: Bot,
-    path: '/ai-legal-assistant',
-  },
-  {
-    title: 'Legal Guidance',
-    description: 'Understand civil, criminal, family, property, labour, and consumer issues in simple language.',
-    icon: Gavel,
-    path: '/legal-guidance',
+    path: '/ai-legal-guidance',
   },
   {
     title: 'Women Protection',

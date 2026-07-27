@@ -18,10 +18,9 @@ const resources = {
       nav: {
         home: 'Home',
         about: 'About',
-        assistant: 'AI Assistant',
-        guidance: 'Legal Guidance',
+        aiGuidance: 'AI Legal Guidance',
         women: 'Women Protection',
-        aid: 'Legal Aid',
+        aid: 'Free Legal Aid',
         docs: 'Documents',
         locator: 'Directory',
         tracker: 'Case Tracker',
@@ -39,14 +38,15 @@ const resources = {
         tagline: 'Karnataka Legal Assistance',
         usefulLinks: 'Useful Links',
         contact: 'Contact',
+        aiLegalGuidance: 'AI Legal Guidance',
+        womenProtection: 'Women Protection',
+        directoryLocator: 'Directory Locator',
         location: 'Bengaluru, Karnataka',
         email: 'support@smartnyaya.karnataka',
         helplines: 'Helplines: 112, 181, 1098',
         copyright: '© 2026 Smart Karnataka Nyaya. Public legal awareness frontend MVP.',
         legalGuidance: 'Legal Guidance',
-        legalAid: 'Legal Aid',
-        womenProtection: 'Women Protection',
-        directoryLocator: 'Directory Locator',
+        legalAid: 'Free Legal Aid',
       },
 
       // ── Alert Banner ──
@@ -60,8 +60,8 @@ const resources = {
       // ── Home Page ──
       home: {
         portalLabel: 'Karnataka AI Legal Assistance Portal',
-        actionAI: 'Ask AI Legal Assistant',
-        actionAid: 'Check Legal Aid Eligibility',
+        actionAI: 'Ask AI Legal Guidance',
+        actionAid: 'Apply for free legal aid eligibility',
         actionWomen: 'Women Safety Help',
         actionDirectory: 'Find Legal Services',
         justiceDesk: 'Justice Access Desk',
@@ -83,10 +83,8 @@ const resources = {
 
       // ── Services (cards) ──
       services: {
-        aiAssistant: 'AI Legal Assistant',
-        aiAssistantDesc: 'Ask mock Kannada-English legal awareness questions and get practical next-step guidance.',
-        legalGuidance: 'Legal Guidance',
-        legalGuidanceDesc: 'Understand civil, criminal, family, property, labour, and consumer issues in simple language.',
+        aiGuidance: 'AI Legal Guidance',
+        aiGuidanceDesc: 'Ask Kannada-English legal awareness questions and understand civil, criminal, family, and property issues.',
         womenProtection: 'Women Protection',
         womenProtectionDesc: 'Safety information, emergency contacts, domestic violence help, and complaint guidance.',
         freeLegalAid: 'Free Legal Aid',
@@ -111,9 +109,9 @@ const resources = {
         cardDesc: 'Built for clarity, trust, and future backend integration.',
       },
 
-      // ── AI Legal Assistant Page ──
+      // ── AI Legal Guidance Page ──
       aiAssistant: {
-        eyebrow: 'AI Legal Assistant',
+        eyebrow: 'AI Legal Guidance',
         title: 'Ask a legal awareness question',
         desc: 'Use the mock assistant to understand common legal problems, what details to collect, and which Karnataka support channel may be relevant.',
         note1Title: 'Legal information only',
@@ -126,9 +124,9 @@ const resources = {
 
       // ── Assistant Chat ──
       chat: {
-        title: 'AI Legal Assistant',
-        subtitle: 'Backend-connected Kannada-English legal awareness chat for Karnataka citizens.',
-        language: 'Language',
+        title: 'AI Legal Guidance',
+        subtitle: 'I am a bilingual legal guidance AI. You can write in English, Kannada, or both.',
+        language: 'Language:',
         english: 'English',
         kannada: 'Kannada',
         kannadaEnglish: 'Kannada + English',
