@@ -23,15 +23,16 @@ export default function Directory() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const filters = [
-    t('directory.filterLegalAid'), 
-    t('directory.filterDLSA'), 
-    t('directory.filterHelpline'), 
-    t('directory.filterCourt'), 
-    t('directory.filterPolice'), 
-    t('directory.filterWomenPolice'), 
-    t('directory.filterNGO'), 
-    t('directory.filterShelter')
+  // Each entry: { value: backend_service_type, label: display text }
+  const SERVICE_FILTERS = [
+    { value: 'legal_aid',            label: t('directory.filterLegalAid') },
+    { value: 'dlsa',                 label: t('directory.filterDLSA') },
+    { value: 'helpline',             label: t('directory.filterHelpline') },
+    { value: 'court',                label: t('directory.filterCourt') },
+    { value: 'police',               label: t('directory.filterPolice') },
+    { value: 'women_police_station', label: t('directory.filterWomenPolice') },
+    { value: 'ngo',                  label: t('directory.filterNGO') },
+    { value: 'one_stop_centre',      label: 'One Stop Centre (Sakhi)' },
   ];
 
   // Update dependent taluks dropdown when district changes
@@ -126,7 +127,7 @@ export default function Directory() {
                   onChange={(event) => setType(event.target.value)}
                 >
                   <option value="">{t('directory.allServices')}</option>
-                  {filters.map((item) => <option key={item} value={item}>{item}</option>)}
+                  {SERVICE_FILTERS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
                 </select>
               </label>
             </div>

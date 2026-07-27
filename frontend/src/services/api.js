@@ -37,7 +37,9 @@ function incomeToAnnualIncome(income) {
 }
 
 function serviceTypeToBackend(value) {
-  const map = {
+  // Directory filter values are already backend enum strings (e.g. 'court', 'dlsa')
+  // Keep legacy label→value map for any old callsites
+  const legacy = {
     Court: 'court',
     DLSA: 'dlsa',
     'Police Station': 'police_station',
@@ -46,8 +48,9 @@ function serviceTypeToBackend(value) {
     'Shelter Home': 'shelter_home',
     Helpline: 'helpline',
     'Legal Aid': 'legal_aid',
+    'One Stop Centre (Sakhi)': 'one_stop_centre',
   };
-  return map[value] || value || undefined;
+  return legacy[value] || value || undefined;
 }
 
 export const authApi = {
