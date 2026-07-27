@@ -9,6 +9,7 @@ from app.models.domain import LegalQuery, User
 from app.schemas import ClassifyIssueRequest, LegalQueryCreate, LegalQueryRead, PrecedentSearchRequest, RiskAssessmentRequest
 from app.services.ai_service import AIService, get_ai_service
 from app.services.llm_router import get_llm_router
+from app.services.routing import route_chat_request
 
 router = APIRouter(prefix="/ai", tags=["Legal Assistant"])
 
@@ -48,17 +49,18 @@ def chat(
     Routes to Groq (fast) with Gemini/OpenRouter fallback.
     Stores query in database if user is logged in and consents.
     """
-    router_svc = get_llm_router()
-
     # Build conversation history for the LLM
     history = [{"role": m.role, "content": m.content} for m in payload.history]
 
-    # Get AI response
-    result = router_svc.legal_chat(payload.message, payload.language, history)
+    # Route request (checks for case number first, otherwise falls back to LLM)
+    routed_result = route_chat_request(payload.message, payload.language, history, db)
 
-    # Classify the issue in the background for storage
-    ai_service = get_ai_service()
-    classification = ai_service.classify_legal_issue(payload.message, payload.language)
+    # Classify the issue in the background for storage (if not a system response)
+    if routed_result["provider"] == "system":
+        classification = {"category": "case_tracking", "urgency_level": "normal"}
+    else:
+        ai_service = get_ai_service()
+        classification = ai_service.classify_legal_issue(payload.message, payload.language)
 
     # Store in database if user consented
     if payload.consent_to_store:
@@ -68,16 +70,16 @@ def chat(
             language=payload.language,
             legal_category=classification["category"],
             urgency_level=classification["urgency_level"],
-            ai_response=result["text"],
+            ai_response=routed_result["answer"],
         )
         db.add(row)
         audit(db, request, "ai.chat", current_user.user_id if current_user else None)
         db.commit()
 
     return ChatResponse(
-        answer=result["text"],
-        provider=result["provider"],
-        model=result["model"],
+        answer=routed_result["answer"],
+        provider=routed_result["provider"],
+        model=routed_result["model"],
         category=classification["category"],
         urgency=classification["urgency_level"],
         disclaimer=LEGAL_DISCLAIMER,
