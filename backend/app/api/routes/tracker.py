@@ -20,19 +20,29 @@ ALLOWED_TYPES = {
 MAX_FILE_SIZE_MB = 5
 
 
-@router.get("/{case_id}")
-def get_case(case_id: UUID, db: Session = Depends(get_db)):
-    row = db.get(CaseObject, case_id)
+def _get_case_by_number(case_number: str, db: Session) -> CaseObject:
+    """Fetch a CaseObject by its human-readable eCourt case number (e.g. CC/00042/2026).
+    Accepts the number with or without leading zeros for convenience."""
+    # Normalise: strip whitespace, uppercase
+    cn = case_number.strip().upper()
+    row = db.scalar(select(CaseObject).where(CaseObject.case_number == cn))
     if not row:
-        raise HTTPException(status_code=404, detail="Case not found")
+        raise HTTPException(
+            status_code=404,
+            detail=f"No case found with case number '{cn}'. Please check the number and try again.",
+        )
     return row
 
 
-@router.patch("/{case_id}/status")
-def update_case_status(case_id: UUID, payload: StatusPatch, request: Request, db: Session = Depends(get_db)):
-    row = db.get(CaseObject, case_id)
-    if not row:
-        raise HTTPException(status_code=404, detail="Case not found")
+@router.get("/{case_number:path}")
+def get_case(case_number: str, db: Session = Depends(get_db)):
+    """Look up a case by eCourt case number (e.g. CC/00042/2026)."""
+    return _get_case_by_number(case_number, db)
+
+
+@router.patch("/{case_number:path}/status")
+def update_case_status(case_number: str, payload: StatusPatch, request: Request, db: Session = Depends(get_db)):
+    row = _get_case_by_number(case_number, db)
     row.status = payload.status
     audit(db, request, "tracker.update_status", row.user_id)
     db.commit()
@@ -40,17 +50,15 @@ def update_case_status(case_id: UUID, payload: StatusPatch, request: Request, db
     return row
 
 
-@router.post("/{case_id}/upload-document")
+@router.post("/{case_number:path}/upload-document")
 async def upload_document(
-    case_id: UUID,
+    case_number: str,
     request: Request,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
-    """Upload a supporting document for a case. Stored as base64 in the case's documents JSON field."""
-    row = db.get(CaseObject, case_id)
-    if not row:
-        raise HTTPException(status_code=404, detail="Case not found")
+    """Upload a supporting document for a case (identified by eCourt case number)."""
+    row = _get_case_by_number(case_number, db)
 
     # Validate file type
     if file.content_type not in ALLOWED_TYPES:
@@ -78,12 +86,12 @@ async def upload_document(
     current_docs.append(doc_entry)
     row.documents = current_docs
 
-    # Create a notification for the case owner
+    # Notify the case owner
     if row.user_id:
         db.add(Notification(
             user_id=row.user_id,
             title="Document uploaded",
-            message=f"Document '{file.filename}' ({round(size_mb * 1024, 1)} KB) was successfully uploaded to your case.",
+            message=f"Document '{file.filename}' ({round(size_mb * 1024, 1)} KB) was successfully uploaded to case {row.case_number}.",
             channel="in_app",
         ))
 
@@ -96,18 +104,15 @@ async def upload_document(
         "filename": file.filename,
         "size_kb": round(len(content) / 1024, 1),
         "total_documents": len(current_docs),
-        "case_id": str(case_id),
+        "case_number": row.case_number,
     }
 
 
-@router.get("/{case_id}/documents")
-def list_documents(case_id: UUID, db: Session = Depends(get_db)):
-    """List all documents uploaded for a case (without the base64 data to keep response small)."""
-    row = db.get(CaseObject, case_id)
-    if not row:
-        raise HTTPException(status_code=404, detail="Case not found")
+@router.get("/{case_number:path}/documents")
+def list_documents(case_number: str, db: Session = Depends(get_db)):
+    """List all documents for a case (without the base64 binary data)."""
+    row = _get_case_by_number(case_number, db)
     docs = row.documents or []
-    # Return metadata only — not the binary data
     return [
         {"filename": d.get("filename"), "content_type": d.get("content_type"), "size_kb": d.get("size_kb")}
         for d in docs

@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, Float, ForeignKey, String, Text, func
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -11,6 +11,15 @@ from app.models.enums import RecordStatus, UserRole
 
 def uuid_pk() -> Mapped[uuid.UUID]:
     return mapped_column(primary_key=True, default=uuid.uuid4)
+
+
+def _generate_case_number() -> str:
+    """Generate eCourt-style case number: CC/NNNN/YYYY"""
+    import random
+    from datetime import datetime
+    year = datetime.now().year
+    seq = random.randint(1, 99999)
+    return f"CC/{seq:05d}/{year}"
 
 
 class TimestampMixin:
@@ -55,6 +64,7 @@ class CaseObject(Base, TimestampMixin):
     __tablename__ = "case_objects"
 
     case_id: Mapped[uuid.UUID] = uuid_pk()
+    case_number: Mapped[str] = mapped_column(String(30), unique=True, index=True, default=_generate_case_number)
     user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.user_id"), nullable=True, index=True)
     grievance_text: Mapped[str] = mapped_column(Text)
     legal_sections: Mapped[dict | list | None] = mapped_column(JSONVariant, default=list)

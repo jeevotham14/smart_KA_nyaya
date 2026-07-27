@@ -317,11 +317,12 @@ export default function CaseTracker() {
               <label>
                 <span className="text-sm font-semibold text-navy-900">{t('caseTracker.caseId')}</span>
                 <input
-                  className="mt-2 w-full rounded-sm border border-slate-300 px-3 py-3 text-sm outline-none focus:border-legalGold focus:ring-2 focus:ring-legalGold/20"
-                  placeholder={t('caseTracker.placeholder')}
+                  className="mt-2 w-full rounded-sm border border-slate-300 px-3 py-3 font-mono text-sm outline-none focus:border-legalGold focus:ring-2 focus:ring-legalGold/20 tracking-wider"
+                  placeholder="e.g. CC/00042/2026"
                   value={trackingId}
                   onChange={(e) => setTrackingId(e.target.value)}
                 />
+                <p className="mt-1 text-xs text-slate-400">Enter the eCourt case number printed on your case acknowledgement slip.</p>
               </label>
               <button
                 className="mt-4 flex w-full items-center justify-center gap-2 rounded-sm bg-navy-800 px-5 py-3 text-sm font-bold text-white disabled:opacity-60 hover:bg-navy-700 transition-colors"
@@ -337,10 +338,13 @@ export default function CaseTracker() {
               {caseData && (
                 <div className="mt-4 rounded-sm border border-aidGreen/30 bg-green-50 p-4 text-sm leading-6">
                   <p className="font-bold text-navy-900">Case Found ✅</p>
-                  <p className="mt-1 text-slate-700"><span className="font-semibold">Status:</span> <span className="capitalize">{caseData.status?.replace(/_/g, ' ')}</span></p>
-                  <p className="text-slate-700"><span className="font-semibold">Case ID:</span> <span className="font-mono text-xs">{caseData.case_id}</span></p>
+                  <p className="mt-2 rounded bg-white border border-slate-200 px-3 py-2 font-mono text-base font-bold text-navy-800 tracking-widest">
+                    {caseData.case_number}
+                  </p>
+                  <p className="mt-2 text-slate-700"><span className="font-semibold">Status:</span> <span className="capitalize">{caseData.status?.replace(/_/g, ' ')}</span></p>
                   {caseData.court_type && <p className="text-slate-700"><span className="font-semibold">Court:</span> {caseData.court_type}</p>}
                   {caseData.estimated_duration_days && <p className="text-slate-700"><span className="font-semibold">Est. Duration:</span> {caseData.estimated_duration_days} days</p>}
+                  <p className="mt-2 text-xs text-slate-400">Internal ID: {caseData.case_id}</p>
                 </div>
               )}
             </form>
@@ -348,7 +352,7 @@ export default function CaseTracker() {
             {/* Document upload (only shown when a case is found) */}
             {caseData && (
               <DocumentUploader
-                caseId={caseData.case_id}
+                caseId={caseData.case_number}
                 onUploadSuccess={() => setDocRefresh((n) => n + 1)}
               />
             )}
@@ -394,14 +398,14 @@ export default function CaseTracker() {
                   <FileText className="h-5 w-5 text-legalGold" />
                   <h3 className="font-bold text-navy-900">Uploaded Documents</h3>
                 </div>
-                <DocumentList caseId={caseData.case_id} refreshTrigger={docRefresh} />
+                <DocumentList caseId={caseData.case_number} refreshTrigger={docRefresh} />
               </section>
             )}
 
             {!caseData && (
               <div className="rounded-md border border-slate-200 bg-slate-50 p-6 text-center shadow-sm">
                 <Search className="mx-auto h-8 w-8 text-slate-300" />
-                <p className="mt-3 text-sm font-semibold text-slate-500">Enter a Case ID above to track your case and upload documents.</p>
+                <p className="mt-3 text-sm font-semibold text-slate-500">Enter your eCourt Case Number above (e.g. <span className="font-mono">CC/00042/2026</span>) to track your case and upload documents.</p>
               </div>
             )}
           </div>
