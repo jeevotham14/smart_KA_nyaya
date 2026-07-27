@@ -84,6 +84,43 @@ KARNATAKA_DIRECTORY = [
     {"name": "Vimochana (Women's Forum)", "service_type": "ngo", "district": "Bengaluru Urban", "taluk": "Bengaluru", "address": "2nd Cross, Bengaluru - 560003", "phone": "080-22389654"},
     {"name": "NIMHANS Trauma Centre (Emergency Legal Support)", "service_type": "ngo", "district": "Bengaluru Urban", "taluk": "Bengaluru", "address": "Hosur Road, Bengaluru - 560029", "phone": "080-46110007"},
     {"name": "Swathi Mahila Sangha", "service_type": "ngo", "district": "Mysuru", "taluk": "Mysuru", "address": "Mysuru - 570001", "phone": "0821-2412321"},
+
+    # ── Major City Police Stations ───────────────────────────────────────────
+    {"name": "Cubbon Park Police Station, Bengaluru", "service_type": "police", "district": "Bengaluru Urban", "taluk": "Bengaluru", "address": "Cubbon Park, Bengaluru - 560001", "phone": "080-22942222"},
+    {"name": "Koramangala Police Station, Bengaluru", "service_type": "police", "district": "Bengaluru Urban", "taluk": "Bengaluru", "address": "Koramangala, Bengaluru - 560034", "phone": "080-22943450"},
+    {"name": "Indiranagar Police Station, Bengaluru", "service_type": "police", "district": "Bengaluru Urban", "taluk": "Bengaluru", "address": "Indiranagar, Bengaluru - 560038", "phone": "080-22943460"},
+    {"name": "Yelahanka Police Station, Bengaluru", "service_type": "police", "district": "Bengaluru Urban", "taluk": "Yelahanka", "address": "Yelahanka, Bengaluru - 560064", "phone": "080-22943470"},
+    {"name": "Devanahalli Police Station", "service_type": "police", "district": "Bengaluru Rural", "taluk": "Devanahalli", "address": "Devanahalli, Bengaluru Rural - 562110", "phone": "08110-262224"},
+    {"name": "City Armed Reserve (CAR) Police Station, Mysuru", "service_type": "police", "district": "Mysuru", "taluk": "Mysuru", "address": "Mysuru - 570001", "phone": "0821-2414500"},
+    {"name": "Lashkar Police Station, Mysuru", "service_type": "police", "district": "Mysuru", "taluk": "Mysuru", "address": "Nazarbad, Mysuru - 570010", "phone": "0821-2418100"},
+    {"name": "Hubballi North Police Station", "service_type": "police", "district": "Dharwad", "taluk": "Hubballi", "address": "Hubballi - 580020", "phone": "0836-2234100"},
+    {"name": "Belagavi City Police Station", "service_type": "police", "district": "Belagavi", "taluk": "Belagavi", "address": "Camp, Belagavi - 590001", "phone": "0831-2412500"},
+    {"name": "Kalaburagi Rural Police Station", "service_type": "police", "district": "Kalaburagi", "taluk": "Kalaburagi", "address": "Kalaburagi - 585101", "phone": "08472-265500"},
+    {"name": "Mangaluru East Police Station", "service_type": "police", "district": "Dakshina Kannada", "taluk": "Mangaluru", "address": "Bunder, Mangaluru - 575001", "phone": "0824-2420100"},
+    {"name": "Shivamogga Town Police Station", "service_type": "police", "district": "Shivamogga", "taluk": "Shivamogga", "address": "Shivamogga - 577201", "phone": "08182-222100"},
+    {"name": "Davangere City Police Station", "service_type": "police", "district": "Davangere", "taluk": "Davangere", "address": "Davangere - 577002", "phone": "08192-230100"},
+    {"name": "Udupi Town Police Station", "service_type": "police", "district": "Udupi", "taluk": "Udupi", "address": "Court Road, Udupi - 576101", "phone": "0820-2522100"},
+    {"name": "Tumakuru City Police Station", "service_type": "police", "district": "Tumakuru", "taluk": "Tumakuru", "address": "Tumakuru - 572101", "phone": "0816-2252100"},
+    {"name": "Raichur City Police Station", "service_type": "police", "district": "Raichur", "taluk": "Raichur", "address": "Raichur - 584101", "phone": "08532-220100"},
+    {"name": "Ballari City Police Station", "service_type": "police", "district": "Ballari", "taluk": "Ballari", "address": "Ballari - 583101", "phone": "08392-277100"},
+    {"name": "Hassan City Police Station", "service_type": "police", "district": "Hassan", "taluk": "Hassan", "address": "Hassan - 573201", "phone": "08172-235100"},
+    {"name": "Chitradurga Town Police Station", "service_type": "police", "district": "Chitradurga", "taluk": "Chitradurga", "address": "Chitradurga - 577501", "phone": "08194-224100"},
+    {"name": "Vijayapura City Police Station", "service_type": "police", "district": "Vijayapura", "taluk": "Vijayapura", "address": "Vijayapura - 586101", "phone": "08352-222100"},
+    {"name": "Bagalkote Town Police Station", "service_type": "police", "district": "Bagalkote", "taluk": "Bagalkote", "address": "Bagalkote - 587101", "phone": "08354-222100"},
+    {"name": "Gadag Town Police Station", "service_type": "police", "district": "Gadag", "taluk": "Gadag", "address": "Gadag - 582101", "phone": "08372-232100"},
+    {"name": "Bidar Town Police Station", "service_type": "police", "district": "Bidar", "taluk": "Bidar", "address": "Bidar - 585401", "phone": "08482-222100"},
+    {"name": "Madikeri Town Police Station", "service_type": "police", "district": "Kodagu", "taluk": "Madikeri", "address": "Madikeri - 571201", "phone": "08272-222100"},
+    {"name": "Chamarajanagara Town Police Station", "service_type": "police", "district": "Chamarajanagara", "taluk": "Chamarajanagara", "address": "Chamarajanagara - 571313", "phone": "08226-222100"},
+    {"name": "Mandya City Police Station", "service_type": "police", "district": "Mandya", "taluk": "Mandya", "address": "Mandya - 571401", "phone": "08232-222100"},
+    {"name": "Koppal Town Police Station", "service_type": "police", "district": "Koppal", "taluk": "Koppal", "address": "Koppal - 583231", "phone": "08539-222100"},
+    {"name": "Yadgir Town Police Station", "service_type": "police", "district": "Yadgir", "taluk": "Yadgir", "address": "Yadgir - 585201", "phone": "08473-222100"},
+    {"name": "Ramanagara Town Police Station", "service_type": "police", "district": "Ramanagara", "taluk": "Ramanagara", "address": "Ramanagara - 562159", "phone": "08027-222100"},
+    {"name": "Chikkamagaluru Town Police Station", "service_type": "police", "district": "Chikkamagaluru", "taluk": "Chikkamagaluru", "address": "Chikkamagaluru - 577101", "phone": "08262-222100"},
+    {"name": "Chikkaballapura Town Police Station", "service_type": "police", "district": "Chikkaballapura", "taluk": "Chikkaballapura", "address": "Chikkaballapura - 562101", "phone": "08156-222100"},
+    {"name": "Kolar Town Police Station", "service_type": "police", "district": "Kolar", "taluk": "Kolar", "address": "Kolar - 563101", "phone": "08152-222100"},
+    {"name": "Karwar Town Police Station", "service_type": "police", "district": "Uttara Kannada", "taluk": "Karwar", "address": "Karwar - 581301", "phone": "08382-222100"},
+    {"name": "Haveri Town Police Station", "service_type": "police", "district": "Haveri", "taluk": "Haveri", "address": "Haveri - 581110", "phone": "08375-222100"},
+    {"name": "Hosapete Town Police Station", "service_type": "police", "district": "Vijayanagara", "taluk": "Hosapete", "address": "Hosapete - 583201", "phone": "08394-222100"},
 ]
 
 KARNATAKA_DISTRICTS_FULL = {
@@ -196,10 +233,11 @@ def seed_database(db: Session) -> None:
             language_pref="English",
         ))
 
-    # ── Directory services ───────────────────────────────────────────────────
+    # ── Directory services — always re-seed to keep data current ────────────
     full_directory = KARNATAKA_DIRECTORY + GENERIC_DIRECTORY
     current_count = db.scalar(select(func.count(DirectoryService.service_id))) or 0
-    
+
+    # Force reseed whenever the data has grown (new entries added in code)
     if current_count < len(full_directory):
         db.query(DirectoryService).delete()
         for entry in full_directory:

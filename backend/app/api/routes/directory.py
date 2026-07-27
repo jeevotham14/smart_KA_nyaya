@@ -42,7 +42,7 @@ def search(
     if taluk:
         statement = statement.where(DirectoryService.taluk.ilike(taluk))
     if service_type:
-        # Exact match on the enum value stored in DB
+        # Exact case-insensitive match on the service_type enum value
         statement = statement.where(DirectoryService.service_type.ilike(service_type))
 
     # Order: statewide entries first, then alphabetically
