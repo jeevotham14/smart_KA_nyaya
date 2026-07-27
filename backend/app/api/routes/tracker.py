@@ -41,25 +41,7 @@ def _get_case_by_number(case_number: str, db: Session) -> CaseObject:
     return row
 
 
-@router.get("/{case_number:path}")
-def get_case(case_number: str, db: Session = Depends(get_db)):
-    """Look up a case by eCourt case number (e.g. CC/00042/2026)."""
-    try:
-        return _get_case_by_number(case_number, db)
-    except HTTPException as e:
-        if e.status_code == 404:
-            cn = extract_case_number(case_number) or case_number.strip().upper()
-            return {
-                "case_number": cn,
-                "status": "under_review",
-                "court_type": "Principal District and Sessions Court (External)",
-                "grievance_text": "State of Karnataka vs Unknown",
-                "created_at": (datetime.now(timezone.utc) - timedelta(days=45)).isoformat(),
-                "estimated_duration_days": 120,
-                "documents": [],
-                "user_id": None
-            }
-        raise
+
 
 
 @router.patch("/{case_number:path}/status")
@@ -148,3 +130,24 @@ def user_cases(user_id: UUID, db: Session = Depends(get_db)):
     return db.scalars(
         select(CaseObject).where(CaseObject.user_id == user_id).order_by(CaseObject.created_at.desc())
     ).all()
+
+
+@router.get("/{case_number:path}")
+def get_case(case_number: str, db: Session = Depends(get_db)):
+    """Look up a case by eCourt case number (e.g. CC/00042/2026)."""
+    try:
+        return _get_case_by_number(case_number, db)
+    except HTTPException as e:
+        if e.status_code == 404:
+            cn = extract_case_number(case_number) or case_number.strip().upper()
+            return {
+                "case_number": cn,
+                "status": "under_review",
+                "court_type": "Principal District and Sessions Court (External)",
+                "grievance_text": "State of Karnataka vs Unknown",
+                "created_at": (datetime.now(timezone.utc) - timedelta(days=45)).isoformat(),
+                "estimated_duration_days": 120,
+                "documents": [],
+                "user_id": None
+            }
+        raise
