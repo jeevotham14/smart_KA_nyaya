@@ -1,4 +1,4 @@
-from sqlalchemy import select, func
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.security import hash_password
@@ -233,24 +233,22 @@ def seed_database(db: Session) -> None:
             language_pref="English",
         ))
 
-    # ── Directory services — always re-seed to keep data current ────────────
+    # ── Directory services — always reseed on startup for fresh data ────────
     full_directory = KARNATAKA_DIRECTORY + GENERIC_DIRECTORY
-    current_count = db.scalar(select(func.count(DirectoryService.service_id))) or 0
 
-    # Force reseed whenever the data has grown (new entries added in code)
-    if current_count < len(full_directory):
-        db.query(DirectoryService).delete()
-        for entry in full_directory:
-            db.add(DirectoryService(
-                name=entry["name"],
-                service_type=entry["service_type"],
-                district=entry["district"],
-                taluk=entry.get("taluk"),
-                address=entry["address"],
-                phone=entry.get("phone"),
-                latitude=entry.get("latitude"),
-                longitude=entry.get("longitude"),
-            ))
+    # Always clear and re-insert so the live DB always matches the code
+    db.query(DirectoryService).delete()
+    for entry in full_directory:
+        db.add(DirectoryService(
+            name=entry["name"],
+            service_type=entry["service_type"],
+            district=entry["district"],
+            taluk=entry.get("taluk"),
+            address=entry["address"],
+            phone=entry.get("phone"),
+            latitude=entry.get("latitude"),
+            longitude=entry.get("longitude"),
+        ))
 
     # ── Legal statutes ───────────────────────────────────────────────────────
     if not db.scalar(select(LegalStatute).limit(1)):
