@@ -157,6 +157,36 @@ export const legalApi = {
     const { data } = await api.get(`/api/tracker/${trackingId}`);
     return data;
   },
+  uploadCaseDocument: async (caseId, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await api.post(`/api/tracker/${caseId}/upload-document`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return data;
+  },
+  listCaseDocuments: async (caseId) => {
+    const { data } = await api.get(`/api/tracker/${caseId}/documents`);
+    return data;
+  },
+};
+
+export const notificationApi = {
+  fetchForUser: async (userId) => {
+    const { data } = await api.get(`/api/notifications/user/${userId}`);
+    return data;
+  },
+  markRead: async (notificationId) => {
+    const { data } = await api.patch(`/api/notifications/${notificationId}/read`);
+    return data;
+  },
+  markAllRead: async (userId) => {
+    // Mark all unread notifications as read for a user
+    const notifications = await notificationApi.fetchForUser(userId);
+    const unread = notifications.filter((n) => !n.read_status);
+    await Promise.all(unread.map((n) => notificationApi.markRead(n.notification_id)));
+    return { marked: unread.length };
+  },
 };
 
 export default api;
