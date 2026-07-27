@@ -7,6 +7,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { getApiError, legalApi, notificationApi } from '../services/api.js';
 import { karnatakaDistricts } from '../data/mockData.js';
+import { ErrorBoundary } from '../components/ErrorBoundary.jsx';
 
 // ── eCourts-style status pipeline ─────────────────────────────────────────────
 const STATUS_STEPS = [
@@ -599,11 +600,13 @@ export default function CaseTracker() {
         {/* ── Case Detail Panel ── */}
         {caseData && (
           <div className="mt-6">
-            <CaseDetailPanel
-              caseData={caseData}
-              docRefresh={docRefresh}
-              setDocRefresh={setDocRefresh}
-            />
+            <ErrorBoundary>
+              <CaseDetailPanel
+                caseData={caseData}
+                docRefresh={docRefresh}
+                setDocRefresh={setDocRefresh}
+              />
+            </ErrorBoundary>
           </div>
         )}
 
