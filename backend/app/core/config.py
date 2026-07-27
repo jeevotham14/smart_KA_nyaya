@@ -13,9 +13,16 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60
     cors_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+
+    # AI Providers
     ai_provider: str = "mock"
     ai_model: str = "mock-legal-assistant"
     embedding_model: str = "mock-embedding"
+    gemini_api_key: str | None = None
+    groq_api_key: str | None = None
+    openrouter_api_key: str | None = None
+
+    # Legacy / other integrations
     openai_api_key: str | None = None
     indian_kanoon_api_key: str | None = None
     maps_api_key: str | None = None
@@ -28,6 +35,10 @@ class Settings(BaseSettings):
     @classmethod
     def parse_cors_origins(cls, value: Any) -> list[str]:
         if isinstance(value, str):
+            # Handle JSON array format: ["a","b"]
+            if value.strip().startswith("["):
+                import json
+                return json.loads(value)
             return [item.strip() for item in value.split(",") if item.strip()]
         return value
 

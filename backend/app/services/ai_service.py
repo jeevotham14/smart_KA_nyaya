@@ -1,115 +1,155 @@
-from dataclasses import asdict
+"""
+AI Service — delegates to real LLM providers via LLMRouter.
+Keeps backward compatibility with existing route contracts.
+"""
+from __future__ import annotations
+
+import json
+import re
 from typing import Any
 
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
-from app.agents import DocumentGenerationAgent, LEGAL_DISCLAIMER, LegalFactExtractionAgent, LegalGuidanceAgent, RagRetrievalAgent
-from app.core.config import Settings, get_settings
 from app.models.domain import LegalStatute, Precedent
+from app.services.llm_router import LEGAL_DISCLAIMER, LLMRouter, TaskType, get_llm_router
 
 
 class AIService:
-    """Provider-facing AI integration layer.
-
-    The service reads provider/API-key configuration from environment-backed
-    settings, but stays safe by default with deterministic local agents until a
-    real provider client is deliberately enabled.
-    """
-
-    def __init__(self, settings: Settings | None = None):
-        self.settings = settings or get_settings()
-        self.classifier = LegalFactExtractionAgent()
-        self.retriever = RagRetrievalAgent()
-        self.guidance = LegalGuidanceAgent()
-        self.document_generator = DocumentGenerationAgent()
+    def __init__(self, router: LLMRouter | None = None):
+        self.router = router or get_llm_router()
 
     @property
     def provider_ready(self) -> bool:
-        if self.settings.ai_provider.lower() == "openai":
-            return bool(self.settings.openai_api_key)
-        return self.settings.ai_provider.lower() == "mock"
+        return bool(self.router.gemini_key or self.router.groq_key)
 
     def provider_metadata(self) -> dict[str, Any]:
-        fallback = self.settings.ai_provider.lower() != "mock" and not self.provider_ready
+        providers = []
+        if self.router.groq_key:
+            providers.append("groq/llama-3.3-70b-versatile")
+        if self.router.gemini_key:
+            providers.append("gemini/gemini-2.0-flash-lite")
+        if self.router.openrouter_key:
+            providers.append("openrouter/fallback")
         return {
-            "provider": self.settings.ai_provider,
-            "model": self.settings.ai_model,
-            "embedding_model": self.settings.embedding_model,
+            "providers": providers,
             "provider_ready": self.provider_ready,
-            "mode": "mock_fallback" if fallback else self.settings.ai_provider,
+            "mode": "production" if self.provider_ready else "mock_fallback",
         }
 
     def classify_legal_issue(self, text: str, language: str = "English") -> dict[str, Any]:
-        classification = self.classifier.run(text, language)
+        result = self.router.classify_issue(text)
+        classification = result.get("classification", {})
         return {
-            **asdict(classification),
+            "language": language,
+            "category": classification.get("category", "general"),
+            "urgency_level": classification.get("urgency", "normal"),
+            "sections": self._relevant_sections(classification.get("category", "general")),
+            "facts": [s.strip() for s in text.replace("\n", " ").split(".") if s.strip()][:5],
             "provider": self.provider_metadata(),
         }
 
-    def rag_retrieval_placeholder(self, query: str, db: Session | None = None, top_k: int = 3) -> dict[str, Any]:
-        retrieved = self.retriever.run(query, top_k)
-        if db is not None:
-            retrieved["statutes"] = self._retrieve_statutes(query, db, top_k) or retrieved["statutes"]
-            retrieved["precedents"] = self._retrieve_precedents(query, db, top_k) or retrieved["precedents"]
-        retrieved["provider"] = self.provider_metadata()
-        retrieved["pgvector_ready"] = True
-        return retrieved
-
     def legal_guidance_response(self, text: str, language: str = "English", db: Session | None = None) -> dict[str, Any]:
-        classification = self.classifier.run(text, language)
-        response = self.guidance.run(text, classification)
-        response["retrieval"] = self.rag_retrieval_placeholder(text, db=db)
-        response["provider"] = self.provider_metadata()
-        response["disclaimer"] = LEGAL_DISCLAIMER
-        return response
+        # 1. Classify issue
+        classification_result = self.classify_legal_issue(text, language)
 
-    def document_generation_response(self, doc_type: str, facts: dict[str, Any]) -> dict[str, Any]:
-        content = self.document_generator.generate(doc_type, facts)
+        # 2. Get real AI guidance
+        chat_result = self.router.legal_chat(text, language)
+
+        # 3. Supplement with DB statutes if available
+        statutes = []
+        if db:
+            statutes = self._retrieve_statutes(text, db, 3)
+
         return {
-            "doc_type": doc_type,
-            "content_text": content,
-            "format_compliant": True,
-            "provider": self.provider_metadata(),
+            "answer": chat_result["text"],
+            "steps": self._extract_steps(chat_result["text"]),
+            "classification": {
+                "category": classification_result["category"],
+                "urgency_level": classification_result["urgency_level"],
+                "language": language,
+                "sections": classification_result["sections"],
+                "facts": classification_result["facts"],
+            },
+            "retrieval": {
+                "statutes": statutes or self._fallback_statutes(classification_result["category"]),
+                "retrieval_mode": "db_keyword" if statutes else "fallback",
+            },
+            "provider": {"name": chat_result["provider"], "model": chat_result["model"]},
             "disclaimer": LEGAL_DISCLAIMER,
         }
 
-    def _retrieve_statutes(self, query: str, db: Session, top_k: int) -> list[dict[str, Any]]:
-        terms = [term.strip() for term in query.lower().split() if len(term.strip()) > 3][:8]
-        if not terms:
-            return []
-        filters = [LegalStatute.act_name.ilike(f"%{term}%") | LegalStatute.section_text.ilike(f"%{term}%") for term in terms]
-        rows = db.scalars(select(LegalStatute).where(or_(*filters)).limit(top_k)).all()
-        return [
-            {
-                "section_id": str(row.section_id),
-                "act_name": row.act_name,
-                "section_number": row.section_number,
-                "summary": row.section_text,
-                "state_applicability": row.state_applicability,
-            }
-            for row in rows
+    def document_generation_response(self, doc_type: str, facts: dict[str, Any], language: str = "English") -> dict[str, Any]:
+        result = self.router.generate_document(doc_type, facts, language)
+        return {
+            "doc_type": doc_type,
+            "content_text": result["text"],
+            "format_compliant": True,
+            "provider": {"name": result["provider"], "model": result["model"]},
+            "disclaimer": LEGAL_DISCLAIMER,
+        }
+
+    def rag_retrieval_placeholder(self, query: str, db: Session | None = None, top_k: int = 3) -> dict[str, Any]:
+        statutes = []
+        precedents = []
+        if db:
+            statutes = self._retrieve_statutes(query, db, top_k)
+            precedents = self._retrieve_precedents(query, db, top_k)
+        return {
+            "statutes": statutes,
+            "precedents": precedents,
+            "retrieval_mode": "db_keyword",
+            "provider": self.provider_metadata(),
+        }
+
+    # ── Internal helpers ────────────────────────────────────────────────────
+
+    @staticmethod
+    def _extract_steps(ai_text: str) -> list[str]:
+        """Extract numbered steps from AI response text."""
+        lines = ai_text.split("\n")
+        steps = []
+        for line in lines:
+            line = line.strip()
+            if re.match(r'^(\d+[\.\)]\s|[-•]\s)', line) and len(line) > 10:
+                steps.append(re.sub(r'^(\d+[\.\)]\s|[-•]\s)', '', line).strip())
+        return steps[:6] if steps else [
+            "Document all facts, dates, and people involved.",
+            "Preserve all evidence including messages, documents, and photographs.",
+            "Contact your local DLSA or TLSC for free legal guidance.",
         ]
 
-    def _retrieve_precedents(self, query: str, db: Session, top_k: int) -> list[dict[str, Any]]:
-        terms = [term.strip() for term in query.lower().split() if len(term.strip()) > 3][:8]
+    @staticmethod
+    def _relevant_sections(category: str) -> list[str]:
+        mapping = {
+            "women_protection": ["Protection of Women from Domestic Violence Act, 2005", "BNS Sections on assault/criminal intimidation", "Dowry Prohibition Act"],
+            "criminal": ["Bharatiya Nagarik Suraksha Sanhita (BNSS)", "Bharatiya Nyaya Sanhita (BNS)", "Karnataka Police Act"],
+            "property": ["Transfer of Property Act", "Karnataka Land Revenue Act", "Registration Act"],
+            "labour": ["Industrial Disputes Act", "Code on Wages", "Karnataka Shops and Commercial Establishments Act"],
+            "family": ["Hindu Marriage Act", "Special Marriage Act", "Guardians and Wards Act"],
+            "consumer": ["Consumer Protection Act, 2019", "Karnataka Consumer Disputes Redressal Commission"],
+        }
+        return mapping.get(category, ["Constitution of India Article 39A (Free Legal Aid)", "Legal Services Authorities Act"])
+
+    @staticmethod
+    def _fallback_statutes(category: str) -> list[dict]:
+        return [{"act_name": s, "section_number": "—", "summary": "Relevant to your issue."} for s in AIService._relevant_sections(category)]
+
+    def _retrieve_statutes(self, query: str, db: Session, top_k: int) -> list[dict]:
+        terms = [t.strip() for t in query.lower().split() if len(t.strip()) > 3][:8]
         if not terms:
             return []
-        filters = [Precedent.title.ilike(f"%{term}%") | Precedent.summary.ilike(f"%{term}%") for term in terms]
+        filters = [LegalStatute.act_name.ilike(f"%{t}%") | LegalStatute.section_text.ilike(f"%{t}%") for t in terms]
+        rows = db.scalars(select(LegalStatute).where(or_(*filters)).limit(top_k)).all()
+        return [{"act_name": r.act_name, "section_number": r.section_number, "summary": r.section_text} for r in rows]
+
+    def _retrieve_precedents(self, query: str, db: Session, top_k: int) -> list[dict]:
+        terms = [t.strip() for t in query.lower().split() if len(t.strip()) > 3][:8]
+        if not terms:
+            return []
+        filters = [Precedent.title.ilike(f"%{t}%") | Precedent.summary.ilike(f"%{t}%") for t in terms]
         rows = db.scalars(select(Precedent).where(or_(*filters)).limit(top_k)).all()
-        return [
-            {
-                "case_ref": str(row.case_ref),
-                "title": row.title,
-                "court": row.court,
-                "jurisdiction": row.jurisdiction,
-                "year": row.year,
-                "outcome": row.outcome,
-                "summary": row.summary,
-                "source_url": row.source_url,
-            }
-            for row in rows
-        ]
+        return [{"title": r.title, "court": r.court, "year": r.year, "summary": r.summary} for r in rows]
 
 
 def get_ai_service() -> AIService:

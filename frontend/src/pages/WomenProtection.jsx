@@ -32,11 +32,20 @@ export default function WomenProtection() {
                 </div>
               </div>
               <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                {[t('women.btn112'), t('women.btn181'), t('women.btn1098')].map((item) => (
-                  <button className="inline-flex items-center justify-center gap-2 rounded-sm bg-alertRed px-4 py-3 text-sm font-bold text-white" key={item} type="button">
+                {[
+                  { label: t('women.btn112'), number: '112' },
+                  { label: t('women.btn181'), number: '181' },
+                  { label: t('women.btn1098'), number: '1098' },
+                ].map((item) => (
+                  <a
+                    className="inline-flex items-center justify-center gap-2 rounded-sm bg-alertRed px-4 py-3 text-sm font-bold text-white hover:bg-red-700 transition-colors"
+                    href={`tel:${item.number}`}
+                    key={item.number}
+                    aria-label={`Call ${item.label}`}
+                  >
                     <Phone className="h-4 w-4" aria-hidden="true" />
-                    {item}
-                  </button>
+                    {item.label}
+                  </a>
                 ))}
               </div>
             </div>

@@ -7,11 +7,21 @@ const api = axios.create({
   timeout: 12000,
 });
 
-api.interceptors.request.use((config) => {
+// Separate client with longer timeout for AI calls
+const aiApi = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 45000,
+});
+
+const authInterceptor = (config) => {
   const token = window.localStorage.getItem('smartNyayaToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+};
+api.interceptors.request.use(authInterceptor);
+aiApi.interceptors.request.use(authInterceptor);
+
+api.interceptors.request.use((config) => {
   return config;
 });
 
@@ -69,23 +79,30 @@ export const authApi = {
 };
 
 export const legalApi = {
-  askAssistant: async ({ query, language, category }) => {
-    const { data } = await api.post('/api/ai/legal-query', {
-      grievance_text: query,
+  askAssistant: async ({ query, language, history = [] }) => {
+    const { data } = await aiApi.post('/api/ai/chat', {
+      message: query,
       language,
-      legal_category: category,
+      history,
       consent_to_store: true,
     });
     return {
-      answer: data.ai_response,
-      steps: [
-        `Category: ${data.legal_category}`,
-        `Urgency: ${data.urgency_level}`,
-        `Status: ${data.status}`,
-      ],
-      queryId: data.query_id,
+      answer: data.answer,
+      steps: [],          // steps now embedded in the answer text
+      category: data.category,
+      urgency: data.urgency,
+      provider: data.provider,
+      model: data.model,
       raw: data,
     };
+  },
+  translate: async ({ text, sourceLang, targetLang }) => {
+    const { data } = await aiApi.post('/api/ai/translate', {
+      text,
+      source_language: sourceLang,
+      target_language: targetLang,
+    });
+    return data;
   },
   classifyIssue: async ({ text, language }) => {
     const { data } = await api.post('/api/ai/classify-issue', { text, language });

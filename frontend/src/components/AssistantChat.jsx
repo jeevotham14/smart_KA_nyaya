@@ -42,26 +42,32 @@ export default function AssistantChat() {
     const userText = query;
     setLoading(true);
     setError('');
-    setMessages((current) => [...current, { role: 'user', text: userText }]);
+    const newUserMsg = { role: 'user', text: userText };
+    setMessages((prev) => [...prev, newUserMsg]);
+    setQuery('');
     try {
-      const result = await legalApi.askAssistant({ query: userText, language, category });
-      setMessages((current) => [
-        ...current,
+      // Build history from current messages for context
+      const history = messages
+        .filter((m) => m.role !== 'system')
+        .map((m) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.text }));
+
+      const result = await legalApi.askAssistant({ query: userText, language, history });
+      setMessages((prev) => [
+        ...prev,
         {
           role: 'assistant',
           text: result.answer,
-          steps: result.steps,
+          provider: result.provider,
+          model: result.model,
+          category: result.category,
+          urgency: result.urgency,
         },
       ]);
-      setQuery('');
     } catch (apiError) {
       setError(getApiError(apiError));
-      setMessages((current) => [
-        ...current,
-        {
-          role: 'assistant',
-          text: t('chat.errorMsg'),
-        },
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', text: t('chat.errorMsg') },
       ]);
     } finally {
       setLoading(false);
@@ -131,7 +137,13 @@ export default function AssistantChat() {
                     message.role === 'user' ? 'border-navy-800 bg-navy-800 text-white' : 'border-slate-200 bg-slate-50 text-slate-700'
                   }`}
                 >
-                  <p>{message.text}</p>
+                  {message.role === 'assistant' && message.urgency === 'emergency' && (
+                    <span className="mb-2 inline-block rounded-sm bg-red-100 px-2 py-1 text-xs font-bold text-red-700">⚠️ EMERGENCY — Call 112 immediately</span>
+                  )}
+                  <p className="whitespace-pre-wrap">{message.text}</p>
+                  {message.role === 'assistant' && message.provider && (
+                    <p className="mt-3 text-xs text-slate-400">Powered by {message.provider} / {message.model}</p>
+                  )}
                   {message.steps ? (
                     <ul className="mt-3 grid gap-2">
                       {message.steps.map((step) => (

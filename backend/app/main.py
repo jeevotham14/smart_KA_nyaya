@@ -1,9 +1,13 @@
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+from slowapi.util import get_remote_address
 
 from app.api.routes import routers
 from app.core.config import get_settings
@@ -13,10 +17,23 @@ from app.db.session import SessionLocal, engine
 
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 
+limiter = Limiter(key_func=get_remote_address, default_limits=["200/minute"])
+
 
 def create_app() -> FastAPI:
     settings = get_settings()
-    app = FastAPI(title=settings.app_name, version="0.1.0")
+    app = FastAPI(
+        title=settings.app_name,
+        version="1.0.0",
+        description="Smart Karnataka Nyaya — Karnataka Government Legal Assistance Platform",
+    )
+
+    # Rate limiting
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    app.add_middleware(SlowAPIMiddleware)
+
+    # CORS
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
@@ -25,12 +42,13 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    # API routes
     for router in routers:
         app.include_router(router, prefix=settings.api_prefix)
 
     @app.get("/health", tags=["System"])
     def health():
-        return {"status": "ok", "service": settings.app_name}
+        return {"status": "ok", "service": settings.app_name, "version": "1.0.0"}
 
     @app.on_event("startup")
     def on_startup():
@@ -40,10 +58,8 @@ def create_app() -> FastAPI:
 
     # Serve the built React frontend
     if STATIC_DIR.exists():
-        # Serve static assets (JS, CSS, images)
         app.mount("/assets", StaticFiles(directory=STATIC_DIR / "assets"), name="assets")
 
-        # Catch-all: serve index.html for any non-API route (SPA routing)
         @app.get("/{full_path:path}")
         def serve_frontend(full_path: str):
             file_path = STATIC_DIR / full_path

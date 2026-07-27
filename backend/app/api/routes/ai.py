@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, Request
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.agents import LEGAL_DISCLAIMER
@@ -7,9 +8,96 @@ from app.db.session import get_db
 from app.models.domain import LegalQuery, User
 from app.schemas import ClassifyIssueRequest, LegalQueryCreate, LegalQueryRead, PrecedentSearchRequest, RiskAssessmentRequest
 from app.services.ai_service import AIService, get_ai_service
+from app.services.llm_router import get_llm_router
 
 router = APIRouter(prefix="/ai", tags=["Legal Assistant"])
 
+
+# ── New production chat endpoint ────────────────────────────────────────────
+
+class ChatMessage(BaseModel):
+    role: str  # "user" or "assistant"
+    content: str
+
+
+class ChatRequest(BaseModel):
+    message: str = Field(min_length=2, max_length=4000)
+    language: str = "English"
+    history: list[ChatMessage] = []
+    consent_to_store: bool = True
+
+
+class ChatResponse(BaseModel):
+    answer: str
+    provider: str
+    model: str
+    category: str | None = None
+    urgency: str | None = None
+    disclaimer: str
+
+
+@router.post("/chat", response_model=ChatResponse)
+def chat(
+    payload: ChatRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User | None = Depends(get_optional_user),
+):
+    """
+    Primary AI chat endpoint.
+    Routes to Groq (fast) with Gemini/OpenRouter fallback.
+    Stores query in database if user is logged in and consents.
+    """
+    router_svc = get_llm_router()
+
+    # Build conversation history for the LLM
+    history = [{"role": m.role, "content": m.content} for m in payload.history]
+
+    # Get AI response
+    result = router_svc.legal_chat(payload.message, payload.language, history)
+
+    # Classify the issue in the background for storage
+    ai_service = get_ai_service()
+    classification = ai_service.classify_legal_issue(payload.message, payload.language)
+
+    # Store in database if user consented
+    if payload.consent_to_store:
+        row = LegalQuery(
+            user_id=current_user.user_id if current_user else None,
+            grievance_text=payload.message,
+            language=payload.language,
+            legal_category=classification["category"],
+            urgency_level=classification["urgency_level"],
+            ai_response=result["text"],
+        )
+        db.add(row)
+        audit(db, request, "ai.chat", current_user.user_id if current_user else None)
+        db.commit()
+
+    return ChatResponse(
+        answer=result["text"],
+        provider=result["provider"],
+        model=result["model"],
+        category=classification["category"],
+        urgency=classification["urgency_level"],
+        disclaimer=LEGAL_DISCLAIMER,
+    )
+
+
+class TranslateRequest(BaseModel):
+    text: str = Field(min_length=2, max_length=5000)
+    source_language: str = "English"
+    target_language: str = "Kannada"
+
+
+@router.post("/translate")
+def translate(payload: TranslateRequest):
+    """Translate legal text between Kannada and English using Gemini."""
+    result = get_llm_router().translate(payload.text, payload.source_language, payload.target_language)
+    return {"translated_text": result["text"], "provider": result["provider"], "model": result["model"]}
+
+
+# ── Legacy endpoints (preserved for backward compatibility) ──────────────────
 
 @router.post("/legal-query", response_model=LegalQueryRead)
 def legal_query(
@@ -30,7 +118,6 @@ def legal_query(
         ai_response=result["answer"],
     )
     db.add(row)
-    db.flush()
     audit(db, request, "ai.legal_query", current_user.user_id if current_user else None)
     db.commit()
     db.refresh(row)
@@ -56,6 +143,5 @@ def risk_assessment(payload: RiskAssessmentRequest, ai_service: AIService = Depe
         "urgency_level": classification["urgency_level"],
         "estimated_duration_days": 120 if classification["category"] in {"property", "criminal"} else 45,
         "category": payload.legal_category or classification["category"],
-        "provider": classification["provider"],
         "disclaimer": LEGAL_DISCLAIMER,
     }
