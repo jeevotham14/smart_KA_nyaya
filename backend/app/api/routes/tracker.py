@@ -9,6 +9,7 @@ from app.api.deps import audit
 from app.db.session import get_db
 from app.models.domain import CaseObject, Notification
 from app.schemas import StatusPatch
+from app.services.case_detector import extract_case_number
 
 router = APIRouter(prefix="/tracker", tags=["Tracking"])
 
@@ -23,8 +24,13 @@ MAX_FILE_SIZE_MB = 5
 def _get_case_by_number(case_number: str, db: Session) -> CaseObject:
     """Fetch a CaseObject by its human-readable eCourt case number (e.g. CC/00042/2026).
     Accepts the number with or without leading zeros for convenience."""
-    # Normalise: strip whitespace, uppercase
-    cn = case_number.strip().upper()
+    # Normalise using the robust regex engine
+    cn = extract_case_number(case_number)
+    
+    # If the parser couldn't find a valid structure, fallback to raw input
+    if not cn:
+        cn = case_number.strip().upper()
+        
     row = db.scalar(select(CaseObject).where(CaseObject.case_number == cn))
     if not row:
         raise HTTPException(
