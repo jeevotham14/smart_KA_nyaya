@@ -9,19 +9,30 @@ class AlertRequest(BaseModel):
     description: str = ""
 
 MOCK_RESOURCES = {
-    "medical": [
-        {"name": "General Hospital", "contact": "104", "type": "hospital"},
-        {"name": "Ambulance Services", "contact": "108", "type": "ambulance"},
+    "domestic_violence": [
+        {"name": "Women Helpline (National)", "contact": "181", "description": "24/7 dedicated helpline for women in distress."},
+        {"name": "NCW Domestic Violence Helpline", "contact": "7827170170", "description": "National Commission for Women dedicated WhatsApp number for domestic violence cases."},
+        {"name": "Local Police Station", "contact": "100", "description": "Immediate police assistance for physical violence."}
     ],
-    "police": [
-        {"name": "Police Control Room", "contact": "100", "type": "police"},
-        {"name": "Women Helpline", "contact": "1091", "type": "police_special"},
+    "cyber_fraud": [
+        {"name": "National Cyber Crime Reporting", "contact": "1930", "description": "Helpline for financial cyber frauds."},
+        {"name": "Cyber Crime Portal", "contact": "", "description": "Report anonymously at cybercrime.gov.in."}
     ],
-    "fire": [
-        {"name": "Fire and Rescue", "contact": "101", "type": "fire"},
+    "child_abuse": [
+        {"name": "Childline India", "contact": "1098", "description": "24/7 free emergency phone service for children in need of aid and assistance."},
+        {"name": "NCPCR", "contact": "18001212830", "description": "National Commission for Protection of Child Rights helpline."}
     ],
-    "legal": [
-        {"name": "Legal Aid Helpline", "contact": "15100", "type": "legal_aid"},
+    "police_harassment": [
+        {"name": "State Police Complaints Authority", "contact": "", "description": "File a formal complaint against police misconduct."},
+        {"name": "National Human Rights Commission", "contact": "14433", "description": "For serious human rights violations by authorities."}
+    ],
+    "women_safety": [
+        {"name": "Women Helpline", "contact": "1091", "description": "Police helpline for women in distress."},
+        {"name": "One Stop Centre (Sakhi)", "contact": "", "description": "Integrated support and assistance to women affected by violence."}
+    ],
+    "senior_citizen_abuse": [
+        {"name": "Elderline (National Helpline)", "contact": "14567", "description": "Helpline for senior citizens providing information, guidance, and rescue."},
+        {"name": "Maintenance Tribunal", "contact": "", "description": "Local tribunal under the Maintenance and Welfare of Parents and Senior Citizens Act."}
     ]
 }
 
