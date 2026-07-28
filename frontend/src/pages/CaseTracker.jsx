@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   AlertCircle, Bell, BellOff, Calendar, CheckCheck, ChevronRight,
   ClipboardList, FileText, Gavel, Loader2, Paperclip, Scale,
@@ -8,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { getApiError, legalApi, notificationApi } from '../services/api.js';
 import { karnatakaDistricts } from '../data/mockData.js';
 import { ErrorBoundary } from '../components/ErrorBoundary.jsx';
+import CaseTimeline from '../components/CaseTimeline.jsx';
 
 // ── eCourts-style status pipeline ─────────────────────────────────────────────
 const STATUS_STEPS = [
@@ -304,14 +306,22 @@ function CaseDetailPanel({ caseData, docRefresh, setDocRefresh }) {
                 </p>
               )}
             </div>
-            <span className={`rounded px-3 py-1.5 text-xs font-bold uppercase tracking-wider ${
-              caseData.status === 'resolved'     ? 'bg-emerald-100 text-aidGreen' :
-              caseData.status === 'routed'       ? 'bg-blue-100 text-blue-700'   :
-              caseData.status === 'under_review' ? 'bg-amber-100 text-amber-700' :
-              'bg-slate-100 text-slate-600'
-            }`}>
-              {caseData.status?.replace(/_/g, ' ')}
-            </span>
+            <div className="flex flex-col items-end gap-2">
+              <span className={`rounded px-3 py-1.5 text-xs font-bold uppercase tracking-wider ${
+                caseData.status === 'resolved'     ? 'bg-emerald-100 text-aidGreen' :
+                caseData.status === 'routed'       ? 'bg-blue-100 text-blue-700'   :
+                caseData.status === 'under_review' ? 'bg-amber-100 text-amber-700' :
+                'bg-slate-100 text-slate-600'
+              }`}>
+                {caseData.status?.replace(/_/g, ' ')}
+              </span>
+              <Link 
+                to={`/workspace/${caseData.case_number}`}
+                className="text-xs font-bold text-legalGold hover:text-navy-900 hover:underline transition-colors"
+              >
+                View Full Workspace →
+              </Link>
+            </div>
           </div>
 
           {/* Info grid */}
@@ -357,35 +367,12 @@ function CaseDetailPanel({ caseData, docRefresh, setDocRefresh }) {
         </div>
 
         {/* Status Pipeline */}
-        <div className="rounded border border-slate-200 bg-white p-4">
+        <div className="rounded border border-slate-200 bg-white p-4 h-full">
           <p className="flex items-center gap-2 text-sm font-bold text-navy-900">
-            <Scale className="h-4 w-4 text-legalGold" /> Case Stage
+            <Scale className="h-4 w-4 text-legalGold" /> Detailed Case Timeline
           </p>
-          <div className="mt-3 grid gap-3">
-            {STATUS_STEPS.map((step, idx) => {
-              const done   = curStep > idx;
-              const active = curStep === idx;
-              const Icon   = step.icon;
-              return (
-                <div key={step.key} className={`flex items-center gap-3 rounded p-2.5 text-sm transition-colors ${
-                  done   ? 'bg-emerald-50' :
-                  active ? 'bg-amber-50 ring-1 ring-legalGold/40' :
-                  'bg-slate-50 opacity-50'
-                }`}>
-                  <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                    done   ? 'bg-aidGreen text-white' :
-                    active ? 'bg-legalGold text-navy-900' :
-                    'bg-slate-200 text-slate-500'
-                  }`}>
-                    {done ? '✓' : <Icon className="h-3.5 w-3.5" />}
-                  </span>
-                  <div>
-                    <p className={`text-xs font-semibold ${done ? 'text-aidGreen' : active ? 'text-navy-900' : 'text-slate-400'}`}>{step.label}</p>
-                    {active && <p className="text-xs text-legalGold font-medium">← Current Stage</p>}
-                  </div>
-                </div>
-              );
-            })}
+          <div className="mt-4">
+            <CaseTimeline caseId={caseData.case_number} currentStatus={caseData.status} />
           </div>
         </div>
       </div>

@@ -160,6 +160,10 @@ export const legalApi = {
     const { data } = await api.get(`/api/tracker/${trackingId}`);
     return data;
   },
+  getCaseTimeline: async (caseId) => {
+    const { data } = await api.get(`/api/timeline/${caseId}`);
+    return data;
+  },
   uploadEvidence: async (caseId, file) => {
     const formData = new FormData();
     formData.append('file', file);
