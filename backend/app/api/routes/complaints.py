@@ -85,7 +85,7 @@ def create_complaint(payload: ComplaintCreate, request: Request, background_task
     # Dispatch email asynchronously
     background_tasks.add_task(
         send_complaint_email_task, 
-        str(row.id), 
+        str(row.complaint_id), 
         row.complaint_type, 
         row.description, 
         row.routed_authority
