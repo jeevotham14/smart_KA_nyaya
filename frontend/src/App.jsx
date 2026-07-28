@@ -20,6 +20,8 @@ import VakalatnmaGenerator from './pages/VakalatnmaGenerator.jsx';
 import CourtFeeCalculator from './pages/CourtFeeCalculator.jsx';
 import LimitationChecker from './pages/LimitationChecker.jsx';
 import RightsExplainer from './pages/RightsExplainer.jsx';
+import EmergencyAssistance from './pages/EmergencyAssistance.jsx';
+import GlobalSearch from './pages/GlobalSearch.jsx';
 
 export default function App() {
   return (
@@ -40,6 +42,8 @@ export default function App() {
         <Route path="court-fee-calculator" element={<CourtFeeCalculator />} />
         <Route path="limitation-checker" element={<LimitationChecker />} />
         <Route path="rights-explainer" element={<RightsExplainer />} />
+        <Route path="emergency" element={<EmergencyAssistance />} />
+        <Route path="search" element={<GlobalSearch />} />
         <Route path="resources" element={<Resources />} />
         <Route path="contact" element={<Contact />} />
         <Route path="login" element={<LoginRegister />} />

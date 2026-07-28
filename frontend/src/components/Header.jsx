@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { Languages, Menu, Scale, X } from 'lucide-react';
+import { Languages, Menu, Scale, Search, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const navItems = [
@@ -12,6 +12,7 @@ const navItems = [
   ['nav.docs', '/document-generator'],
   ['nav.locator', '/directory'],
   ['nav.tracker', '/case-tracker'],
+  ['Emergency', '/emergency'],
   ['nav.resources', '/resources'],
   ['nav.contact', '/contact'],
 ];
@@ -60,6 +61,13 @@ export default function Header() {
               {i18n.language === 'en' ? '\u0c95\u0ca8\u0ccd\u0ca8\u0ca1' : 'English'}
             </button>
             <Link
+              to="/search"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 transition-all duration-300 hover:border-legalGold hover:text-legalGold hover:shadow-[0_0_15px_rgba(196,154,58,0.15)]"
+              aria-label="Global Search"
+            >
+              <Search className="h-4 w-4" />
+            </Link>
+            <Link
               className="rounded-full bg-legalGold px-5 py-2 text-sm font-bold text-navy-900 transition-all duration-300 hover:shadow-[0_4px_15px_rgba(196,154,58,0.4)] hover:scale-105"
               to="/login"
             >
@@ -89,6 +97,13 @@ export default function Header() {
               <Languages className="h-4 w-4" aria-hidden="true" />
               {i18n.language === 'en' ? '\u0c95\u0ca8\u0ccd\u0ca8\u0ca1' : 'English'}
             </button>
+            <Link
+              to="/search"
+              className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-white/20 transition-all duration-300 hover:border-legalGold hover:text-legalGold"
+              aria-label="Global Search"
+            >
+              <Search className="h-4 w-4" />
+            </Link>
             <Link className="flex-1 rounded-full bg-legalGold px-4 py-2 text-center text-sm font-bold text-navy-900" to="/login">
               {t('login')}
             </Link>

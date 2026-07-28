@@ -232,6 +232,18 @@ export const legalApi = {
     const { data } = await api.patch(`/api/workspace/${caseId}/tasks/${taskId}`, payload);
     return data;
   },
+  getEmergencyResources: async (category) => {
+    const { data } = await api.get(`/api/emergency/resources/${category}`);
+    return data;
+  },
+  triggerEmergencyAlert: async (payload) => {
+    const { data } = await api.post('/api/emergency/alert', payload);
+    return data;
+  },
+  globalSearch: async (q) => {
+    const { data } = await api.get('/api/search', { params: { q } });
+    return data;
+  },
 };
 
 export const notificationApi = {

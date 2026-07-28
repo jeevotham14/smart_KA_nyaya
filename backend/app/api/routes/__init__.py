@@ -1,4 +1,4 @@
-from app.api.routes import admin, ai, auth, complaints, directory, documents, evidence, guided_intake, legal_aid, notifications, tracker, women_protection, workspace, timeline, legal_tools
+from app.api.routes import admin, ai, auth, complaints, directory, documents, evidence, guided_intake, legal_aid, notifications, tracker, women_protection, workspace, timeline, legal_tools, search, emergency
 
 routers = [
     auth.router,
@@ -16,4 +16,6 @@ routers = [
     admin.router,
     timeline.router,
     legal_tools.router,
+    search.router,
+    emergency.router,
 ]
