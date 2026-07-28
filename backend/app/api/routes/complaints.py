@@ -25,6 +25,8 @@ def route_authority(complaint_type: str, district: str) -> str:
     return f"{district} District Legal Services Authority"
 
 def send_complaint_email_task(complaint_id: str, complaint_type: str, description: str, routed_authority: str):
+    from dotenv import load_dotenv
+    load_dotenv()
     # Setup your Gmail App Password and Email in the .env file or environment variables
     # SMTP_USER="your_email@gmail.com"
     # SMTP_PASS="your_app_password"
