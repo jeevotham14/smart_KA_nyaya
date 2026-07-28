@@ -114,7 +114,7 @@ export default function EmergencyAssistance() {
                 {resources.map((res, idx) => (
                   <div key={idx} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-navy-950 p-6 transition-colors hover:border-legalGold/30 hover:shadow-sm">
                     <h4 className="font-bold text-lg text-navy-900 dark:text-white mb-2">{res.name}</h4>
-                    <p className="text-sm leading-6 text-slate-600 dark:text-slate-400">{res.description}</p>
+                    <p className="text-base leading-relaxed text-slate-800 dark:text-slate-200">{res.description}</p>
                     {res.contact && (
                       <a href={`tel:${res.contact}`} className="mt-4 inline-flex items-center gap-2 rounded-lg bg-navy-900 dark:bg-navy-800 border border-slate-200 dark:border-slate-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-legalGold hover:border-legalGold transition-all">
                         <Phone className="h-4 w-4" />

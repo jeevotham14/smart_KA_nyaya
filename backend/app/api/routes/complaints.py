@@ -1,6 +1,10 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, BackgroundTasks
+import smtplib
+from email.message import EmailMessage
+import os
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -20,9 +24,50 @@ def route_authority(complaint_type: str, district: str) -> str:
         return f"{district} Women Protection Cell"
     return f"{district} District Legal Services Authority"
 
+def send_complaint_email_task(complaint_id: str, complaint_type: str, description: str, routed_authority: str):
+    # Setup your Gmail App Password and Email in the .env file or environment variables
+    # SMTP_USER="your_email@gmail.com"
+    # SMTP_PASS="your_app_password"
+    sender_email = os.getenv("SMTP_USER", "noreply@smartnyaya.in")
+    sender_pass = os.getenv("SMTP_PASS", "")
+    target_email = "jeevpai2005@gmail.com"
+
+    if not sender_pass:
+        print(f"SMTP_PASS not set. Skipping email dispatch to {target_email} for complaint {complaint_id}")
+        return
+
+    msg = EmailMessage()
+    msg.set_content(f"""
+Hello,
+
+A new complaint has been successfully registered on Smart Karnataka Nyaya.
+
+Complaint ID: {complaint_id}
+Type: {complaint_type}
+Routed To: {routed_authority}
+
+Description:
+{description}
+
+Thank you,
+Smart Karnataka Nyaya Team
+""")
+
+    msg['Subject'] = f"Complaint Registered: {complaint_type}"
+    msg['From'] = sender_email
+    msg['To'] = target_email
+
+    try:
+        # Connect to Gmail SMTP server
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(sender_email, sender_pass)
+            server.send_message(msg)
+        print(f"Successfully sent complaint email to {target_email}")
+    except Exception as e:
+        print(f"Failed to send email to {target_email}: {e}")
 
 @router.post("", response_model=ComplaintRead)
-def create_complaint(payload: ComplaintCreate, request: Request, db: Session = Depends(get_db)):
+def create_complaint(payload: ComplaintCreate, request: Request, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     row = Complaint(
         complaint_type=payload.complaint_type,
         description=payload.description,
@@ -36,6 +81,16 @@ def create_complaint(payload: ComplaintCreate, request: Request, db: Session = D
     audit(db, request, "complaints.create")
     db.commit()
     db.refresh(row)
+    
+    # Dispatch email asynchronously
+    background_tasks.add_task(
+        send_complaint_email_task, 
+        str(row.id), 
+        row.complaint_type, 
+        row.description, 
+        row.routed_authority
+    )
+    
     return row
 
 

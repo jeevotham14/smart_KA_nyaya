@@ -291,7 +291,7 @@ function CaseDetailPanel({ caseData, docRefresh, setDocRefresh }) {
     <div className="grid gap-4">
 
       {/* ── Case Header Card ── */}
-      <div className="rounded border border-slate-200 bg-white overflow-hidden">
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 overflow-hidden shadow-sm glass-panel">
         {/* Coloured top bar */}
         <div className="h-1.5 w-full bg-gradient-to-r from-navy-800 via-legalGold to-aidGreen" />
         <div className="p-5">
@@ -348,8 +348,8 @@ function CaseDetailPanel({ caseData, docRefresh, setDocRefresh }) {
       <div className="grid gap-4 md:grid-cols-2">
 
         {/* Parties */}
-        <div className="rounded border border-slate-200 bg-white p-4">
-          <p className="flex items-center gap-2 text-sm font-bold text-navy-900">
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-6 sm:p-8 shadow-sm glass-panel">
+          <p className="flex items-center gap-2 text-sm font-bold text-navy-900 dark:text-white">
             <User className="h-4 w-4 text-legalGold" /> Party Details
           </p>
           <div className="mt-3 grid gap-3">
@@ -367,8 +367,8 @@ function CaseDetailPanel({ caseData, docRefresh, setDocRefresh }) {
         </div>
 
         {/* Status Pipeline */}
-        <div className="rounded border border-slate-200 bg-white p-4 h-full">
-          <p className="flex items-center gap-2 text-sm font-bold text-navy-900">
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-6 sm:p-8 shadow-sm glass-panel h-full">
+          <p className="flex items-center gap-2 text-sm font-bold text-navy-900 dark:text-white">
             <Scale className="h-4 w-4 text-legalGold" /> Detailed Case Timeline
           </p>
           <div className="mt-4">
@@ -378,8 +378,8 @@ function CaseDetailPanel({ caseData, docRefresh, setDocRefresh }) {
       </div>
 
       {/* ── Hearing History ── */}
-      <div className="rounded border border-slate-200 bg-white p-4">
-        <p className="flex items-center gap-2 text-sm font-bold text-navy-900">
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-6 sm:p-8 shadow-sm glass-panel">
+        <p className="flex items-center gap-2 text-sm font-bold text-navy-900 dark:text-white">
           <Calendar className="h-4 w-4 text-legalGold" /> Hearing History
         </p>
         <div className="mt-3 overflow-x-auto">
@@ -407,8 +407,8 @@ function CaseDetailPanel({ caseData, docRefresh, setDocRefresh }) {
       </div>
 
       {/* ── Document Upload + List ── */}
-      <div className="rounded border border-slate-200 bg-white p-4">
-        <p className="flex items-center gap-2 text-sm font-bold text-navy-900 mb-3">
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-6 sm:p-8 shadow-sm glass-panel">
+        <p className="flex items-center gap-2 text-sm font-bold text-navy-900 dark:text-white mb-3">
           <FileText className="h-4 w-4 text-legalGold" /> Case Documents
         </p>
         <DocumentList caseId={caseData.case_number} refreshTrigger={docRefresh} />
@@ -461,7 +461,7 @@ export default function CaseTracker() {
   };
 
   return (
-    <section className="py-10 md:py-14 bg-slate-50 min-h-screen">
+    <section className="py-10 md:py-14 bg-slate-50 dark:bg-navy-950 min-h-screen">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
         {/* ── Page Header ── */}
@@ -473,7 +473,7 @@ export default function CaseTracker() {
               </span>
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-legalGold">Karnataka eCourts</p>
-                <h1 className="font-serif text-2xl font-black text-navy-900">Case Status & Tracker</h1>
+                <h1 className="font-serif text-2xl font-black text-navy-900 dark:text-white">Case Status & Tracker</h1>
               </div>
             </div>
             <p className="mt-1.5 max-w-xl text-sm text-slate-500">
@@ -484,7 +484,7 @@ export default function CaseTracker() {
         </div>
 
         {/* ── Search Card ── */}
-        <div className="rounded-md border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 shadow-sm glass-panel overflow-hidden">
 
           {/* Tab bar */}
           <div className="flex overflow-x-auto border-b border-slate-200 bg-slate-50">
@@ -513,7 +513,7 @@ export default function CaseTracker() {
                   {currentTab?.label}
                 </label>
                 <input
-                  className="w-full rounded border border-slate-300 px-4 py-3 font-mono text-sm text-navy-900 outline-none focus:border-legalGold focus:ring-2 focus:ring-legalGold/20 tracking-wider"
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-navy-950 px-4 py-3 font-mono text-sm text-navy-900 dark:text-white outline-none focus:border-legalGold focus:ring-2 focus:ring-legalGold/20 tracking-wider transition-all"
                   placeholder={currentTab?.placeholder}
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
@@ -527,7 +527,7 @@ export default function CaseTracker() {
                       Select District
                     </label>
                     <select
-                      className="w-full rounded border border-slate-300 px-4 py-3 text-sm text-navy-900 outline-none focus:border-legalGold focus:ring-2 focus:ring-legalGold/20 bg-white"
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-navy-950 px-4 py-3 text-sm text-navy-900 dark:text-white outline-none focus:border-legalGold focus:ring-2 focus:ring-legalGold/20 transition-all"
                       value={district}
                       onChange={(e) => setDistrict(e.target.value)}
                     >
@@ -573,12 +573,12 @@ export default function CaseTracker() {
 
         {/* ── Empty state ── */}
         {!caseData && !loading && !error && (
-          <div className="mt-6 rounded-md border border-slate-200 bg-white p-8 text-center shadow-sm">
-            <Scale className="mx-auto h-10 w-10 text-slate-200" />
-            <p className="mt-3 text-sm font-semibold text-slate-400">Enter your case number to view full case details, hearing history, and upload supporting documents.</p>
+          <div className="mt-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-8 text-center shadow-sm glass-panel">
+            <Scale className="mx-auto h-10 w-10 text-slate-200 dark:text-slate-700" />
+            <p className="mt-3 text-sm font-semibold text-slate-400 dark:text-slate-500">Enter your case number to view full case details, hearing history, and upload supporting documents.</p>
             <div className="mt-4 flex flex-wrap justify-center gap-2 text-xs text-slate-400">
               {['Case Number (CC/NNNNN/YYYY)', 'FIR Number'].map((hint) => (
-                <span key={hint} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">{hint}</span>
+                <span key={hint} className="rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-navy-800 px-3 py-1">{hint}</span>
               ))}
             </div>
           </div>

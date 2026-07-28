@@ -4,7 +4,6 @@ import {
   Loader2, RefreshCw, Scale, Shield, ShoppingCart, Users,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import SectionHeader from '../components/SectionHeader.jsx';
 import { legalApi } from '../services/api.js';
 
 // ── Rich static content for each resource (shown instantly) ──────────────────
@@ -164,28 +163,28 @@ function ResourceCard({ resourceKey, data }) {
   };
 
   return (
-    <article className={`rounded-md border bg-white shadow-sm transition-all duration-300 ${expanded ? 'border-legalGold/50 shadow-md' : 'border-slate-200'}`}>
+    <article className={`rounded-2xl border bg-white dark:bg-navy-900 shadow-sm glass-panel transition-all duration-300 ${expanded ? 'border-legalGold/50 shadow-md' : 'border-slate-200 dark:border-slate-800 hover:-translate-y-1 hover:shadow-lg'}`}>
       {/* Card header */}
-      <div className="p-6">
+      <div className="p-6 sm:p-8">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
-            <span className={`mt-0.5 rounded-sm bg-slate-100 p-2 ${data.color}`}>
+            <span className={`mt-0.5 rounded-xl bg-slate-100 dark:bg-navy-950 p-2 ${data.color}`}>
               <Icon className="h-5 w-5" />
             </span>
             <div>
-              <span className="inline-block rounded-full bg-navy-50 px-2 py-0.5 text-xs font-bold text-navy-700 mb-1">{data.tag}</span>
-              <p className="font-serif text-xl font-bold text-navy-900">{data.title}</p>
-              <p className="mt-1 text-sm leading-6 text-slate-600">{data.desc}</p>
+              <span className="inline-block rounded-full bg-navy-50 dark:bg-navy-800 px-2 py-0.5 text-xs font-bold text-navy-700 dark:text-slate-300 mb-1">{data.tag}</span>
+              <p className="font-serif text-xl font-bold text-navy-900 dark:text-white">{data.title}</p>
+              <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-400">{data.desc}</p>
             </div>
           </div>
         </div>
 
         <button
           onClick={toggleExpand}
-          className={`mt-5 flex w-full items-center justify-center gap-2 rounded-sm border px-4 py-2.5 text-sm font-bold transition-colors ${
+          className={`mt-5 flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-bold transition-colors ${
             expanded
-              ? 'border-legalGold bg-legalGold/10 text-navy-900'
-              : 'border-navy-800 bg-navy-800 text-white hover:bg-navy-700'
+              ? 'border-legalGold bg-legalGold/10 text-navy-900 dark:text-legalGold'
+              : 'premium-btn premium-btn-secondary !text-navy-900 dark:!text-white'
           }`}
           type="button"
           aria-expanded={expanded}
@@ -198,18 +197,18 @@ function ResourceCard({ resourceKey, data }) {
 
       {/* Expanded content */}
       {expanded && (
-        <div className="border-t border-slate-200 bg-slate-50 px-6 pb-6 pt-5">
+        <div className="border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-navy-950/50 px-6 sm:px-8 pb-6 sm:pb-8 pt-5 rounded-b-2xl">
 
           {/* Step-by-step sections */}
           <div className="grid gap-3">
             {data.steps.map((step, i) => (
-              <div key={i} className="overflow-hidden rounded-sm border border-slate-200 bg-white">
+              <div key={i} className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900">
                 <button
                   onClick={() => setActiveSection(activeSection === i ? null : i)}
                   className="flex w-full items-center justify-between px-4 py-3 text-left"
                   type="button"
                 >
-                  <span className="flex items-center gap-3 text-sm font-bold text-navy-900">
+                  <span className="flex items-center gap-3 text-sm font-bold text-navy-900 dark:text-white">
                     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-legalGold text-xs font-bold text-navy-900">
                       {i + 1}
                     </span>
@@ -220,8 +219,8 @@ function ResourceCard({ resourceKey, data }) {
                     : <ChevronDown className="h-4 w-4 shrink-0 text-slate-400" />}
                 </button>
                 {activeSection === i && (
-                  <div className="border-t border-slate-100 px-4 pb-4 pt-3">
-                    <p className="whitespace-pre-line text-sm leading-7 text-slate-700">{step.body}</p>
+                  <div className="border-t border-slate-100 dark:border-slate-800 px-4 pb-4 pt-3">
+                    <p className="whitespace-pre-line text-sm leading-7 text-slate-700 dark:text-slate-300">{step.body}</p>
                   </div>
                 )}
               </div>
@@ -237,7 +236,7 @@ function ResourceCard({ resourceKey, data }) {
                   href={link.url}
                   target={link.url.startsWith('http') ? '_blank' : undefined}
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-sm border border-navy-800 px-3 py-1.5 text-xs font-bold text-navy-800 hover:bg-navy-50 transition-colors"
+                  className="inline-flex items-center gap-1.5 rounded-sm border border-navy-800 dark:border-slate-700 px-3 py-1.5 text-xs font-bold text-navy-800 dark:text-slate-200 hover:bg-navy-50 dark:hover:bg-navy-800 transition-colors"
                 >
                   <ExternalLink className="h-3 w-3" />
                   {link.label}
@@ -247,13 +246,13 @@ function ResourceCard({ resourceKey, data }) {
           )}
 
           {/* AI Deep Dive section */}
-          <div className="mt-5 rounded-sm border border-legalGold/30 bg-legalGold/5 p-4">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-bold text-navy-900">🤖 Get AI-Powered Deep Dive</p>
+          <div className="mt-5 rounded-xl border border-legalGold/30 bg-legalGold/5 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm font-bold text-navy-900 dark:text-white">🤖 Get AI-Powered Deep Dive</p>
               <button
                 onClick={loadAiInsight}
                 disabled={aiLoading}
-                className="flex items-center gap-1.5 rounded-sm bg-navy-800 px-3 py-1.5 text-xs font-bold text-white disabled:opacity-60 hover:bg-navy-700 transition-colors"
+                className="premium-btn premium-btn-gold text-xs px-3 py-1.5 disabled:opacity-60"
                 type="button"
               >
                 {aiLoading
@@ -261,16 +260,16 @@ function ResourceCard({ resourceKey, data }) {
                   : <><RefreshCw className="h-3 w-3" /> Ask Gemini / Groq</>}
               </button>
             </div>
-            <p className="mt-1 text-xs text-slate-500">Get a detailed, personalised explanation from our legal AI.</p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Get a detailed, personalised explanation from our legal AI.</p>
 
             {aiError && (
-              <p className="mt-3 text-xs font-semibold text-alertRed">{aiError}</p>
+              <p className="mt-3 text-xs font-semibold text-alertRed dark:text-red-400">{aiError}</p>
             )}
 
             {aiContent && (
-              <div className="mt-3 rounded-sm border border-legalGold/20 bg-white p-4">
-                <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700">{aiContent}</p>
-                <p className="mt-3 text-xs text-slate-400">⚠️ This is legal awareness only, not legal advice. Consult a qualified advocate for official action.</p>
+              <div className="mt-3 rounded-xl border border-legalGold/20 bg-white dark:bg-navy-900 p-4">
+                <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700 dark:text-slate-300">{aiContent}</p>
+                <p className="mt-3 text-xs text-slate-400 dark:text-slate-500">⚠️ This is legal awareness only, not legal advice. Consult a qualified advocate for official action.</p>
               </div>
             )}
           </div>
@@ -285,18 +284,34 @@ export default function Resources() {
   const { t } = useTranslation();
 
   return (
-    <section className="py-12 md:py-16">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <SectionHeader eyebrow="Resources & Updates" title="Legal Awareness Articles">
-          Click on any article below to read detailed guidance on Karnataka legal topics. Each article also lets you ask our AI for a personalised deep dive.
-        </SectionHeader>
-
-        <div className="mt-8 grid gap-5 md:grid-cols-2">
-          {Object.entries(RESOURCE_CONTENT).map(([key, data]) => (
-            <ResourceCard key={key} resourceKey={key} data={data} />
-          ))}
+    <>
+      <section className="hero-gradient-bg relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-legalGold/5 blur-3xl" />
+          <div className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-white/5 blur-3xl" />
         </div>
-      </div>
-    </section>
+        <div className="relative mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8 text-center animate-scale-in">
+          <p className="inline-flex items-center gap-2 rounded-full border border-legalGold/30 bg-legalGold/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-legalGold">
+            <BookOpen className="h-3.5 w-3.5" /> Resources & Updates
+          </p>
+          <h1 className="mt-6 font-display text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
+            Legal Awareness Articles
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-300">
+            Click on any article below to read detailed guidance on Karnataka legal topics. Each article also lets you ask our AI for a personalised deep dive.
+          </p>
+        </div>
+      </section>
+
+      <section className="bg-surface dark:bg-navy-950 py-12 md:py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-6 md:grid-cols-2">
+            {Object.entries(RESOURCE_CONTENT).map(([key, data]) => (
+              <ResourceCard key={key} resourceKey={key} data={data} />
+            ))}
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

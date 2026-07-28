@@ -23,25 +23,25 @@ export default function AdminDashboard() {
           {translatedStats.map((card) => <DashboardCard key={card.label} {...card} />)}
         </div>
         <div className="mt-8 grid gap-6 lg:grid-cols-[0.75fr_1.25fr]">
-          <aside className="rounded-md border border-slate-200 bg-white p-6 shadow-sm">
-            <h3 className="font-serif text-2xl font-bold text-navy-900">{t('adminDash.manage')}</h3>
+          <aside className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-6 sm:p-8 shadow-sm glass-panel">
+            <h3 className="font-serif text-2xl font-bold text-navy-900 dark:text-white">{t('adminDash.manage')}</h3>
             <div className="mt-5 grid gap-3">
               {[t('adminDash.users'), t('adminDash.legalContent'), t('adminDash.directoryServices'), t('adminDash.complaints'), t('adminDash.analyticsReports')].map((item) => (
-                <button className="rounded-sm border border-slate-200 px-4 py-3 text-left text-sm font-bold text-slate-700 hover:border-legalGold" key={item} type="button">{item}</button>
+                <button className="rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-3 text-left text-sm font-bold text-slate-700 dark:text-slate-300 hover:border-legalGold dark:hover:border-legalGold transition-all duration-300 hover:-translate-y-1 hover:shadow-md bg-white dark:bg-navy-800" key={item} type="button">{item}</button>
               ))}
             </div>
           </aside>
-          <section className="rounded-md border border-slate-200 bg-white p-6 shadow-sm">
-            <h3 className="font-serif text-2xl font-bold text-navy-900">{t('adminDash.reportsTable')}</h3>
+          <section className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-6 sm:p-8 shadow-sm glass-panel">
+            <h3 className="font-serif text-2xl font-bold text-navy-900 dark:text-white">{t('adminDash.reportsTable')}</h3>
             <div className="mt-5 overflow-x-auto">
               <table className="w-full min-w-[640px] text-left text-sm">
-                <thead className="bg-slate-100 text-navy-900">
+                <thead className="bg-slate-50 dark:bg-navy-800 text-navy-900 dark:text-white border-b border-slate-200 dark:border-slate-700">
                   <tr><th className="p-3">{t('adminDash.thReport')}</th><th className="p-3">{t('adminDash.thDistrict')}</th><th className="p-3">{t('adminDash.thOwner')}</th><th className="p-3">{t('adminDash.thStatus')}</th></tr>
                 </thead>
                 <tbody>
                   {[t('adminDash.report1'), t('adminDash.report2'), t('adminDash.report3'), t('adminDash.report4')].map((report) => (
-                    <tr className="border-b border-slate-100" key={report}>
-                      <td className="p-3 font-semibold">{report}</td><td className="p-3">{t('adminDash.statewide')}</td><td className="p-3">{t('adminDash.adminDesk')}</td><td className="p-3">{t('adminDash.open')}</td>
+                    <tr className="border-b border-slate-100 dark:border-slate-800/50" key={report}>
+                      <td className="p-3 font-semibold text-navy-900 dark:text-slate-200">{report}</td><td className="p-3 text-slate-600 dark:text-slate-400">{t('adminDash.statewide')}</td><td className="p-3 text-slate-600 dark:text-slate-400">{t('adminDash.adminDesk')}</td><td className="p-3 text-slate-600 dark:text-slate-400">{t('adminDash.open')}</td>
                     </tr>
                   ))}
                 </tbody>

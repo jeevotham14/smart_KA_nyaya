@@ -1,12 +1,16 @@
-import { useState } from 'react';
-import { FileWarning, MapPin, Phone, ShieldAlert, Shield, ArrowRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { FileWarning, MapPin, Phone, ShieldAlert, Shield } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { karnatakaDistricts, womenSupportCenters } from '../data/mockData.js';
+import { karnatakaDistricts } from '../data/mockData.js';
+import { legalApi } from '../services/api.js';
+
 const DISTRICT_NAMES = Object.keys(karnatakaDistricts).sort();
 
 export default function WomenProtection() {
   const { t } = useTranslation();
   const [selectedDistrict, setSelectedDistrict] = useState('');
+  const [filteredCenters, setFilteredCenters] = useState([]);
+  const [loadingCenters, setLoadingCenters] = useState(false);
   
   const guidance = [
     { title: t('women.guidance1Title'), text: t('women.guidance1Text') },
@@ -16,9 +20,23 @@ export default function WomenProtection() {
   ];
   const actionChecklist = [t('women.check1'), t('women.check2'), t('women.check3'), t('women.check4'), t('women.check5')];
   
-  const filteredCenters = selectedDistrict
-    ? womenSupportCenters.filter(c => c.district === selectedDistrict)
-    : womenSupportCenters;
+  useEffect(() => {
+    let active = true;
+    async function loadCenters() {
+      setLoadingCenters(true);
+      try {
+        const data = await legalApi.searchDirectory({ serviceType: 'women_police_station', district: selectedDistrict });
+        if (active) setFilteredCenters(data);
+      } catch (err) {
+        console.error(err);
+        if (active) setFilteredCenters([]);
+      } finally {
+        if (active) setLoadingCenters(false);
+      }
+    }
+    loadCenters();
+    return () => { active = false; };
+  }, [selectedDistrict]);
 
   return (
     <>
@@ -121,19 +139,30 @@ export default function WomenProtection() {
                 </label>
               </div>
               <div className="grid gap-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                {filteredCenters.map((center) => (
-                  <article className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-navy-800 p-5 transition-colors hover:border-legalGold/50" key={center.name}>
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div>
-                        <p className="font-serif text-lg font-bold text-navy-900 dark:text-white">{center.name}</p>
-                        <p className="mt-1 inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400"><MapPin className="h-4 w-4" /> {center.district} - {center.distance}</p>
+                {loadingCenters ? (
+                  <p className="text-slate-500 font-medium">Loading stations...</p>
+                ) : filteredCenters.length === 0 ? (
+                  <p className="text-slate-500 font-medium">No women police stations found for this district.</p>
+                ) : (
+                  filteredCenters.map((center) => (
+                    <article className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-navy-800 p-5 transition-colors hover:border-legalGold/50" key={center.service_id || center.name}>
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <p className="font-serif text-lg font-bold text-navy-900 dark:text-white">{center.name}</p>
+                          <p className="mt-1 inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                            <MapPin className="h-4 w-4 shrink-0" /> {center.district}
+                          </p>
+                          {center.address && <p className="mt-1 text-sm text-slate-500 line-clamp-2">{center.address}</p>}
+                        </div>
+                        {center.phone && (
+                          <a href={`tel:${center.phone}`} className="inline-flex items-center gap-2 rounded-lg bg-white dark:bg-navy-900 border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm font-bold text-navy-800 dark:text-white hover:border-legalGold hover:text-legalGold transition-all">
+                            <Phone className="h-4 w-4" /> {center.phone}
+                          </a>
+                        )}
                       </div>
-                      <a href={`tel:${center.phone}`} className="inline-flex items-center gap-2 rounded-lg bg-white dark:bg-navy-900 border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm font-bold text-navy-800 dark:text-white hover:border-legalGold hover:text-legalGold transition-all">
-                        <Phone className="h-4 w-4" /> {center.phone}
-                      </a>
-                    </div>
-                  </article>
-                ))}
+                    </article>
+                  ))
+                )}
               </div>
             </div>
           </section>

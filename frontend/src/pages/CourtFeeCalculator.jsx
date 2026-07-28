@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Calculator } from 'lucide-react';
 import AnimatedSection from '../components/AnimatedSection.jsx';
-import SectionHeader from '../components/SectionHeader.jsx';
 import { legalApi } from '../services/api.js';
 import FeeCalculatorForm from '../components/FeeCalculatorForm.jsx';
 import FeeResult from '../components/FeeResult.jsx';
@@ -25,25 +24,45 @@ export default function CourtFeeCalculator() {
   };
 
   return (
-    <div className="bg-surface min-h-screen py-12">
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-        <AnimatedSection>
-          <div className="mb-8 text-center">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-navy-50 mb-4">
-              <Calculator className="h-8 w-8 text-legalGold" />
-            </div>
-            <SectionHeader title="Court Fee Calculator">
+    <>
+      <section className="hero-gradient-bg relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-legalGold/5 blur-3xl" />
+          <div className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-white/5 blur-3xl" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-legalGold/3 blur-[120px]" />
+        </div>
+
+        <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 md:py-20 lg:px-8">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="inline-flex items-center gap-2 rounded-full border border-legalGold/30 bg-legalGold/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-legalGold">
+              <Calculator className="h-3.5 w-3.5" /> Financial
+            </p>
+            <h1 className="mt-8 font-display text-4xl font-extrabold leading-[1.1] tracking-tight text-white sm:text-5xl md:text-6xl">
+              Court Fee Calculator
+            </h1>
+            <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-300">
               Calculate estimated court fees for different case types in Karnataka.
-            </SectionHeader>
+            </p>
           </div>
-          
-          <div className="card-premium p-6 md:p-8">
-            <FeeCalculatorForm onSubmit={handleCalculate} loading={loading} />
-            {error && <div className="mt-4 text-alertRed text-sm">{error}</div>}
-            {result && <FeeResult result={result} />}
-          </div>
-        </AnimatedSection>
+        </div>
+        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-slate-50 dark:from-navy-950 to-transparent" />
+      </section>
+
+      <div className="bg-surface dark:bg-navy-950 min-h-screen py-12">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <AnimatedSection>
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-6 sm:p-8 shadow-sm glass-panel transition-all duration-300">
+              <FeeCalculatorForm onSubmit={handleCalculate} loading={loading} />
+              {error && <div className="mt-4 rounded-xl border border-alertRed/20 bg-alertRed/5 p-4 text-sm text-alertRed">{error}</div>}
+              {result && (
+                <div className="mt-8">
+                  <FeeResult result={result} />
+                </div>
+              )}
+            </div>
+          </AnimatedSection>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
