@@ -24,20 +24,21 @@ def route_authority(complaint_type: str, district: str) -> str:
         return f"{district} Women Protection Cell"
     return f"{district} District Legal Services Authority"
 
+from app.core.config import get_settings
+
 def send_complaint_email_task(complaint_id: str, complaint_type: str, description: str, routed_authority: str):
     from dotenv import load_dotenv
     import os
     env_path = os.path.join(os.path.dirname(__file__), "../../..", ".env")
-    load_dotenv(dotenv_path=env_path)
-    # Setup your Gmail App Password and Email in the .env file or environment variables
-    # SMTP_USER="your_email@gmail.com"
-    # SMTP_PASS="your_app_password"
-    sender_email = os.getenv("SMTP_USER", "noreply@smartnyaya.in")
-    sender_pass = os.getenv("SMTP_PASS", "")
+    load_dotenv(dotenv_path=env_path, override=True)
+    
+    settings = get_settings()
+    sender_email = settings.smtp_user or os.getenv("SMTP_USER", "noreply@smartnyaya.in")
+    sender_pass = settings.smtp_pass or os.getenv("SMTP_PASS", "")
     target_email = "jeevpai2005@gmail.com"
 
     if not sender_pass:
-        print(f"SMTP_PASS not set. Skipping email dispatch to {target_email} for complaint {complaint_id}")
+        print(f"[Email Task] SMTP_PASS not set. Skipping email dispatch to {target_email} for complaint {complaint_id}")
         return
 
     msg = EmailMessage()

@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     sms_api_key: str | None = None
     email_api_key: str | None = None
 
+    # SMTP Mail
+    smtp_user: str | None = None
+    smtp_pass: str | None = None
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     @field_validator("cors_origins", mode="before")
