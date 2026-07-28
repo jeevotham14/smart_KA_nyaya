@@ -1,9 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Download, Eye, FileText, Printer, Save } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import FormInput from '../components/FormInput.jsx';
 import SectionHeader from '../components/SectionHeader.jsx';
+import DownloadButtons from '../components/DownloadButtons.jsx';
+import DocumentPreview from '../components/DocumentPreview.jsx';
+import { useDraftManager } from '../components/DraftManager.jsx';
 import { karnatakaDistricts, documentTemplates } from '../data/mockData.js';
 const DISTRICT_NAMES = Object.keys(karnatakaDistricts).sort();
 import { getApiError, legalApi } from '../services/api.js';
@@ -18,11 +21,11 @@ function buildDraft(values) {
 
 export default function DocumentGenerator() {
   const { t } = useTranslation();
-  const [draft, setDraft] = useState(buildDraft({ type: 'Complaint' }));
-  const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [activeTab, setActiveTab] = useState('editor'); // 'editor' or 'preview'
+  const { draft, setDraft, saveDraft, saved } = useDraftManager('docGenDraft', buildDraft({ type: 'Complaint' }));
   const { register, handleSubmit, watch } = useForm({
     defaultValues: {
       type: 'Complaint',
@@ -41,7 +44,6 @@ export default function DocumentGenerator() {
     setLoading(true);
     setError('');
     setSuccess('');
-    setSaved(false);
     try {
       const document = await legalApi.generateDocument(formValues);
       setDraft(document.content_text);
@@ -53,6 +55,18 @@ export default function DocumentGenerator() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!draft || activeTab === 'editor') {
+      // Keep draft updated with liveDraft when not edited manually? 
+      // User can manually edit in editor tab. We won't strictly override unless they click 'Generate Draft'.
+    }
+  }, [liveDraft]);
+
+  const handlePrint = () => window.print();
+  const handleDownloadPdf = () => alert('Downloading PDF...'); // Mock PDF download
+  const handleDownloadDocx = () => alert('Downloading DOCX...'); // Mock DOCX download
+
 
   return (
     <section className="py-12 md:py-16">
@@ -91,7 +105,7 @@ export default function DocumentGenerator() {
                 <Eye className="h-4 w-4" aria-hidden="true" />
                 {loading ? t('docGen.generating') : t('docGen.generateDraft')}
               </button>
-              <button className="inline-flex items-center justify-center gap-2 rounded-sm border border-navy-800 px-5 py-3 text-sm font-bold text-navy-800" onClick={() => setSaved(true)} type="button">
+              <button className="inline-flex items-center justify-center gap-2 rounded-sm border border-navy-800 px-5 py-3 text-sm font-bold text-navy-800 hover:bg-slate-50 transition-colors" onClick={() => saveDraft(draft)} type="button">
                 <Save className="h-4 w-4" aria-hidden="true" />
                 {t('docGen.saveDraft')}
               </button>
@@ -100,22 +114,49 @@ export default function DocumentGenerator() {
             {error ? <p className="mt-3 rounded-sm bg-red-50 p-3 text-sm font-semibold text-alertRed">{error}</p> : null}
             {saved ? <p className="mt-3 rounded-sm bg-emerald-50 p-3 text-sm font-semibold text-aidGreen">{t('docGen.draftSaved')}</p> : null}
           </form>
-          <aside className="rounded-md border border-slate-200 bg-white p-6 shadow-sm">
+          <aside className="rounded-md border border-slate-200 bg-white p-6 shadow-sm flex flex-col">
             <div className="flex flex-col gap-3 border-b border-slate-200 pb-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h3 className="font-serif text-2xl font-bold text-navy-900">{t('docGen.previewTitle')}</h3>
                 <p className="mt-1 text-sm text-slate-600">{t('docGen.previewDesc')}</p>
               </div>
-              <div className="flex gap-2">
-                <button className="inline-flex h-10 w-10 items-center justify-center rounded-sm border border-slate-300 text-navy-800" title={t('docGen.printPlaceholder')} type="button">
-                  <Printer className="h-4 w-4" aria-hidden="true" />
-                </button>
-                <button className="inline-flex h-10 w-10 items-center justify-center rounded-sm bg-legalGold text-navy-900" title={t('docGen.downloadPlaceholder')} type="button">
-                  <Download className="h-4 w-4" aria-hidden="true" />
-                </button>
-              </div>
+              <DownloadButtons 
+                onPrint={handlePrint} 
+                onDownloadPdf={handleDownloadPdf} 
+                onDownloadDocx={handleDownloadDocx} 
+                onSave={() => saveDraft(draft)}
+                saved={saved} 
+              />
             </div>
-            <pre className="mt-5 min-h-[520px] whitespace-pre-wrap rounded-sm border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700">{draft}</pre>
+            
+            <div className="mt-4 flex gap-4 border-b border-slate-200">
+              <button 
+                type="button"
+                className={`pb-2 text-sm font-semibold transition-colors border-b-2 ${activeTab === 'editor' ? 'border-legalGold text-navy-900' : 'border-transparent text-slate-500 hover:text-navy-900'}`}
+                onClick={() => setActiveTab('editor')}
+              >
+                Draft Editor
+              </button>
+              <button 
+                type="button"
+                className={`pb-2 text-sm font-semibold transition-colors border-b-2 ${activeTab === 'preview' ? 'border-legalGold text-navy-900' : 'border-transparent text-slate-500 hover:text-navy-900'}`}
+                onClick={() => setActiveTab('preview')}
+              >
+                Print Preview
+              </button>
+            </div>
+
+            <div className="flex-1 mt-5">
+              {activeTab === 'editor' ? (
+                <textarea
+                  className="h-full min-h-[520px] w-full resize-none rounded-sm border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700 outline-none focus:border-legalGold focus:ring-2 focus:ring-legalGold/20"
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                />
+              ) : (
+                <DocumentPreview content={draft} />
+              )}
+            </div>
             <p className="mt-4 text-xs leading-5 text-slate-500">{t('disclaimer')}</p>
           </aside>
         </div>

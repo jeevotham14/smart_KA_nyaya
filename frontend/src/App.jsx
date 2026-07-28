@@ -15,6 +15,7 @@ import Resources from './pages/Resources.jsx';
 import UserDashboard from './pages/UserDashboard.jsx';
 import WomenProtection from './pages/WomenProtection.jsx';
 import CaseWorkspace from './pages/CaseWorkspace.jsx';
+import VakalatnmaGenerator from './pages/VakalatnmaGenerator.jsx';
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="women-protection" element={<WomenProtection />} />
         <Route path="legal-aid" element={<LegalAid />} />
         <Route path="document-generator" element={<DocumentGenerator />} />
+        <Route path="vakalatnama" element={<VakalatnmaGenerator />} />
         <Route path="directory" element={<Directory />} />
         <Route path="case-tracker" element={<CaseTracker />} />
         <Route path="guided-intake" element={<GuidedIntake />} />

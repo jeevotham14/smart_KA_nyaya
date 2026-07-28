@@ -196,3 +196,14 @@ class CaseTask(Base, TimestampMixin):
     title: Mapped[str] = mapped_column(String(500), nullable=False)
     completed: Mapped[bool] = mapped_column(Boolean, default=False)
     due_date: Mapped[str | None] = mapped_column(String(50), nullable=True)
+
+
+class DocumentDraft(Base, TimestampMixin):
+    __tablename__ = "document_drafts"
+
+    draft_id: Mapped[uuid.UUID] = uuid_pk()
+    user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.user_id"), nullable=True, index=True)
+    doc_type: Mapped[str] = mapped_column(String(100))
+    form_data: Mapped[dict | list | None] = mapped_column(JSONVariant, nullable=True)
+    content_text: Mapped[str] = mapped_column(Text)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now(), onupdate=func.now())

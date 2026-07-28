@@ -157,8 +157,8 @@ export const womenSupportCenters = [
 
 export const documentTemplates = {
   Complaint: {
-    heading: 'Police Complaint Draft',
-    request: 'I request the concerned police authority to receive this complaint and take action as per law.',
+    heading: 'Complaint Draft',
+    request: 'I request the concerned authority to receive this complaint and take action as per law.',
   },
   'Petition draft': {
     heading: 'Petition Draft',
@@ -175,6 +175,82 @@ export const documentTemplates = {
   'Affidavit draft': {
     heading: 'Affidavit Draft',
     request: 'I state that the facts mentioned above are true to the best of my knowledge and belief.',
+  },
+  'Consumer Complaint': {
+    heading: 'Consumer Complaint Draft',
+    request: 'I request the consumer forum to direct the opposite party to refund/compensate as per the Consumer Protection Act.',
+  },
+  'Police Complaint': {
+    heading: 'Police Complaint Draft',
+    request: 'I request the concerned police authority to register an FIR and take legal action against the accused.',
+  },
+  'Legal Notice': {
+    heading: 'Legal Notice Draft',
+    request: 'Call upon you to comply with the demands within 15 days, failing which legal action will be initiated.',
+  },
+  'Reply Notice': {
+    heading: 'Reply to Legal Notice Draft',
+    request: 'Deny the false allegations and demand withdrawal of the notice.',
+  },
+  'Affidavit': {
+    heading: 'Affidavit',
+    request: 'I solemnly affirm and declare that the above facts are true and correct.',
+  },
+  'RTI Application': {
+    heading: 'RTI Application Draft',
+    request: 'Please provide the requested information under the Right to Information Act, 2005.',
+  },
+  'Power of Attorney': {
+    heading: 'Power of Attorney Draft',
+    request: 'I hereby appoint the attorney to act on my behalf for the specific purposes mentioned herein.',
+  },
+  'Vakalatnama': {
+    heading: 'Vakalatnama',
+    request: 'I hereby appoint the advocate to appear and plead on my behalf in the aforementioned matter.',
+  },
+  'Written Statement': {
+    heading: 'Written Statement Draft',
+    request: 'The defendant prays that the suit be dismissed with costs.',
+  },
+  'Appeal': {
+    heading: 'Appeal Draft',
+    request: 'The appellant prays to set aside the impugned order of the lower court.',
+  },
+  'Revision Petition': {
+    heading: 'Revision Petition Draft',
+    request: 'The petitioner prays to revise and quash the erroneous order of the lower court.',
+  },
+  'Application for Interim Relief': {
+    heading: 'Application for Interim Relief Draft',
+    request: 'The applicant prays for temporary injunction/stay pending the final disposal of the case.',
+  },
+  'Condonation of Delay': {
+    heading: 'Application for Condonation of Delay Draft',
+    request: 'The applicant prays to condone the delay in filing the accompanying petition/appeal.',
+  },
+  'Caveat Petition': {
+    heading: 'Caveat Petition Draft',
+    request: 'Let no ex-parte order be passed against the caveator without notice to them.',
+  },
+  'Indemnity Bond': {
+    heading: 'Indemnity Bond Draft',
+    request: 'I agree to indemnify and hold harmless the concerned authority against any claims arising out of this matter.',
+  },
+  'Undertaking': {
+    heading: 'Undertaking Draft',
+    request: 'I undertake to comply with the specified conditions and bear responsibility for any default.',
+  },
+  'Rental Agreement': {
+    heading: 'Rental Agreement Draft',
+    request: 'The tenant and landlord agree to the terms of lease for the specified premises.',
+  },
+  'Employment Complaint': {
+    heading: 'Employment/Labour Complaint Draft',
+    request: 'I request the labour commissioner/tribunal to order the employer to clear dues and provide relief.',
+  },
+  'Cyber Crime Complaint': {
+    heading: 'Cyber Crime Complaint Draft',
+    request: 'I request the cyber crime cell to investigate the online fraud/harassment and take necessary action.',
   },
 };
 
