@@ -14,6 +14,7 @@ import LoginRegister from './pages/LoginRegister.jsx';
 import Resources from './pages/Resources.jsx';
 import UserDashboard from './pages/UserDashboard.jsx';
 import WomenProtection from './pages/WomenProtection.jsx';
+import CaseWorkspace from './pages/CaseWorkspace.jsx';
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="directory" element={<Directory />} />
         <Route path="case-tracker" element={<CaseTracker />} />
         <Route path="guided-intake" element={<GuidedIntake />} />
+        <Route path="workspace/:caseId" element={<CaseWorkspace />} />
         <Route path="resources" element={<Resources />} />
         <Route path="contact" element={<Contact />} />
         <Route path="login" element={<LoginRegister />} />

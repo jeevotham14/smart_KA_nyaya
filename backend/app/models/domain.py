@@ -1,9 +1,10 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text, func
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text, func, Column
+import sqlalchemy.types as types
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
+from datetime import timezone
 from app.db.base import Base
 from app.db.types import JSONVariant, TextArray, Vector
 from app.models.enums import RecordStatus, UserRole
@@ -174,3 +175,24 @@ class AuditLog(Base, TimestampMixin):
     user_id: Mapped[uuid.UUID | None] = mapped_column(nullable=True, index=True)
     action: Mapped[str] = mapped_column(String(180))
     ip_address: Mapped[str | None] = mapped_column(String(80), nullable=True)
+
+
+class CaseNote(Base, TimestampMixin):
+    __tablename__ = "case_notes"
+
+    note_id: Mapped[uuid.UUID] = uuid_pk()
+    case_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("case_objects.case_id"), nullable=False)
+    user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.user_id"), nullable=True)
+    content: Mapped[str] = mapped_column(Text, default="")
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
+
+
+class CaseTask(Base, TimestampMixin):
+    __tablename__ = "case_tasks"
+
+    task_id: Mapped[uuid.UUID] = uuid_pk()
+    case_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("case_objects.case_id"), nullable=False)
+    user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.user_id"), nullable=True)
+    title: Mapped[str] = mapped_column(String(500), nullable=False)
+    completed: Mapped[bool] = mapped_column(Boolean, default=False)
+    due_date: Mapped[str | None] = mapped_column(String(50), nullable=True)

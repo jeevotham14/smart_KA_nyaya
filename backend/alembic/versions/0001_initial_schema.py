@@ -18,7 +18,9 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.execute("CREATE EXTENSION IF NOT EXISTS vector")
+    context = op.get_context()
+    if context.dialect.name == "postgresql":
+        op.execute("CREATE EXTENSION IF NOT EXISTS vector")
     op.create_table(
         "users",
         sa.Column("user_id", sa.Uuid(), primary_key=True),

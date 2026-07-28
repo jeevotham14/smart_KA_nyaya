@@ -1,6 +1,8 @@
 from app.models.domain import (
     AuditLog,
+    CaseNote,
     CaseObject,
+    CaseTask,
     Complaint,
     DirectoryService,
     DlsaApplication,
@@ -14,7 +16,9 @@ from app.models.domain import (
 
 __all__ = [
     "AuditLog",
+    "CaseNote",
     "CaseObject",
+    "CaseTask",
     "Complaint",
     "DirectoryService",
     "DlsaApplication",

@@ -1,4 +1,4 @@
-from app.api.routes import admin, ai, auth, complaints, directory, documents, guided_intake, legal_aid, notifications, tracker, women_protection
+from app.api.routes import admin, ai, auth, complaints, directory, documents, guided_intake, legal_aid, notifications, tracker, women_protection, workspace
 
 routers = [
     auth.router,
@@ -11,5 +11,6 @@ routers = [
     directory.router,
     tracker.router,
     notifications.router,
+    workspace.router,
     admin.router,
 ]

@@ -180,6 +180,26 @@ export const legalApi = {
     const { data } = await aiApi.post('/api/ai/legal-health-score', payload);
     return data;
   },
+  getWorkspaceNotes: async (caseId) => {
+    const { data } = await api.get(`/api/workspace/${caseId}/notes`);
+    return data;
+  },
+  saveWorkspaceNote: async (caseId, payload) => {
+    const { data } = await api.post(`/api/workspace/${caseId}/notes`, payload);
+    return data;
+  },
+  getWorkspaceTasks: async (caseId) => {
+    const { data } = await api.get(`/api/workspace/${caseId}/tasks`);
+    return data;
+  },
+  createWorkspaceTask: async (caseId, payload) => {
+    const { data } = await api.post(`/api/workspace/${caseId}/tasks`, payload);
+    return data;
+  },
+  updateWorkspaceTask: async (caseId, taskId, payload) => {
+    const { data } = await api.patch(`/api/workspace/${caseId}/tasks/${taskId}`, payload);
+    return data;
+  },
 };
 
 export const notificationApi = {
