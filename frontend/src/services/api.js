@@ -111,6 +111,18 @@ export const legalApi = {
     const { data } = await api.post('/api/ai/classify-issue', { text, language });
     return data;
   },
+  calculateCourtFee: async (payload) => {
+    const { data } = await api.post('/api/tools/court-fee', payload);
+    return data;
+  },
+  checkLimitationPeriod: async (payload) => {
+    const { data } = await api.post('/api/tools/limitation-period', payload);
+    return data;
+  },
+  explainRights: async (payload) => {
+    const { data } = await api.post('/api/tools/rights-explainer', payload);
+    return data;
+  },
   checkEligibility: async (values) => {
     const { data } = await api.post('/api/legal-aid/check-eligibility', {
       gender: values.gender,

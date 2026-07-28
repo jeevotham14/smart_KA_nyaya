@@ -17,6 +17,9 @@ import WomenProtection from './pages/WomenProtection.jsx';
 import CaseWorkspace from './pages/CaseWorkspace.jsx';
 import EvidenceOrganizer from './pages/EvidenceOrganizer.jsx';
 import VakalatnmaGenerator from './pages/VakalatnmaGenerator.jsx';
+import CourtFeeCalculator from './pages/CourtFeeCalculator.jsx';
+import LimitationChecker from './pages/LimitationChecker.jsx';
+import RightsExplainer from './pages/RightsExplainer.jsx';
 
 export default function App() {
   return (
@@ -34,6 +37,9 @@ export default function App() {
         <Route path="guided-intake" element={<GuidedIntake />} />
         <Route path="workspace/:caseId" element={<CaseWorkspace />} />
         <Route path="evidence/:caseId" element={<EvidenceOrganizer />} />
+        <Route path="court-fee-calculator" element={<CourtFeeCalculator />} />
+        <Route path="limitation-checker" element={<LimitationChecker />} />
+        <Route path="rights-explainer" element={<RightsExplainer />} />
         <Route path="resources" element={<Resources />} />
         <Route path="contact" element={<Contact />} />
         <Route path="login" element={<LoginRegister />} />
