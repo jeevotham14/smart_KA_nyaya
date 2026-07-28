@@ -160,6 +160,22 @@ export const legalApi = {
     const { data } = await api.get(`/api/tracker/${trackingId}`);
     return data;
   },
+  uploadEvidence: async (caseId, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await api.post(`/api/evidence/${caseId}/upload`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return data;
+  },
+  listEvidence: async (caseId) => {
+    const { data } = await api.get(`/api/evidence/${caseId}`);
+    return data;
+  },
+  bundleEvidence: async (caseId) => {
+    const { data } = await api.post(`/api/evidence/${caseId}/bundle`);
+    return data;
+  },
   uploadCaseDocument: async (caseId, file) => {
     const formData = new FormData();
     formData.append('file', file);

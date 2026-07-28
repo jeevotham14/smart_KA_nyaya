@@ -207,3 +207,17 @@ class DocumentDraft(Base, TimestampMixin):
     form_data: Mapped[dict | list | None] = mapped_column(JSONVariant, nullable=True)
     content_text: Mapped[str] = mapped_column(Text)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
+
+
+class EvidenceFile(Base, TimestampMixin):
+    __tablename__ = "evidence_files"
+
+    file_id: Mapped[uuid.UUID] = uuid_pk()
+    case_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("case_objects.case_id"), nullable=True, index=True)
+    user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.user_id"), nullable=True, index=True)
+    filename: Mapped[str] = mapped_column(String(255))
+    content_type: Mapped[str] = mapped_column(String(100))
+    size_kb: Mapped[int] = mapped_column(Integer)
+    category: Mapped[str] = mapped_column(String(100))
+    data: Mapped[bytes] = mapped_column(types.LargeBinary)
+
