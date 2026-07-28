@@ -172,6 +172,14 @@ export const legalApi = {
     const { data } = await api.get(`/api/tracker/${caseId}/documents`);
     return data;
   },
+  submitIntake: async (payload) => {
+    const { data } = await aiApi.post('/api/ai/guided-intake', payload);
+    return data;
+  },
+  getLegalHealthScore: async (payload) => {
+    const { data } = await aiApi.post('/api/ai/legal-health-score', payload);
+    return data;
+  },
 };
 
 export const notificationApi = {

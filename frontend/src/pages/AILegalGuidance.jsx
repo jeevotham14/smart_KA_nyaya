@@ -1,4 +1,5 @@
-import { BookOpen, FileSearch, ShieldCheck } from 'lucide-react';
+import { BookOpen, FileSearch, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AssistantChat from '../components/AssistantChat.jsx';
 import SectionHeader from '../components/SectionHeader.jsx';
@@ -31,6 +32,19 @@ export default function AILegalGuidance() {
               );
             })}
           </div>
+        </div>
+        <div className="mt-8 mb-4 rounded-xl border border-navy-100 bg-navy-50/50 p-6 sm:flex sm:items-center sm:justify-between">
+          <div>
+            <h3 className="text-lg font-bold text-navy-900">Need specific legal guidance?</h3>
+            <p className="mt-1 text-sm text-slate-600">Try our new step-by-step guided intake process for a more accurate analysis.</p>
+          </div>
+          <Link
+            to="/guided-intake"
+            className="mt-4 inline-flex items-center justify-center gap-2 rounded-md bg-navy-800 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-navy-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-900 sm:mt-0"
+          >
+            Start Guided Intake
+            <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
         <div className="mt-8">
           <AssistantChat />

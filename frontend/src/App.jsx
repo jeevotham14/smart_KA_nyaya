@@ -7,6 +7,7 @@ import CaseTracker from './pages/CaseTracker.jsx';
 import Contact from './pages/Contact.jsx';
 import Directory from './pages/Directory.jsx';
 import DocumentGenerator from './pages/DocumentGenerator.jsx';
+import GuidedIntake from './pages/GuidedIntake.jsx';
 import Home from './pages/Home.jsx';
 import LegalAid from './pages/LegalAid.jsx';
 import LoginRegister from './pages/LoginRegister.jsx';
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="document-generator" element={<DocumentGenerator />} />
         <Route path="directory" element={<Directory />} />
         <Route path="case-tracker" element={<CaseTracker />} />
+        <Route path="guided-intake" element={<GuidedIntake />} />
         <Route path="resources" element={<Resources />} />
         <Route path="contact" element={<Contact />} />
         <Route path="login" element={<LoginRegister />} />
