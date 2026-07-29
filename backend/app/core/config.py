@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     indian_kanoon_api_key: str | None = None
     maps_api_key: str | None = None
     sms_api_key: str | None = None
+    sarvam_api_key: str | None = "sk_dn271vgk_7oau1Ae1w3KFQ33Zt1HzQnpY"
+
+    # Legal Aid
+    legal_aid_income_limit: int = 300000  # Karnataka DLSA threshold — update periodically
     email_api_key: str | None = None
 
     # SMTP Mail

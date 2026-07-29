@@ -10,11 +10,10 @@ const navItems = [
   ['nav.aiGuidance', '/ai-legal-guidance'],
   ['nav.women', '/women-protection'],
   ['nav.aid', '/legal-aid'],
-  ['nav.docs', '/document-generator'],
+  ['nav.docsResources', '/document-generator'],
   ['nav.locator', '/directory'],
   ['nav.tracker', '/case-tracker'],
   ['Emergency', '/emergency'],
-  ['nav.resources', '/resources'],
   ['nav.contact', '/contact'],
 ];
 

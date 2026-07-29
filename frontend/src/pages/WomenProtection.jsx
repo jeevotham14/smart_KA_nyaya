@@ -1,17 +1,22 @@
 import { useState, useEffect } from 'react';
-import { FileWarning, MapPin, Phone, ShieldAlert, Shield } from 'lucide-react';
+import { FileWarning, MapPin, Phone, ShieldAlert, Shield, Navigation, Compass, ExternalLink } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { karnatakaDistricts } from '../data/mockData.js';
 import { legalApi } from '../services/api.js';
+import { detectDistrict, haversineKm } from '../utils/geolocation.js';
 
 const DISTRICT_NAMES = Object.keys(karnatakaDistricts).sort();
 
 export default function WomenProtection() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isKn = i18n.language === 'kn';
+
   const [selectedDistrict, setSelectedDistrict] = useState('');
+  const [userCoords, setUserCoords] = useState(null);
+  const [geoStatus, setGeoStatus] = useState('idle'); // idle, locating, success, denied
   const [filteredCenters, setFilteredCenters] = useState([]);
   const [loadingCenters, setLoadingCenters] = useState(false);
-  
+
   const guidance = [
     { title: t('women.guidance1Title'), text: t('women.guidance1Text') },
     { title: t('women.guidance2Title'), text: t('women.guidance2Text') },
@@ -19,14 +24,45 @@ export default function WomenProtection() {
     { title: t('women.guidance4Title'), text: t('women.guidance4Text') },
   ];
   const actionChecklist = [t('women.check1'), t('women.check2'), t('women.check3'), t('women.check4'), t('women.check5')];
-  
+
+  // Auto-detect geolocation on mount
+  useEffect(() => {
+    let isMounted = true;
+    async function runGeo() {
+      setGeoStatus('locating');
+      const { district, lat, lon } = await detectDistrict();
+      if (!isMounted) return;
+      if (lat && lon) setUserCoords({ lat, lon });
+      if (district) {
+        setSelectedDistrict(district);
+        setGeoStatus('success');
+      } else {
+        setGeoStatus('denied');
+      }
+    }
+    runGeo();
+    return () => { isMounted = false; };
+  }, []);
+
+  // Fetch centers & sort by distance if coords exist
   useEffect(() => {
     let active = true;
     async function loadCenters() {
       setLoadingCenters(true);
       try {
         const data = await legalApi.searchDirectory({ serviceType: 'women_police_station', district: selectedDistrict });
-        if (active) setFilteredCenters(data);
+        if (active) {
+          let list = [...data];
+          if (userCoords && userCoords.lat && userCoords.lon) {
+            list = list.map((item) => {
+              const itemLat = item.latitude || 12.9716;
+              const itemLon = item.longitude || 77.5946;
+              const dist = haversineKm(userCoords.lat, userCoords.lon, itemLat, itemLon);
+              return { ...item, distanceKm: dist };
+            }).sort((a, b) => a.distanceKm - b.distanceKm);
+          }
+          setFilteredCenters(list);
+        }
       } catch (err) {
         console.error(err);
         if (active) setFilteredCenters([]);
@@ -36,11 +72,11 @@ export default function WomenProtection() {
     }
     loadCenters();
     return () => { active = false; };
-  }, [selectedDistrict]);
+  }, [selectedDistrict, userCoords]);
 
   return (
     <>
-      {/* ── Premium Hero ── */}
+      {/* ── Hero ── */}
       <section className="hero-gradient-bg relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-alertRed/10 blur-3xl" />
@@ -66,6 +102,7 @@ export default function WomenProtection() {
 
       <section className="py-12 md:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {/* Emergency Speed Dial Header */}
           <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
             <div className="rounded-2xl border border-red-200/50 bg-red-50/80 dark:bg-red-950/20 dark:border-red-900/50 p-6 backdrop-blur-sm shadow-sm">
               <div className="flex items-start gap-4">
@@ -98,74 +135,94 @@ export default function WomenProtection() {
             
             <aside className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-6 shadow-sm glass-panel">
               <h3 className="font-serif text-2xl font-bold text-navy-900 dark:text-white">{t('women.checklist')}</h3>
-              <div className="mt-5 grid gap-3">
-                {actionChecklist.map((item, index) => (
-                  <p className="flex items-center gap-3 rounded-xl bg-slate-50 dark:bg-navy-800 p-3 text-sm font-medium leading-6 text-slate-700 dark:text-slate-300 transition-colors hover:bg-slate-100 dark:hover:bg-navy-700" key={item}>
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-legalGold/10 text-xs font-bold text-legalGold">{index + 1}</span>
-                    {item}
-                  </p>
+              <ul className="mt-4 space-y-3">
+                {actionChecklist.map((item, idx) => (
+                  <li key={idx} className="flex items-start gap-3 text-sm text-slate-700 dark:text-slate-300">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-legalGold/20 text-legalGold text-xs font-bold mt-0.5">
+                      {idx + 1}
+                    </span>
+                    <span>{item}</span>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </aside>
           </div>
 
-          <div className="mt-12 grid gap-6 md:grid-cols-2">
-            {guidance.map((item) => (
-              <article className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-6 shadow-sm glass-panel hover:shadow-md transition-all" key={item.title}>
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20 text-alertRed mb-4">
-                  <FileWarning className="h-5 w-5" aria-hidden="true" />
-                </div>
-                <h3 className="font-serif text-xl font-bold text-navy-900 dark:text-white">{item.title}</h3>
-                <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">{item.text}</p>
-              </article>
-            ))}
-          </div>
-
-          <section className="mt-12 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-8 shadow-sm glass-panel">
-            <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
+          {/* Directory Lookup & Nearby Centers */}
+          <div className="mt-12 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-6 sm:p-8 shadow-sm">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
               <div>
-                <h3 className="font-serif text-2xl font-bold text-navy-900 dark:text-white">{t('women.locatorTitle')}</h3>
-                <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">{t('women.locatorDesc')}</p>
-                <label className="mt-6 block">
-                  <span className="text-sm font-semibold text-navy-900 dark:text-slate-200">{t('women.districtLabel')}</span>
-                  <select 
-                    className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-navy-950 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:border-legalGold focus:ring-2 focus:ring-legalGold/20 transition-all"
-                    value={selectedDistrict}
-                    onChange={(e) => setSelectedDistrict(e.target.value)}
-                  >
-                    <option value="">All Districts</option>
-                    {DISTRICT_NAMES.map((district) => <option key={district} value={district}>{district}</option>)}
-                  </select>
-                </label>
+                <h3 className="font-serif text-2xl font-bold text-navy-900 dark:text-white flex items-center gap-2">
+                  <MapPin className="h-6 w-6 text-legalGold" />
+                  {isKn ? 'ಹತ್ತಿರದ ಮಹಿಳಾ ಪೊಲೀಸ್ ಠಾಣೆಗಳು & ಸಖಿ ಕೇಂದ್ರಗಳು' : 'Nearby Women Protection Stations & Sakhi Centres'}
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                  {geoStatus === 'success'
+                    ? (isKn ? 'ನಿಮ್ಮ ಜಿಯೋ-ಸ್ಥಳದಿಂದ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಪತ್ತೆಹಚ್ಚಲಾಗಿದೆ.' : 'Auto-detected from your live location.')
+                    : (isKn ? 'ಜಿಲ್ಲೆಯನ್ನು ಆಯ್ಕೆ ಮಾಡಿ ಅಥವಾ ಸ್ಥಳೀಯ ನೆರವು ಹುಡುಕಿ.' : 'Select a district to view local support centres.')}
+                </p>
               </div>
-              <div className="grid gap-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                {loadingCenters ? (
-                  <p className="text-slate-500 font-medium">Loading stations...</p>
-                ) : filteredCenters.length === 0 ? (
-                  <p className="text-slate-500 font-medium">No women police stations found for this district.</p>
-                ) : (
-                  filteredCenters.map((center) => (
-                    <article className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-navy-800 p-5 transition-colors hover:border-legalGold/50" key={center.service_id || center.name}>
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                          <p className="font-serif text-lg font-bold text-navy-900 dark:text-white">{center.name}</p>
-                          <p className="mt-1 inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                            <MapPin className="h-4 w-4 shrink-0" /> {center.district}
-                          </p>
-                          {center.address && <p className="mt-1 text-sm text-slate-500 line-clamp-2">{center.address}</p>}
-                        </div>
-                        {center.phone && (
-                          <a href={`tel:${center.phone}`} className="inline-flex items-center gap-2 rounded-lg bg-white dark:bg-navy-900 border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm font-bold text-navy-800 dark:text-white hover:border-legalGold hover:text-legalGold transition-all">
-                            <Phone className="h-4 w-4" /> {center.phone}
-                          </a>
-                        )}
-                      </div>
-                    </article>
-                  ))
-                )}
+
+              <div className="flex items-center gap-2">
+                <select
+                  value={selectedDistrict}
+                  onChange={(e) => setSelectedDistrict(e.target.value)}
+                  className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-navy-950 px-4 py-2.5 text-sm font-semibold text-navy-900 dark:text-white focus:border-legalGold"
+                >
+                  <option value="">{isKn ? 'ಎಲ್ಲಾ ಜಿಲ್ಲೆಗಳು (All Districts)' : 'All Districts'}</option>
+                  {DISTRICT_NAMES.map((d) => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
               </div>
             </div>
-          </section>
+
+            {loadingCenters ? (
+              <p className="text-sm text-slate-500 py-8 text-center">{isKn ? 'ಲೋಡ್ ಆಗುತ್ತಿದೆ...' : 'Loading nearby safety centres...'}</p>
+            ) : filteredCenters.length > 0 ? (
+              <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {filteredCenters.map((center) => (
+                  <div key={center.service_id || center.name} className="rounded-xl border border-slate-200 dark:border-slate-800 p-5 bg-slate-50/50 dark:bg-navy-950/50 hover:border-legalGold transition-all shadow-sm">
+                    <div className="flex justify-between items-start">
+                      <h4 className="font-bold text-navy-900 dark:text-white text-base">{center.name}</h4>
+                      {center.distanceKm && (
+                        <span className="text-xs font-bold text-legalGold bg-legalGold/10 px-2 py-0.5 rounded">
+                          {center.distanceKm.toFixed(1)} km
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 mt-2">{center.address}</p>
+                    <p className="text-xs font-semibold text-slate-500 mt-1">{center.district}, Karnataka</p>
+
+                    <div className="mt-4 flex items-center gap-2 border-t border-slate-200 dark:border-slate-800 pt-3">
+                      {center.phone && (
+                        <a
+                          href={`tel:${center.phone.replace(/[^0-9+]/g, '')}`}
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-all"
+                        >
+                          <Phone className="h-3.5 w-3.5" />
+                          <span>{isKn ? 'ಕರೆ ಮಾಡಿ' : 'Call Speed Dial'}</span>
+                        </a>
+                      )}
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(center.name + ' ' + center.address)}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center justify-center p-2 rounded-lg bg-slate-200 dark:bg-navy-800 hover:bg-legalGold hover:text-navy-950 text-slate-700 dark:text-slate-200 font-bold text-xs transition-all"
+                        title="Get Directions"
+                      >
+                        <Compass className="h-4 w-4" />
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500 py-8 text-center">
+                {isKn ? 'ಈ ಜಿಲ್ಲೆಯಲ್ಲಿ ಯಾವುದೇ ಕೇಂದ್ರ ಕಂಡುಬಂದಿಲ್ಲ.' : 'No registered centres found for this district.'}
+              </p>
+            )}
+          </div>
         </div>
       </section>
     </>

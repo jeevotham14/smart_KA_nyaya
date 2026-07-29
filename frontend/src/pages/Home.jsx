@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowRight, BookOpen, Building2, CheckCircle2, FileText, Gavel,
-  Landmark, MessageSquare, Scale, Search, Shield, ShieldAlert, Zap,
+  Landmark, MessageSquare, Scale, Search, Shield, ShieldAlert, Zap, Loader2, Sparkles
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AlertBanner from '../components/AlertBanner.jsx';
@@ -11,6 +11,7 @@ import GlassCard from '../components/GlassCard.jsx';
 import SectionHeader from '../components/SectionHeader.jsx';
 import ServiceCard from '../components/ServiceCard.jsx';
 import { services } from '../data/mockData.js';
+import { legalApi } from '../services/api.js';
 
 /* ── Animated counter hook ── */
 function useCounter(target, duration = 2000) {
@@ -57,7 +58,35 @@ function StatItem({ value, suffix = '', label }) {
 
 export default function Home() {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const isKn = i18n.language === 'kn';
+
+  // Hero classifier state
+  const [situationText, setSituationText] = useState('');
+  const [classifying, setClassifying] = useState(false);
+  const [classifyResult, setClassifyResult] = useState(null);
+  const [error, setError] = useState('');
+
+  const handleHeroClassify = async (e) => {
+    e.preventDefault();
+    if (!situationText.trim()) return;
+    setClassifying(true);
+    setError('');
+    setClassifyResult(null);
+    try {
+      const res = await legalApi.classifyDocument({
+        text: situationText.trim(),
+        language: isKn ? 'kn' : 'en',
+      });
+      setClassifyResult(res);
+    } catch (err) {
+      console.error('Hero classification failed', err);
+      // Fallback redirect to AI guidance if API fails
+      navigate(`/ai-legal-guidance?q=${encodeURIComponent(situationText)}`);
+    } finally {
+      setClassifying(false);
+    }
+  };
 
   const translatedServices = [
     { ...services[0], title: t('services.aiGuidance'), description: t('services.aiGuidanceDesc') },
@@ -95,7 +124,7 @@ export default function Home() {
 
   return (
     <>
-      {/* ── Hero ── */}
+      {/* ── Hero with Situation Classifier ── */}
       <section className="hero-gradient-bg relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-legalGold/5 blur-3xl" />
@@ -103,40 +132,125 @@ export default function Home() {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-legalGold/3 blur-[120px]" />
         </div>
 
-        <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 md:py-28 lg:py-36 lg:px-8">
+        <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 md:py-24 lg:py-28 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
             <p className="inline-flex items-center gap-2 rounded-full border border-legalGold/30 bg-legalGold/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-legalGold">
               <Scale className="h-3.5 w-3.5" /> {isKn ? 'ಕರ್ನಾಟಕ ಸರ್ಕಾರ — ಸಾರ್ವಜನಿಕ ಕಾನೂನು ಸೇವಾ ಪೋರ್ಟಲ್' : 'Government of Karnataka'}
             </p>
-            <h1 className="mt-8 font-display text-4xl font-extrabold leading-[1.1] tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
+            <h1 className="mt-6 font-display text-4xl font-extrabold leading-[1.1] tracking-tight text-white sm:text-5xl md:text-6xl">
               {isKn ? 'ಪ್ರತಿಯೊಬ್ಬ ನಾಗರಿಕನಿಗೂ ' : 'Justice Made Simple '}
               <span className="bg-gradient-to-r from-legalGold to-yellow-300 bg-clip-text text-transparent">
                 {isKn ? 'ಸರಳ ನ್ಯಾಯ ವ್ಯವಸ್ಥೆ' : 'for Every Citizen'}
               </span>
             </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-300 sm:text-xl">
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
               {isKn
-                ? 'ಕರ್ನಾಟಕದ ಜನತೆಗಾಗಿ AI-ಬೆಂಬಲಿತ ಕಾನೂನು ಮಾರ್ಗದರ್ಶನ, ದಾಖಲೆ ಕರಡು ಸಿದ್ಧತೆ, ಪ್ರಕರಣ ಟ್ರ್ಯಾಕಿಂಗ್ ಮತ್ತು ಉಚಿತ ಕಾನೂನು ನೆರವು.'
-                : 'AI-powered legal guidance, document generation, case tracking, and legal support for the people of Karnataka.'}
+                ? 'ನಿಮ್ಮ ಸನ್ನಿವೇಶವನ್ನು ವಿವರಿಸಿ — AI ತಕ್ಷಣವೇ ಸರಿಯಾದ ಕಾನೂನು, ದಾಖಲೆ ಮತ್ತು ಪರಿಹಾರ ಮಾರ್ಗವನ್ನು ಸೂಚಿಸುತ್ತದೆ.'
+                : 'Describe your situation below — AI instantly analyzes your legal rights, documents, and next steps.'}
             </p>
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link to="/ai-legal-guidance" className="premium-btn premium-btn-gold text-base">
-                {isKn ? 'ಕಾನೂನು ಸಹಾಯ ಪ್ರಾರಂಭಿಸಿ' : 'Start Legal Assistance'}
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link to="/case-tracker" className="premium-btn premium-btn-secondary !border-white/20 !text-white hover:!border-legalGold hover:!text-legalGold text-base">
-                {isKn ? 'ಪ್ರಕರಣ ಟ್ರ್ಯಾಕ್ ಮಾಡಿ' : 'Track My Case'}
-              </Link>
-            </div>
+
+            {/* Situation Input Search Box */}
+            <form onSubmit={handleHeroClassify} className="mt-8 relative max-w-2xl mx-auto">
+              <div className="relative flex items-center shadow-2xl rounded-2xl overflow-hidden border border-legalGold/40 bg-navy-950/80 backdrop-blur-md">
+                <input
+                  type="text"
+                  value={situationText}
+                  onChange={(e) => setSituationText(e.target.value)}
+                  placeholder={
+                    isKn
+                      ? 'ಉದಾ: ನನ್ನ ಭೂಮಿಯನ್ನು ಬೇರೆಯವರು ಅಕ್ರಮವಾಗಿ ಆಕ್ರಮಿಸಿಕೊಂಡಿದ್ದಾರೆ...'
+                      : 'E.g., My landlord refused to return my security deposit...'
+                  }
+                  className="w-full py-4 pl-5 pr-32 text-sm md:text-base text-white placeholder-slate-400 bg-transparent focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  disabled={classifying || !situationText.trim()}
+                  className="absolute right-2 top-2 bottom-2 px-5 rounded-xl bg-gradient-to-r from-legalGold to-yellow-500 hover:from-yellow-400 hover:to-yellow-600 text-navy-950 font-bold text-sm flex items-center gap-2 transition-all shadow-md disabled:opacity-50"
+                >
+                  {classifying ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4" />
+                      <span>{isKn ? 'ವಿಶ್ಲೇಷಿಸಿ' : 'Analyze'}</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+
+            {/* Instant AI Classification Result Box */}
+            {classifyResult && (
+              <div className="mt-6 text-left max-w-2xl mx-auto p-5 rounded-2xl bg-navy-900/90 border border-legalGold/60 shadow-2xl backdrop-blur-xl animate-fade-in">
+                <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-3">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-legalGold" />
+                    <span className="font-serif font-bold text-white text-base">
+                      {isKn ? 'AI ಸನ್ನಿವೇಶ ವಿಶ್ಲೇಷಣೆ' : 'AI Situation Analysis'}
+                    </span>
+                  </div>
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-legalGold/20 text-legalGold uppercase tracking-wider">
+                    {classifyResult.urgency_level || 'Normal'} Urgency
+                  </span>
+                </div>
+
+                <p className="text-sm text-slate-200 mb-4 leading-relaxed">
+                  {classifyResult.reasoning || (isKn ? 'ನಿಮ್ಮ ಸಮಸ್ಯೆಯನ್ನು ವಿಶ್ಲೇಷಿಸಲಾಗಿದೆ.' : 'Your situation has been analyzed.')}
+                </p>
+
+                {classifyResult.suggested_docs?.length > 0 && (
+                  <div className="space-y-2 mb-4">
+                    <p className="text-xs font-bold text-legalGold uppercase tracking-wider">
+                      {isKn ? 'ಶಿಫಾರಸು ಮಾಡಿದ ದಾಖಲೆಗಳು & ಕ್ರಮಗಳು:' : 'Recommended Documents & Actions:'}
+                    </p>
+                    {classifyResult.suggested_docs.map((doc, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between bg-white/5 hover:bg-white/10 p-3 rounded-xl border border-white/10 transition-all cursor-pointer"
+                        onClick={() => navigate(`/document-generator?doc=${doc.doc_type}`)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <FileText className="h-4 w-4 text-legalGold flex-shrink-0" />
+                          <div>
+                            <p className="text-sm font-semibold text-white">{doc.title || doc.doc_type}</p>
+                            <p className="text-xs text-slate-400">{doc.reason}</p>
+                          </div>
+                        </div>
+                        <span className="text-xs font-bold text-legalGold bg-legalGold/10 px-2 py-1 rounded">
+                          {doc.confidence || 90}% Match
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex flex-wrap gap-2 pt-2 border-t border-white/10">
+                  <Link
+                    to={`/ai-legal-guidance?q=${encodeURIComponent(situationText)}`}
+                    className="text-xs font-bold text-navy-950 bg-legalGold hover:bg-yellow-400 px-3.5 py-2 rounded-lg flex items-center gap-1.5 transition-all"
+                  >
+                    <span>{isKn ? 'ಸಂಪೂರ್ಣ AI ಮಾರ್ಗದರ್ಶನ' : 'Full AI Guidance'}</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                  <Link
+                    to="/legal-aid"
+                    className="text-xs font-bold text-white bg-white/10 hover:bg-white/20 px-3.5 py-2 rounded-lg flex items-center gap-1.5 transition-all"
+                  >
+                    <span>{isKn ? 'ಉಚಿತ ಕಾನೂನು ನೆರವು' : 'Free Legal Aid'}</span>
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#f8fafb] dark:from-navy-950 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#f8fafb] dark:from-navy-950 to-transparent" />
       </section>
 
       {/* ── Stats Bar ── */}
       <AnimatedSection>
-        <section className="relative -mt-8 z-10">
+        <section className="relative -mt-6 z-10">
           <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
             <div className="glass-card grid grid-cols-2 gap-6 p-8 md:grid-cols-4 md:gap-8 bg-white dark:bg-navy-900 border border-slate-200 dark:border-slate-800 shadow-xl rounded-2xl">
               <StatItem value={50000} suffix="+" label={isKn ? 'ನೆರವು ಪಡೆದ ನಾಗರಿಕರು' : 'Citizens Helped'} />
@@ -238,7 +352,6 @@ export default function Home() {
           </div>
         </section>
       </AnimatedSection>
-
     </>
   );
 }

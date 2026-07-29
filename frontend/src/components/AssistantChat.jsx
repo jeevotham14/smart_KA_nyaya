@@ -1,13 +1,12 @@
-import { useState } from 'react';
-import { Bot, Languages, Scale, SendHorizontal, UserRound } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Bot, Languages, Scale, SendHorizontal, UserRound, Mic, MicOff, Volume2, Loader2, Phone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-
 import { getApiError, legalApi } from '../services/api.js';
 
-
-
 export default function AssistantChat() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isKn = i18n.language === 'kn';
+
   const [query, setQuery] = useState('');
   const [language, setLanguage] = useState('English');
   const legalCategories = [
@@ -30,39 +29,104 @@ export default function AssistantChat() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Audio Recording (Sarvam ASR) State
+  const [isRecording, setIsRecording] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+
   const chooseCategory = (item) => {
     setCategory(item.title);
     setQuery(item.prompt);
     setError('');
   };
 
-  const submit = async (event) => {
-    event.preventDefault();
-    if (!query.trim() || loading) return;
-    const userText = query;
+  const handleStartRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+
+      mediaRecorderRef.current.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+
+      mediaRecorderRef.current.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        setTranscribing(true);
+        try {
+          const langCode = language.toLowerCase().includes('kannada') ? 'kn-IN' : 'en-IN';
+          const res = await legalApi.speechToText(audioBlob, langCode);
+          if (res.transcript) {
+            setQuery(res.transcript);
+            // Auto submit speech query
+            handleSendQuery(res.transcript);
+          }
+        } catch (err) {
+          console.error('ASR error', err);
+          setError('Speech recognition failed. Please try typing your message.');
+        } finally {
+          setTranscribing(false);
+          // Stop media tracks
+          stream.getTracks().forEach((track) => track.stop());
+        }
+      };
+
+      mediaRecorderRef.current.start();
+      setIsRecording(true);
+    } catch (err) {
+      console.error('Microphone access denied', err);
+      setError('Microphone permission required for voice input.');
+    }
+  };
+
+  const handleStopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const playTTS = async (text) => {
+    try {
+      const langCode = language.toLowerCase().includes('kannada') ? 'kn-IN' : 'en-IN';
+      const res = await legalApi.textToSpeech({ text, target_language_code: langCode });
+      if (res.audio_base64) {
+        const audio = new Audio('data:audio/wav;base64,' + res.audio_base64);
+        audio.play();
+      }
+    } catch (err) {
+      console.error('TTS playback error', err);
+    }
+  };
+
+  const handleSendQuery = async (textToSend) => {
+    const userText = textToSend || query;
+    if (!userText.trim() || loading) return;
     setLoading(true);
     setError('');
     const newUserMsg = { role: 'user', text: userText };
     setMessages((prev) => [...prev, newUserMsg]);
     setQuery('');
+
     try {
-      // Build history from current messages for context
       const history = messages
         .filter((m) => m.role !== 'system')
         .map((m) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.text }));
 
       const result = await legalApi.askAssistant({ query: userText, language, history });
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          text: result.answer,
-          provider: result.provider,
-          model: result.model,
-          category: result.category,
-          urgency: result.urgency,
-        },
-      ]);
+      const assistantMsg = {
+        role: 'assistant',
+        text: result.answer,
+        provider: result.provider,
+        model: result.model,
+        category: result.category,
+        urgency: result.urgency,
+      };
+
+      setMessages((prev) => [...prev, assistantMsg]);
+      // Auto-trigger TTS response
+      playTTS(result.answer);
     } catch (apiError) {
       setError(getApiError(apiError));
       setMessages((prev) => [
@@ -74,26 +138,31 @@ export default function AssistantChat() {
     }
   };
 
+  const submit = (event) => {
+    event.preventDefault();
+    handleSendQuery();
+  };
+
   return (
-    <section className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 bg-navy-900 p-5 text-white">
+    <section className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-950 shadow-xl">
+      <div className="border-b border-white/10 bg-navy-900 p-5 text-white">
         <div className="grid gap-4 md:grid-cols-[1fr_190px]">
           <div className="flex gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm bg-legalGold text-navy-900">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-legalGold text-navy-950 font-bold">
               <Bot className="h-6 w-6" aria-hidden="true" />
             </span>
             <div>
               <h3 className="font-serif text-2xl font-bold">{t('chat.title')}</h3>
-              <p className="mt-1 text-sm leading-6 text-slate-200">{t('chat.subtitle')}</p>
+              <p className="mt-1 text-xs text-slate-300">{t('chat.subtitle')}</p>
             </div>
           </div>
           <label>
-            <span className="inline-flex items-center gap-2 text-sm font-semibold text-white">
+            <span className="inline-flex items-center gap-2 text-xs font-semibold text-white">
               <Languages className="h-4 w-4" aria-hidden="true" />
               {t('chat.language')}
             </span>
             <select
-              className="mt-2 w-full rounded-sm border border-white/20 bg-white px-3 py-2 text-sm text-navy-900"
+              className="mt-1.5 w-full rounded-xl border border-white/20 bg-navy-950 px-3 py-2 text-xs text-white"
               value={language}
               onChange={(event) => setLanguage(event.target.value)}
             >
@@ -105,71 +174,64 @@ export default function AssistantChat() {
         </div>
       </div>
       <div className="grid gap-0 lg:grid-cols-[280px_1fr]">
-        <aside className="border-b border-slate-200 bg-slate-50 p-4 lg:border-b-0 lg:border-r">
-          <p className="text-sm font-bold text-navy-900">{t('chat.suggestedCategories')}</p>
+        <aside className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-navy-900/50 p-4 lg:border-b-0 lg:border-r">
+          <p className="text-xs font-bold text-navy-900 dark:text-white uppercase tracking-wider">{t('chat.suggestedCategories')}</p>
           <div className="mt-3 grid gap-2">
             {legalCategories.map((item) => (
               <button
-                className={`rounded-sm border px-3 py-3 text-left transition ${
-                  category === item.title ? 'border-legalGold bg-white shadow-sm' : 'border-slate-200 bg-white hover:border-legalGold'
+                className={`rounded-xl border px-3.5 py-3 text-left transition-all ${
+                  category === item.title ? 'border-legalGold bg-white dark:bg-navy-900 shadow-sm' : 'border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-navy-950/50 hover:border-legalGold'
                 }`}
                 key={item.title}
                 onClick={() => chooseCategory(item)}
                 type="button"
               >
-                <span className="block text-sm font-bold text-navy-900">{item.title}</span>
-                <span className="mt-1 block text-xs leading-5 text-slate-500">{item.examples}</span>
+                <span className="block text-xs font-bold text-navy-900 dark:text-white">{item.title}</span>
+                <span className="mt-1 block text-[11px] leading-4 text-slate-500 dark:text-slate-400">{item.examples}</span>
               </button>
             ))}
           </div>
         </aside>
+
         <div>
-          <div className="max-h-[560px] min-h-[420px] space-y-4 overflow-y-auto bg-white p-5">
+          <div className="max-h-[560px] min-h-[420px] space-y-4 overflow-y-auto bg-white dark:bg-navy-950 p-5">
             {messages.map((message, index) => (
               <article className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : ''}`} key={`${message.role}-${index}`}>
                 {message.role === 'assistant' ? (
-                  <span className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-navy-50 text-navy-800">
+                  <span className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-legalGold/10 text-legalGold border border-legalGold/30">
                     <Scale className="h-5 w-5" aria-hidden="true" />
                   </span>
                 ) : null}
                 <div
-                  className={`max-w-2xl rounded-md border p-4 text-sm leading-6 ${
-                    message.role === 'user' ? 'border-navy-800 bg-navy-800 text-white' : 'border-slate-200 bg-slate-50 text-slate-700'
+                  className={`max-w-2xl rounded-2xl border p-4 text-sm leading-relaxed ${
+                    message.role === 'user'
+                      ? 'border-navy-800 bg-navy-800 text-white'
+                      : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-navy-900 text-slate-800 dark:text-slate-200'
                   }`}
                 >
-                  {message.role === 'assistant' && message.urgency === 'emergency' && (
-                    <a href="tel:112" className="mb-2 inline-flex items-center gap-1.5 rounded bg-red-600 px-3 py-1 text-xs font-extrabold text-white hover:bg-red-700 transition-colors shadow">
-                      <Phone className="h-3.5 w-3.5 animate-bounce" /> ⚠️ EMERGENCY — Call 112 Immediately
+                  {message.role === 'assistant' && message.urgency === 'high' && (
+                    <a href="tel:112" className="mb-2 inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1 text-xs font-extrabold text-white hover:bg-red-700 transition-colors shadow">
+                      <Phone className="h-3.5 w-3.5 animate-bounce" /> Emergency Support — Call 112
                     </a>
                   )}
                   <p className="whitespace-pre-wrap">{message.text}</p>
                   
                   {message.role === 'assistant' && (
                     <button
-                      onClick={async () => {
-                        try {
-                          const res = await legalApi.textToSpeech({ text: message.text, language });
-                          if (res.audio_base64) {
-                            const audio = new Audio("data:audio/wav;base64," + res.audio_base64);
-                            audio.play();
-                          }
-                        } catch (err) {
-                          console.error('TTS failed', err);
-                        }
-                      }}
-                      className="mt-2 flex items-center gap-1.5 text-xs font-bold text-legalGold hover:text-yellow-600 transition-colors"
-                      title="Read aloud"
+                      onClick={() => playTTS(message.text)}
+                      className="mt-3 flex items-center gap-1.5 text-xs font-bold text-legalGold hover:text-yellow-500 transition-colors"
+                      title="Listen to Sarvam Voice"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-volume-2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-                      Listen
+                      <Volume2 className="h-4 w-4" />
+                      <span>{isKn ? 'ಧ್ವನಿಯಲ್ಲಿ ಆಲಿಸಿ (Sarvam Voice)' : 'Listen (Sarvam Voice)'}</span>
                     </button>
                   )}
 
                   {message.role === 'assistant' && message.provider && (
-                    <p className="mt-3 text-xs text-slate-400">Powered by {message.provider} / {message.model}</p>
+                    <p className="mt-2 text-[11px] text-slate-400">Router: {message.provider} ({message.model})</p>
                   )}
                   {message.steps ? (
-                    <ul className="mt-3 grid gap-2">
+                    <ul className="mt-3 grid gap-2 text-xs">
                       {message.steps.map((step) => (
                         <li className="border-l-2 border-legalGold pl-3" key={step}>{step}</li>
                       ))}
@@ -177,29 +239,63 @@ export default function AssistantChat() {
                   ) : null}
                 </div>
                 {message.role === 'user' ? (
-                  <span className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-legalGold text-navy-900">
+                  <span className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-legalGold text-navy-950 font-bold">
                     <UserRound className="h-5 w-5" aria-hidden="true" />
                   </span>
                 ) : null}
               </article>
             ))}
-            {loading ? <p className="rounded-sm bg-navy-50 p-3 text-sm font-semibold text-navy-900">{t('chat.loading')}</p> : null}
-            {error ? <p className="rounded-sm bg-red-50 p-3 text-sm font-semibold text-alertRed">{error}</p> : null}
+            {loading ? (
+              <div className="flex items-center gap-2 rounded-xl bg-navy-50 dark:bg-navy-900 p-3 text-xs font-bold text-navy-900 dark:text-white">
+                <Loader2 className="h-4 w-4 animate-spin text-legalGold" />
+                <span>{t('chat.loading')}</span>
+              </div>
+            ) : null}
+            {transcribing ? (
+              <div className="flex items-center gap-2 rounded-xl bg-legalGold/10 p-3 text-xs font-bold text-legalGold">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>{isKn ? 'Sarvam AI ಧ್ವನಿಯನ್ನು ಪಠ್ಯಕ್ಕೆ ಪರಿವರ್ತಿಸುತ್ತಿದೆ...' : 'Sarvam AI transcribing your speech...'}</span>
+              </div>
+            ) : null}
+            {error ? <p className="rounded-xl bg-red-50 dark:bg-red-900/30 p-3 text-xs font-semibold text-alertRed dark:text-red-400">{error}</p> : null}
           </div>
-          <form className="border-t border-slate-200 bg-slate-50 p-4" onSubmit={submit}>
-            <div className="flex flex-col gap-3 sm:flex-row">
+
+          <form className="border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-navy-900 p-4" onSubmit={submit}>
+            <div className="flex items-center gap-2">
               <input
-                className="min-h-12 flex-1 rounded-sm border border-slate-300 px-4 py-3 text-sm outline-none focus:border-legalGold focus:ring-2 focus:ring-legalGold/20"
-                placeholder={t('chat.placeholder')}
+                className="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-navy-950 px-4 py-3 text-sm text-navy-900 dark:text-white outline-none focus:border-legalGold"
+                placeholder={isRecording ? (isKn ? 'ಮಾತನಾಡಿ, ರೆಕಾರ್ಡ್ ಆಗುತ್ತಿದೆ...' : 'Speaking... (recording audio)') : t('chat.placeholder')}
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
               />
-              <button className="inline-flex items-center justify-center gap-2 rounded-sm bg-navy-800 px-5 py-3 text-sm font-bold text-white disabled:opacity-60" disabled={loading} type="submit">
+
+              {/* Sarvam Speech-to-Text Microphone Button */}
+              {isRecording ? (
+                <button
+                  type="button"
+                  onClick={handleStopRecording}
+                  className="p-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs flex items-center justify-center animate-pulse shadow-lg"
+                  title="Stop recording"
+                >
+                  <MicOff className="h-5 w-5" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleStartRecording}
+                  className="p-3 rounded-xl bg-slate-200 dark:bg-navy-800 hover:bg-legalGold hover:text-navy-950 text-slate-700 dark:text-white font-bold text-xs flex items-center justify-center transition-all"
+                  title={isKn ? 'Sarvam AI ಧ್ವನಿ ಇನ್‌ಪುಟ್' : 'Sarvam AI Speech Input'}
+                >
+                  <Mic className="h-5 w-5" />
+                </button>
+              )}
+
+              <button className="premium-btn premium-btn-gold text-xs px-5 py-3 flex items-center gap-2 disabled:opacity-60" disabled={loading || transcribing} type="submit">
                 <SendHorizontal className="h-4 w-4" aria-hidden="true" />
-                {loading ? t('chat.asking') : t('chat.ask')}
+                <span>{loading ? t('chat.asking') : t('chat.ask')}</span>
               </button>
             </div>
-            <p className="mt-3 text-xs leading-5 text-slate-500">{t('disclaimer')}</p>
+            <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">{t('disclaimer')}</p>
           </form>
         </div>
       </div>

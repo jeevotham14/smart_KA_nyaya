@@ -3,6 +3,7 @@ import { ExternalLink, MapPin, MapPinned, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { karnatakaDistricts } from '../data/mockData.js';
 import { getApiError, legalApi } from '../services/api.js';
+import { detectDistrict } from '../utils/geolocation.js';
 
 export const DISTRICT_NAMES_KN = {
   'Bagalkote': 'ಬಾಗಲಕೋಟೆ',
@@ -105,6 +106,18 @@ export default function Directory() {
     { value: 'ngo',                  label: t('directory.filterNGO') },
     { value: 'one_stop_centre',      label: isKn ? 'ಒನ್ ಸ್ಟಾಪ್ ಸೆಂಟರ್ (ಸಖಿ)' : 'One Stop Centre (Sakhi)' },
   ];
+
+  useEffect(() => {
+    let active = true;
+    async function runGeo() {
+      const { district: autoDistrict } = await detectDistrict();
+      if (active && autoDistrict && !district) {
+        setDistrict(autoDistrict);
+      }
+    }
+    runGeo();
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     if (district && karnatakaDistricts[district]) {

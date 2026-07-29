@@ -48,7 +48,7 @@ export default function App() {
           <Route path="rights-explainer" element={<RightsExplainer />} />
           <Route path="emergency" element={<EmergencyAssistance />} />
           <Route path="search" element={<GlobalSearch />} />
-          <Route path="resources" element={<Resources />} />
+          <Route path="resources" element={<Navigate to="/document-generator" replace />} />
           <Route path="contact" element={<Contact />} />
           <Route path="login" element={<LoginRegister />} />
           <Route path="dashboard" element={<UserDashboard />} />

@@ -104,8 +104,8 @@ export const RESOURCE_CONTENT = {
       {
         heading: 'Emergency contacts — save these now',
         headingKn: 'ತುರ್ತು ಸಹಾಯವಾಣಿ ಸಂಖ್ಯೆಗಳು — ಈಗಲೇ ಉಚಿತವಾಗಿ ಸಂಪರ್ಕಿಸಿ',
-        body: `📞 112 — Police Emergency (24/7)\n📞 181 — Vanitha Sahayavani Women Helpline (Karnataka, free)\n📞 1098 — Childline (children in distress)\n📞 102 — Ambulance\n📞 1091 — Women in distress (national)\n📞 080-22111730 — KSLSA Legal Aid`,
-        bodyKn: `📞 ೧೧೨ — ರಾಷ್ಟ್ರೀಯ ತುರ್ತು ಪೊಲೀಸ್ (೨೪/೭)\n📞 ೧೮೧ — ವನಿತಾ ಸಹಾಯವಾಣಿ (ಕರ್ನಾಟಕ, ಉಚಿತ)\n📞 ೧೦೯೮ — ಮಕ್ಕಳ ಸಹಾಯವಾಣಿ (Childline)\n📞 ೧೦೨ — ಆಂಬ್ಯುಲೆನ್ಸ್\n📞 ೦೮೦-೨೨೧೧೧೭೩೦ — ರಾಜ್ಯ ಕಾನೂನು ನೆರವು`,
+        body: ` 112 — Police Emergency (24/7)\n 181 — Vanitha Sahayavani Women Helpline (Karnataka, free)\n 1098 — Childline (children in distress)\n 102 — Ambulance\n 1091 — Women in distress (national)\n 080-22111730 — KSLSA Legal Aid`,
+        bodyKn: ` ೧೧೨ — ರಾಷ್ಟ್ರೀಯ ತುರ್ತು ಪೊಲೀಸ್ (೨೪/೭)\n ೧೮೧ — ವನಿತಾ ಸಹಾಯವಾಣಿ (ಕರ್ನಾಟಕ, ಉಚಿತ)\n ೧೦೯೮ — ಮಕ್ಕಳ ಸಹಾಯವಾಣಿ (Childline)\n ೧೦೨ — ಆಂಬ್ಯುಲೆನ್ಸ್\n ೦೮೦-೨೨೧೧೧೭೩೦ — ರಾಜ್ಯ ಕಾನೂನು ನೆರವು`,
       },
       {
         heading: 'Laws protecting women in Karnataka',
@@ -158,7 +158,7 @@ export const RESOURCE_CONTENT = {
       {
         heading: 'Where to file — jurisdiction',
         headingKn: 'ದೂರು ಸಲ್ಲಿಸುವ ನ್ಯಾಯಾಲಯಗಳ ವ್ಯಾಪ್ತಿ',
-        body: `• Up to ₹50 lakh claim → District Consumer Disputes Redressal Commission (CDRC)\n• ₹50 lakh to ₹2 crore → State Consumer Commission, Bengaluru\n• Above ₹2 crore → National Consumer Disputes Redressal Commission, Delhi\n\n✅ Filing fee is free for claims up to ₹5 lakh.`,
+        body: `• Up to ₹50 lakh claim → District Consumer Disputes Redressal Commission (CDRC)\n• ₹50 lakh to ₹2 crore → State Consumer Commission, Bengaluru\n• Above ₹2 crore → National Consumer Disputes Redressal Commission, Delhi\n\n Filing fee is free for claims up to ₹5 lakh.`,
         bodyKn: `• ₹೫೦ ಲಕ್ಷದವರೆಗಿನ ಪರಿಹಾರ ಧನ → ಜಿಲ್ಲಾ ಗ್ರಾಹಕರ ವಿವಾದ ಪರಿಹಾರ ಆಯೋಗ (CDRC)\n• ₹೫೦ ಲಕ್ಷದಿಂದ ₹೨ ಕೋಟಿಯವರೆಗೆ → ರಾಜ್ಯ ಗ್ರಾಹಕರ ಆಯೋಗ, ಬೆಂಗಳೂರು\n• ₹೫ ಲಕ್ಷದವರೆಗಿನ ದೂರುಗಳಿಗೆ ಕೋರ್ಟ್ ಫೀ ಉಚಿತವಾಗಿರುತ್ತದೆ.`,
       },
       {

@@ -84,12 +84,24 @@ class EligibilityRequest(BaseModel):
     case_type: str | None = None
     is_child: bool = False
     is_senior_citizen: bool = False
+    is_transgender: bool = False
+    is_ex_serviceman: bool = False
+    is_freedom_fighter: bool = False
+    is_hiv_affected: bool = False
+    is_industrial_workmen: bool = False
+    in_custody: bool = False
+    trafficking_victim: bool = False
 
 
 class EligibilityResponse(BaseModel):
     eligible: bool
+    category_match: bool = False
+    income_match: bool = False
     reason: str
+    reason_list: list[str] = []
     disclaimer: str
+    what_it_covers: str = ""
+    alternate_paths: list[str] = []
 
 
 class LegalAidApply(BaseModel):

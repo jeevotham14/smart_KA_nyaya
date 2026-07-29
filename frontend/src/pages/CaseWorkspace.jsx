@@ -213,7 +213,7 @@ export default function CaseWorkspace() {
                   className="premium-btn premium-btn-primary !py-2 !px-4 text-sm"
                 >
                   <Save className="h-4 w-4" />
-                  {notesSaved ? 'Saved ✓' : 'Save Notes'}
+                  {notesSaved ? 'Saved ' : 'Save Notes'}
                 </button>
               </div>
               <textarea

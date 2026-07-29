@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, File, Request, UploadFile
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
@@ -154,25 +154,26 @@ class TTSRequest(BaseModel):
     target_language_code: str = "en-IN"
     speaker: str = "meera"
 
+
 @router.post("/tts")
 async def text_to_speech(payload: TTSRequest):
     """Convert text to speech using Sarvam AI API."""
     import httpx
+    from app.core.config import get_settings
+    settings = get_settings()
     url = "https://api.sarvam.ai/text-to-speech"
     headers = {
-        "api-subscription-key": "sk_dn271vgk_7oau1Ae1w3KFQ33Zt1HzQnpY",
+        "api-subscription-key": settings.sarvam_api_key or "sk_dn271vgk_7oau1Ae1w3KFQ33Zt1HzQnpY",
         "Content-Type": "application/json"
     }
-    # map frontend languages to Sarvam format
-    # Kannada: kn-IN, English: en-IN, Hindi: hi-IN
     target_lang = payload.target_language_code
     if target_lang.lower() == "kannada":
         target_lang = "kn-IN"
     elif target_lang.lower() == "english":
         target_lang = "en-IN"
-    
+
     body = {
-        "inputs": [payload.text[:500]], # limit text length for safety
+        "inputs": [payload.text[:500]],
         "target_language_code": target_lang,
         "speaker": payload.speaker,
         "pitch": 0,
@@ -180,9 +181,9 @@ async def text_to_speech(payload: TTSRequest):
         "loudness": 1.5,
         "speech_sample_rate": 8000,
         "enable_preprocessing": True,
-        "model": "sarvam-tts"
+        "model": "sarvam-tts",
     }
-    
+
     async with httpx.AsyncClient() as client:
         try:
             response = await client.post(url, headers=headers, json=body, timeout=20.0)
@@ -191,4 +192,55 @@ async def text_to_speech(payload: TTSRequest):
             return {"audio_base64": data.get("audios", [])[0] if data.get("audios") else None}
         except Exception as e:
             from fastapi import HTTPException
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── ASR: Speech-to-Text via Sarvam AI ────────────────────────────────────────
+
+@router.post("/asr")
+async def speech_to_text(
+    file: UploadFile = File(...),
+    language: str = "kn-IN",
+):
+    """
+    Transcribe audio using Sarvam AI speech-to-text.
+    Accepts audio/webm, audio/wav, audio/mp4 from the browser MediaRecorder.
+    """
+    from fastapi import HTTPException
+    import httpx
+    from app.core.config import get_settings
+
+    settings = get_settings()
+    sarvam_key = settings.sarvam_api_key or "sk_dn271vgk_7oau1Ae1w3KFQ33Zt1HzQnpY"
+
+    lang_map = {
+        "kannada": "kn-IN",
+        "english": "en-IN",
+        "kn": "kn-IN",
+        "en": "en-IN",
+    }
+    lang_code = lang_map.get(language.lower(), language)
+
+    audio_bytes = await file.read()
+    filename = file.filename or "recording.webm"
+
+    url = "https://api.sarvam.ai/speech-to-text"
+    headers = {"api-subscription-key": sarvam_key}
+
+    async with httpx.AsyncClient() as client:
+        try:
+            resp = await client.post(
+                url,
+                headers=headers,
+                data={"language_code": lang_code, "model": "saarika:v2"},
+                files={"file": (filename, audio_bytes, file.content_type or "audio/webm")},
+                timeout=30.0,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            transcript = data.get("transcript", "")
+            return {"transcript": transcript, "language": lang_code}
+        except httpx.HTTPStatusError as e:
+            raise HTTPException(status_code=502, detail=f"Sarvam ASR error: {e.response.text}")
+        except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))

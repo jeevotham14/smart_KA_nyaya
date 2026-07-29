@@ -25,14 +25,14 @@ export default function AILegalGuidance() {
   const [analysisResult, setAnalysisResult] = useState(null);
 
   const CATEGORIES = [
-    { id: 'consumer', name: 'Consumer & Fraud', nameKn: 'ಗ್ರಾಹಕ ದೂರು & ಸೈಬರ್ ವಂಚನೆ', icon: '🛒' },
-    { id: 'criminal', name: 'Police FIR & Criminal', nameKn: 'ಪೋಲಿಸ್ ಎಫ್‌ಐಆರ್ & ಕ್ರಿಮಿನಲ್', icon: '🚨' },
-    { id: 'domestic_violence', name: 'Domestic Violence & Safety', nameKn: 'ಗೃಹ ಹಿಂಸೆ ರಕ್ಷಣೆ', icon: '🛡️' },
-    { id: 'tenant', name: 'Landlord & Tenant Dispute', nameKn: 'ಮನೆ ಬಾಡಿಗೆ & ಆಸ್ತಿ ವಿವಾದ', icon: '🏠' },
-    { id: 'labour', name: 'Employment & Unpaid Wages', nameKn: 'ಉದ್ಯೋಗ & ವೇತನ ವಿವಾದ', icon: '💼' },
-    { id: 'cyber', name: 'Cyber Crime & Online Fraud', nameKn: 'ಸೈಬರ್ ಅಪರಾಧ ದೂರು', icon: '💻' },
-    { id: 'property', name: 'Property & Partition', nameKn: 'ಆಸ್ತಿ ಮತ್ತು ಹಕ್ಕು ಸ್ವಾಮ್ಯ', icon: '📜' },
-    { id: 'family', name: 'Family & Marriage Matters', nameKn: 'ಕುಟುಂಬ & ವೈವಾಹಿಕ ವಿಷಯಗಳು', icon: '⚖️' },
+    { id: 'consumer', name: 'Consumer & Fraud', nameKn: 'ಗ್ರಾಹಕ ದೂರು & ಸೈಬರ್ ವಂಚನೆ', icon: '' },
+    { id: 'criminal', name: 'Police FIR & Criminal', nameKn: 'ಪೋಲಿಸ್ ಎಫ್‌ಐಆರ್ & ಕ್ರಿಮಿನಲ್', icon: '' },
+    { id: 'domestic_violence', name: 'Domestic Violence & Safety', nameKn: 'ಗೃಹ ಹಿಂಸೆ ರಕ್ಷಣೆ', icon: '️' },
+    { id: 'tenant', name: 'Landlord & Tenant Dispute', nameKn: 'ಮನೆ ಬಾಡಿಗೆ & ಆಸ್ತಿ ವಿವಾದ', icon: '' },
+    { id: 'labour', name: 'Employment & Unpaid Wages', nameKn: 'ಉದ್ಯೋಗ & ವೇತನ ವಿವಾದ', icon: '' },
+    { id: 'cyber', name: 'Cyber Crime & Online Fraud', nameKn: 'ಸೈಬರ್ ಅಪರಾಧ ದೂರು', icon: '' },
+    { id: 'property', name: 'Property & Partition', nameKn: 'ಆಸ್ತಿ ಮತ್ತು ಹಕ್ಕು ಸ್ವಾಮ್ಯ', icon: '' },
+    { id: 'family', name: 'Family & Marriage Matters', nameKn: 'ಕುಟುಂಬ & ವೈವಾಹಿಕ ವಿಷಯಗಳು', icon: '️' },
   ];
 
   const handleSpecificAnalysisSubmit = async (e) => {
@@ -106,7 +106,7 @@ export default function AILegalGuidance() {
                 }`}
               >
                 <Sparkles className="h-4 w-4" />
-                {isKn ? '🎯 ನಿರ್ದಿಷ್ಟ ಪ್ರಕರಣದ AI ವಿಶ್ಲೇಷಣೆ' : '🎯 Specific Legal Guidance (LLM)'}
+                {isKn ? ' ನಿರ್ದಿಷ್ಟ ಪ್ರಕರಣದ AI ವಿಶ್ಲೇಷಣೆ' : ' Specific Legal Guidance (LLM)'}
               </button>
               <button
                 type="button"
@@ -118,7 +118,7 @@ export default function AILegalGuidance() {
                 }`}
               >
                 <Bot className="h-4 w-4" />
-                {isKn ? '💬 ಸಾಮಾನ್ಯ ಕಾನೂನು ಚಾಟ್' : '💬 General AI Assistant Chat'}
+                {isKn ? ' ಸಾಮಾನ್ಯ ಕಾನೂನು ಚಾಟ್' : ' General AI Assistant Chat'}
               </button>
             </div>
           </div>
@@ -268,7 +268,7 @@ export default function AILegalGuidance() {
                       <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-navy-800 via-legalGold to-yellow-300" />
                       
                       <h3 className="font-serif text-2xl font-bold text-navy-900 dark:text-white mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
-                        ⚖️ {isKn ? 'ನಿಮ್ಮ ಪ್ರಕರಣದ ನಿರ್ದಿಷ್ಟ ಕಾನೂನು ಸಲಹೆ' : 'Tailored Legal Case Analysis'}
+                        ️ {isKn ? 'ನಿಮ್ಮ ಪ್ರಕರಣದ ನಿರ್ದಿಷ್ಟ ಕಾನೂನು ಸಲಹೆ' : 'Tailored Legal Case Analysis'}
                       </h3>
 
                       <div className="prose dark:prose-invert max-w-none text-base leading-relaxed text-slate-800 dark:text-slate-200 whitespace-pre-line">

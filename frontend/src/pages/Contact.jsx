@@ -1,13 +1,49 @@
 import { useState } from 'react';
-import { Mail, MapPin, Phone, MessageSquare } from 'lucide-react';
+import { Mail, MapPin, Phone, MessageSquare, UserCheck, Scale, ExternalLink, Shield } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { karnatakaDistricts } from '../data/mockData.js';
 import { getApiError, legalApi } from '../services/api.js';
 
 const DISTRICT_NAMES = Object.keys(karnatakaDistricts).sort();
 
+const PANEL_LAWYERS = [
+  {
+    name: 'Adv. Jeevotham',
+    phone: '9743720764',
+    specialty: 'Criminal Law & Property Disputes',
+    specialtyKn: 'ಕ್ರಿಮಿನಲ್ ಕಾನೂನು ಮತ್ತು ಆಸ್ತಿ ವಿವಾದಗಳು',
+    district: 'Bengaluru Urban',
+    experience: '12+ Years Experience',
+  },
+  {
+    name: 'Adv. Shreyas',
+    phone: '900805500',
+    specialty: 'Family Law & Matrimonial Disputes',
+    specialtyKn: 'ಕುಟುಂಬ ಕಾನೂನು ಮತ್ತು ವೈವಾಹಿಕ ವಿವಾದಗಳು',
+    district: 'Mysuru',
+    experience: '10+ Years Experience',
+  },
+  {
+    name: 'Adv. Parinetha',
+    phone: '9886260189',
+    specialty: 'Women Protection & Civil Litigation',
+    specialtyKn: 'ಮಹಿಳಾ ರಕ್ಷಣೆ ಮತ್ತು ಸಿವಿಲ್ ವ್ಯಾಜ್ಯಗಳು',
+    district: 'Bengaluru Urban',
+    experience: '8+ Years Experience',
+  },
+  {
+    name: 'Adv. Purushotham',
+    phone: '6364849617',
+    specialty: 'Labour Disputes & Consumer Protection',
+    specialtyKn: 'ಕಾರ್ಮಿಕ ವಿವಾದಗಳು ಮತ್ತು ಗ್ರಾಹಕರ ರಕ್ಷಣೆ',
+    district: 'Dharwad',
+    experience: '15+ Years Experience',
+  },
+];
+
 export default function Contact() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isKn = i18n.language === 'kn';
 
   const complaintTypes = [
     { value: 'general', label: t('contact.complaintGeneral') },
@@ -34,7 +70,7 @@ export default function Contact() {
     const { name, value } = event.target;
     setValues((current) => {
       const newValues = { ...current, [name]: value };
-      if (name === 'district') newValues.taluk = ''; // reset taluk on district change
+      if (name === 'district') newValues.taluk = '';
       return newValues;
     });
   };
@@ -62,7 +98,7 @@ export default function Contact() {
     }
   };
 
-  const inputClassName = "rounded-sm border border-slate-300 dark:border-slate-700 bg-white dark:bg-navy-950 px-3 py-3 text-sm text-slate-900 dark:text-white focus:border-legalGold focus:ring-1 focus:ring-legalGold transition-colors";
+  const inputClassName = "rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-navy-950 px-4 py-3 text-sm text-slate-900 dark:text-white focus:border-legalGold focus:ring-1 focus:ring-legalGold transition-colors";
   
   return (
     <>
@@ -76,14 +112,87 @@ export default function Contact() {
             <MessageSquare className="h-3.5 w-3.5" /> {t('contact.eyebrow')}
           </p>
           <h1 className="mt-6 font-display text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
-            {t('contact.title')}
+            {isKn ? 'ಸಂಪರ್ಕ & ನೇರ ವಕೀಲರ ಸೇವೆ' : 'Contact & Empanelled Lawyers'}
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-300">
-            {t('contact.desc')}
+            {isKn
+              ? 'ಪನೆಲ್ ವಕೀಲರನ್ನು ನೇರವಾಗಿ ಸಂಪರ್ಕಿಸಿ ಅಥವಾ ಅಧಿಕೃತ ದೂರು/ಅರ್ಜಿ ಸಲ್ಲಿಸಿ.'
+              : 'Directly speed dial DLSA empanelled advocates or submit your legal grievance online.'}
           </p>
         </div>
       </section>
 
+      {/* Panel Advocates Speed Dial Section */}
+      <section className="bg-slate-100/50 dark:bg-navy-900/50 py-12 md:py-16 border-b border-slate-200 dark:border-slate-800">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-legalGold bg-legalGold/10 px-3 py-1 rounded-full">
+              <Scale className="h-3.5 w-3.5" />
+              {isKn ? 'ಉಚಿತ ಮತ್ತು ಅನುಮೋದಿತ ವಕೀಲರ ಪಟ್ಟಿ' : 'DLSA Empanelled Panel Lawyers'}
+            </span>
+            <h2 className="font-serif text-3xl font-bold text-navy-900 dark:text-white mt-3">
+              {isKn ? 'ನೇರ ವಕೀಲರ ಸ್ಪೀಡ್ ಡಯಲ್' : 'Direct Speed Dial to Advocates'}
+            </h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
+              {isKn
+                ? 'ಯಾವುದೇ ವಿಳಂಬವಿಲ್ಲದೆ ತಕ್ಷಣವೇ ವಕೀಲರಿಗೆ ನೇರ ಕರೆ ಮಾಡಿ ಅಥವಾ ವಾಟ್ಸಾಪ್ ಸಂದೇಶ ಕಳುಹಿಸಿ.'
+                : 'Click to call directly on phone or send an instant WhatsApp message to panel lawyers.'}
+            </p>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {PANEL_LAWYERS.map((lawyer, i) => (
+              <div
+                key={i}
+                className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-950 p-6 shadow-sm hover:shadow-xl hover:border-legalGold transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="h-12 w-12 rounded-xl bg-legalGold/10 text-legalGold font-serif font-bold text-lg flex items-center justify-center border border-legalGold/30">
+                      {lawyer.name.split(' ')[1]?.[0] || 'A'}
+                    </div>
+                    <div>
+                      <h3 className="font-serif text-lg font-bold text-navy-900 dark:text-white leading-tight">
+                        {lawyer.name}
+                      </h3>
+                      <p className="text-xs text-legalGold font-semibold">{lawyer.district}</p>
+                    </div>
+                  </div>
+
+                  <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mt-3">
+                    {isKn ? lawyer.specialtyKn : lawyer.specialty}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">{lawyer.experience}</p>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                  {/* Speed Dial Phone Button */}
+                  <a
+                    href={`tel:${lawyer.phone}`}
+                    className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition-all"
+                  >
+                    <Phone className="h-3.5 w-3.5" />
+                    <span>{isKn ? 'ನೇರ ಕರೆ ಮಾಡಿ:' : 'Call Speed Dial:'} {lawyer.phone}</span>
+                  </a>
+
+                  {/* WhatsApp Button */}
+                  <a
+                    href={`https://wa.me/91${lawyer.phone}?text=${encodeURIComponent('Hello Adv ' + lawyer.name + ', I need legal guidance regarding my case.')}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full inline-flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-slate-100 dark:bg-navy-800 hover:bg-emerald-500/20 text-slate-800 dark:text-slate-200 font-semibold text-xs border border-slate-200 dark:border-slate-700 transition-all"
+                  >
+                    <MessageSquare className="h-3.5 w-3.5 text-emerald-500" />
+                    <span>WhatsApp</span>
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Complaint Form & Info Section */}
       <section className="bg-white dark:bg-navy-950 py-12 md:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
@@ -97,6 +206,9 @@ export default function Contact() {
               ))}
             </div>
             <form className="grid gap-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-6 sm:p-8 shadow-sm glass-panel" onSubmit={submitComplaint}>
+              <h3 className="font-serif text-2xl font-bold text-navy-900 dark:text-white mb-2">
+                {isKn ? 'ಅಧಿಕೃತ ದೂರು / ಮನವಿ ಸಲ್ಲಿಸಿ' : 'Submit Official Grievance'}
+              </h3>
               <input className={inputClassName} name="name" onChange={updateValue} placeholder={t('contact.namePlaceholder')} value={values.name} />
               <input className={inputClassName} name="contact" onChange={updateValue} placeholder={t('contact.contactPlaceholder')} value={values.contact} />
               <select className={inputClassName} name="complaint_type" onChange={updateValue} value={values.complaint_type}>

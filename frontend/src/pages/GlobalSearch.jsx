@@ -170,7 +170,7 @@ export default function GlobalSearch() {
 
               <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 dark:border-slate-800 pt-6">
                 <p className="text-xs text-slate-400 italic">
-                  ⚖️ {aiAnswer.disclaimer || (isKn ? 'ಸೂಚನೆ: ಇದು ಸಾರ್ವಜನಿಕ ಕಾನೂನು ಅರಿವಿಗಾಗಿ ನೀಡಲಾದ ಮಾಹಿತಿಯಾಗಿದೆ.' : 'Legal Disclaimer: Provided for public legal awareness.')}
+                  ️ {aiAnswer.disclaimer || (isKn ? 'ಸೂಚನೆ: ಇದು ಸಾರ್ವಜನಿಕ ಕಾನೂನು ಅರಿವಿಗಾಗಿ ನೀಡಲಾದ ಮಾಹಿತಿಯಾಗಿದೆ.' : 'Legal Disclaimer: Provided for public legal awareness.')}
                 </p>
                 <Link
                   to="/ai-legal-guidance"

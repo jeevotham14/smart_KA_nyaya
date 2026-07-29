@@ -367,7 +367,7 @@ export default function DocumentGenerator() {
           >
             {[
               { id: 'All', label: isKn ? 'ಎಲ್ಲಾ ದಾಖಲೆಗಳು' : 'All Documents' },
-              { id: 'Popular', label: isKn ? '🔥 ಜನಪ್ರಿಯ' : '🔥 Popular' },
+              { id: 'Popular', label: isKn ? ' ಜನಪ್ರಿಯ' : ' Popular' },
               { id: 'Favorites', label: isKn ? '⭐ ನೆಚ್ಚಿನ ದಾಖಲೆಗಳು' : '⭐ Pinned / Favorites' }
             ].map((filter) => (
               <button
@@ -570,10 +570,15 @@ export default function DocumentGenerator() {
                       return (
                         <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-legalGold/40 bg-white dark:bg-navy-900 p-4 shadow-sm">
                           <div>
-                            <h5 className="font-bold text-navy-900 dark:text-white flex items-center gap-2">
-                              {docObj.icon && <docObj.icon className="h-4 w-4 text-legalGold" />}
-                              {isKn && docObj.titleKn ? docObj.titleKn : docObj.title}
-                            </h5>
+                            <div className="flex items-center gap-2">
+                              <h5 className="font-bold text-navy-900 dark:text-white flex items-center gap-2">
+                                {docObj.icon && <docObj.icon className="h-4 w-4 text-legalGold" />}
+                                {isKn && docObj.titleKn ? docObj.titleKn : docObj.title}
+                              </h5>
+                              <span className="text-xs font-bold text-legalGold bg-legalGold/10 px-2 py-0.5 rounded border border-legalGold/20">
+                                {sug.confidence || 95}% Match
+                              </span>
+                            </div>
                             <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">{sug.reason}</p>
                           </div>
                           <button
@@ -700,7 +705,7 @@ export default function DocumentGenerator() {
                             {/* Title & Description */}
                             <h3 className="font-serif text-lg font-bold text-navy-900 dark:text-white group-hover:text-legalGold transition-colors flex items-center gap-1.5">
                               {title}
-                              {doc.popular && <span className="text-xs text-amber-500">🔥</span>}
+                              {doc.popular && <span className="text-xs text-amber-500"></span>}
                             </h3>
                             <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400 line-clamp-2">
                               {shortDesc}

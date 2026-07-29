@@ -166,6 +166,15 @@ export const legalApi = {
     const { data } = await api.post('/api/documents/classify', payload);
     return data;
   },
+  speechToText: async (audioBlob, language = 'kn-IN') => {
+    const formData = new FormData();
+    formData.append('file', audioBlob, 'recording.webm');
+    formData.append('language', language);
+    const { data } = await aiApi.post('/api/ai/asr', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return data; // { transcript, language }
+  },
   searchDirectory: async ({ district, taluk, serviceType, q }) => {
     const { data } = await api.get('/api/directory/search', {
       params: {

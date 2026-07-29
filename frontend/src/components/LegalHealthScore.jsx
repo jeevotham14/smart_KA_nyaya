@@ -95,7 +95,7 @@ export default function LegalHealthScore({ score }) {
       )}
 
       <p className="mt-4 rounded-xl bg-slate-50 p-2.5 text-center text-[10px] text-slate-400">
-        ⚠️ This is an AI-assisted assessment and does NOT constitute legal advice. Consult a qualified advocate for official guidance.
+        ️ This is an AI-assisted assessment and does NOT constitute legal advice. Consult a qualified advocate for official guidance.
       </p>
     </div>
   );
