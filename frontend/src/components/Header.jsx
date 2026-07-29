@@ -63,7 +63,7 @@ export default function Header() {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 text-white transition-all duration-500 ${
+        className={`relative z-50 text-white transition-all duration-500 ${
           scrolled
             ? 'header-glass shadow-lg shadow-navy-900/20'
             : 'bg-navy-900 shadow-lg shadow-navy-900/15'
