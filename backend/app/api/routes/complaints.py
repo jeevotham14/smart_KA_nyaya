@@ -67,9 +67,9 @@ Smart Karnataka Nyaya Team
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
             server.login(sender_email, sender_pass)
             server.send_message(msg)
-        print(f"Successfully sent complaint email to {target_email}")
+        print(f"Successfully sent complaint email to {target_email}", flush=True)
     except Exception as e:
-        print(f"Failed to send email to {target_email}: {e}")
+        print(f"Failed to send email to {target_email}: {e}", flush=True)
 
 @router.post("", response_model=ComplaintRead)
 def create_complaint(payload: ComplaintCreate, request: Request, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
