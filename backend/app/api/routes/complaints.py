@@ -63,13 +63,15 @@ Smart Karnataka Nyaya Team
     msg['To'] = target_email
 
     try:
-        # Connect to Gmail SMTP server
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        # Connect to Gmail SMTP server with explicit 10s timeout
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
             server.login(sender_email, sender_pass)
             server.send_message(msg)
         print(f"Successfully sent complaint email to {target_email}", flush=True)
     except Exception as e:
         print(f"Failed to send email to {target_email}: {e}", flush=True)
+
+import threading
 
 @router.post("", response_model=ComplaintRead)
 def create_complaint(payload: ComplaintCreate, request: Request, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
@@ -87,16 +89,21 @@ def create_complaint(payload: ComplaintCreate, request: Request, background_task
     db.commit()
     db.refresh(row)
     
-    # Dispatch email synchronously to guarantee delivery before returning response
+    # Dispatch email in a dedicated background daemon thread for 0ms delay & no Axios timeout
     try:
-        send_complaint_email_task(
-            str(row.complaint_id), 
-            row.complaint_type, 
-            row.description, 
-            row.routed_authority
+        t = threading.Thread(
+            target=send_complaint_email_task,
+            args=(
+                str(row.complaint_id), 
+                row.complaint_type, 
+                row.description, 
+                row.routed_authority
+            ),
+            daemon=True
         )
+        t.start()
     except Exception as err:
-        print(f"Error sending email: {err}", flush=True)
+        print(f"Error starting email thread: {err}", flush=True)
     
     return row
 
