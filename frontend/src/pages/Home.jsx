@@ -1,16 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  ArrowRight, BookOpen, Building2, CheckCircle2, FileText, Gavel,
-  Landmark, MessageSquare, Scale, Search, Shield, ShieldAlert, Zap, Loader2, Sparkles
+  ArrowRight, FileText, Mic, Scale, Shield, Zap, Loader2, Sparkles, MessageSquare
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AlertBanner from '../components/AlertBanner.jsx';
 import AnimatedSection from '../components/AnimatedSection.jsx';
 import GlassCard from '../components/GlassCard.jsx';
-import SectionHeader from '../components/SectionHeader.jsx';
-import ServiceCard from '../components/ServiceCard.jsx';
-import { services } from '../data/mockData.js';
 import { legalApi } from '../services/api.js';
 
 /* ── Animated counter hook ── */
@@ -88,38 +84,38 @@ export default function Home() {
     }
   };
 
-  const translatedServices = [
-    { ...services[0], title: t('services.aiGuidance'), description: t('services.aiGuidanceDesc') },
-    { ...services[1], title: t('services.womenProtection'), description: t('services.womenProtectionDesc') },
-    { ...services[2], title: t('services.freeLegalAid'), description: t('services.freeLegalAidDesc') },
-    { ...services[3], title: t('services.documentAssistance'), description: t('services.documentAssistanceDesc') },
-    { ...services[4], title: t('services.directoryLocator'), description: t('services.directoryLocatorDesc') },
-    { ...services[5], title: t('services.caseTracking'), description: t('services.caseTrackingDesc') },
-  ];
-
-  const howItWorks = [
+  // 3-card "What We Do" section — focused, not a feature dump
+  const whatWeDo = [
     {
-      icon: MessageSquare,
-      title: isKn ? 'ನಿಮ್ಮ ಸಮಸ್ಯೆಯನ್ನು ವಿವರಿಸಿ' : 'Describe Your Issue',
-      desc: isKn ? 'ನಿಮ್ಮ ಕಾನೂನು ಸಮಸ್ಯೆಯನ್ನು ಸರಳ ಭಾಷೆಯಲ್ಲಿ — ಕನ್ನಡ ಅಥವಾ ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ ತಿಳಿಸಿ.' : 'Tell us about your legal problem in plain language — in English or Kannada.',
+      icon: Scale,
+      color: 'text-legalGold bg-legalGold/10',
+      title: isKn ? 'AI ಕಾನೂನು ಮಾರ್ಗದರ್ಶನ' : 'AI Legal Guidance',
+      desc: isKn
+        ? 'ನಿಮ್ಮ ಸನ್ನಿವೇಶ ವಿವರಿಸಿ — AI ಅನ್ವಯವಾಗುವ ಕಾನೂನು, ಹಕ್ಕುಗಳು ಮತ್ತು ತಕ್ಷಣದ ಮುಂದಿನ ಹೆಜ್ಜೆಗಳನ್ನು ಸ್ಪಷ್ಟ ಭಾಷೆಯಲ್ಲಿ ವಿವರಿಸುತ್ತದೆ.'
+        : 'Describe your situation and our AI instantly explains applicable laws, your rights, and the clearest next steps in plain language.',
+      path: '/ai-legal-guidance',
+      cta: isKn ? 'ಮಾರ್ಗದರ್ಶನ ಪಡೆಯಿರಿ' : 'Get Guidance',
     },
     {
-      icon: Zap,
-      title: isKn ? 'AI ವಿಶ್ಲೇಷಣೆ' : 'AI Analyzes',
-      desc: isKn ? 'ನಮ್ಮ AI ಅನ್ವಯವಾಗುವ ಕಾನೂನುಗಳು, ಹಕ್ಕುಗಳು ಮತ್ತು ಉತ್ತಮ ಮುಂದಿನ ಹೆಜ್ಜೆಯನ್ನು ಗುರುತಿಸುತ್ತದೆ.' : 'Our AI identifies applicable laws, rights, and recommends the best course of action.',
+      icon: Shield,
+      color: 'text-alertRed bg-red-50 dark:bg-red-900/20',
+      title: isKn ? 'ಮಹಿಳಾ ಸಂರಕ್ಷಣೆ' : 'Women Protection',
+      desc: isKn
+        ? 'DV ಕಾಯ್ದೆ, POCSO, ಗೃಹ ಹಿಂಸೆ — ನಿಮ್ಮ ಜಿಲ್ಲೆಯಲ್ಲಿ ಹತ್ತಿರದ ಸುರಕ್ಷತಾ ಕೇಂದ್ರಗಳು ಮತ್ತು ತುರ್ತು ಸಂಖ್ಯೆಗಳನ್ನು ತಕ್ಷಣ ಪಡೆಯಿರಿ.'
+        : 'DV Act, POCSO, domestic violence — instantly find nearby safety centres in your district and emergency numbers.',
+      path: '/women-protection',
+      cta: isKn ? 'ಸಹಾಯ ಪಡೆಯಿರಿ' : 'Get Help Now',
     },
     {
       icon: FileText,
-      title: isKn ? 'ಮಾರ್ಗದರ್ಶನ & ದಾಖಲೆಗಳನ್ನು ಪಡೆಯಿರಿ' : 'Get Guidance & Documents',
-      desc: isKn ? 'ಹಂತ-ಹಂತದ ಮಾರ್ಗದರ್ಶನ ಪಡೆಯಿರಿ, ಕಾನೂನು ದಾಖಲೆಗಳನ್ನು ರಚಿಸಿ, ಮತ್ತು ಪ್ರಾಧಿಕಾರಗಳನ್ನು ಸಂಪರ್ಕಿಸಿ.' : 'Receive step-by-step guidance, generate legal documents, and connect with authorities.',
+      color: 'text-aidGreen bg-green-50 dark:bg-green-900/20',
+      title: isKn ? 'ಉಚಿತ ಕಾನೂನು ನೆರವು' : 'Free Legal Aid',
+      desc: isKn
+        ? 'Section 12 LSA 1987 ಅಡಿ ಅರ್ಹತೆ ತಕ್ಷಣ ತಿಳಿಯಿರಿ ಮತ್ತು ನಿಮ್ಮ ಜಿಲ್ಲಾ ಕಾನೂನು ಸೇವಾ ಪ್ರಾಧಿಕಾರಕ್ಕೆ DLSA ಅರ್ಜಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.'
+        : 'Check your eligibility under Section 12 LSA 1987 instantly, then download a DLSA application for your district.',
+      path: '/legal-aid',
+      cta: isKn ? 'ಅರ್ಹತೆ ಪರೀಕ್ಷಿಸಿ' : 'Check Eligibility',
     },
-  ];
-
-  const quickActions = [
-    { icon: Shield, title: isKn ? 'ತುರ್ತು ಸಹಾಯ' : 'Emergency Help', desc: isKn ? 'ತುರ್ತು ಸನ್ನಿವೇಶಗಳಿಗೆ ತಕ್ಷಣದ ಕಾನೂನು ಮತ್ತು ಸುರಕ್ಷತೆ ಸಹಾಯ' : 'Immediate legal assistance for urgent situations', path: '/women-protection', color: 'text-alertRed' },
-    { icon: FileText, title: isKn ? 'ದಾಖಲೆಗಳನ್ನು ರಚಿಸಿ' : 'Generate Documents', desc: isKn ? 'ದೂರುಗಳು, ನೋಟೀಸ್‌ಗಳು ಮತ್ತು ಕಾನೂನು ಅರ್ಜಿಗಳನ್ನು ಸಿದ್ಧಪಡಿಸಿ' : 'Create complaints, notices, and legal applications', path: '/document-generator', color: 'text-legalGold' },
-    { icon: Scale, title: isKn ? 'ಕಾನೂನು ನೆರವು ಪರಿಶೀಲಿಸಿ' : 'Check Legal Aid', desc: isKn ? 'ಉಚಿತ ಕಾನೂನು ಸೇವೆಗಳಿಗೆ ನಿಮ್ಮ ಅರ್ಹತೆ ಪರಿಶೀಲಿಸಿ' : 'Find out if you qualify for free legal services', path: '/legal-aid', color: 'text-aidGreen' },
-    { icon: Search, title: isKn ? 'ಪ್ರಕರಣ ಟ್ರ್ಯಾಕ್ ಮಾಡಿ' : 'Track Your Case', desc: isKn ? 'ಪ್ರಕರಣದ ಸ್ಥಿತಿ, ವಿಚಾರಣೆ ದಿನಾಂಕಗಳು ಮತ್ತು ಸಮಯವನ್ನು ವೀಕ್ಷಿಸಿ' : 'Monitor case status, hearings, and timelines', path: '/case-tracker', color: 'text-navy-700 dark:text-blue-400' },
   ];
 
   return (
@@ -269,27 +265,35 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Quick Action Cards ── */}
+      {/* ── What We Do — 3 focused cards ── */}
       <AnimatedSection>
-        <section className="py-12 md:py-16">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {quickActions.map((action, i) => {
-                const Icon = action.icon;
+        <section className="py-14 md:py-20">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-10">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-legalGold">
+                {isKn ? 'ಸೇವೆಗಳು' : 'What We Do'}
+              </p>
+              <h2 className="mt-2 font-serif text-2xl font-bold text-navy-900 dark:text-white sm:text-3xl">
+                {isKn ? 'ನಿಮಗೆ ಬೇಕಾದ ಕಾನೂನು ನೆರವು' : 'Legal help that actually reaches you'}
+              </h2>
+            </div>
+            <div className="grid gap-6 sm:grid-cols-3">
+              {whatWeDo.map((card, i) => {
+                const Icon = card.icon;
                 return (
-                  <Link key={i} to={action.path} className="group">
-                    <GlassCard className="h-full p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-legalGold">
-                      <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 dark:bg-navy-800 ${action.color}`}>
-                        <Icon className="h-6 w-6" />
+                  <Link key={i} to={card.path} className="group">
+                    <GlassCard className="h-full p-7 flex flex-col transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-legalGold">
+                      <div className={`mb-5 flex h-13 w-13 items-center justify-center rounded-2xl ${card.color} p-3`}>
+                        <Icon className="h-7 w-7" />
                       </div>
                       <h3 className="font-serif text-lg font-bold text-navy-900 dark:text-white group-hover:text-legalGold transition-colors">
-                        {action.title}
+                        {card.title}
                       </h3>
-                      <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-                        {action.desc}
+                      <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400 flex-1">
+                        {card.desc}
                       </p>
-                      <div className="mt-4 flex items-center gap-1 text-xs font-bold text-legalGold group-hover:translate-x-1 transition-transform">
-                        <span>{isKn ? 'ಸೇವೆ ಪ್ರಾರಂಭಿಸಿ' : 'Get Started'}</span>
+                      <div className="mt-5 flex items-center gap-1.5 text-xs font-bold text-legalGold group-hover:translate-x-1 transition-transform">
+                        <span>{card.cta}</span>
                         <ArrowRight className="h-3.5 w-3.5" />
                       </div>
                     </GlassCard>
@@ -301,53 +305,31 @@ export default function Home() {
         </section>
       </AnimatedSection>
 
-      {/* ── Public Legal Assistance Services ── */}
+      {/* ── Voice Assistant CTA Banner ── */}
       <AnimatedSection>
-        <section className="py-16 md:py-24 bg-slate-100/50 dark:bg-navy-900/50">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <SectionHeader
-              eyebrow={t('home.servicesEyebrow')}
-              title={t('home.servicesTitle')}
-              description={t('home.servicesDesc')}
-            />
-            <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {translatedServices.map((service, index) => (
-                <ServiceCard key={service.path} {...service} index={index} />
-              ))}
-            </div>
-          </div>
-        </section>
-      </AnimatedSection>
-
-      {/* ── How It Works ── */}
-      <AnimatedSection>
-        <section className="py-16 md:py-24">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <SectionHeader
-              eyebrow={isKn ? 'ಸರಳ ಪ್ರಕ್ರಿಯೆ' : 'Simple Process'}
-              title={isKn ? 'ವೇದಿಕೆ ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ?' : 'How Smart Nyaya Works'}
-              description={isKn ? 'ಕಾನೂನು ಜಾಗೃತಿ ಮತ್ತು ಸಹಾಯ ಪಡೆಯಲು ಮೂರು ಸರಳ ಹೆಜ್ಜೆಗಳು' : 'Three simple steps to access legal awareness and assistance'}
-            />
-            <div className="mt-12 grid gap-8 md:grid-cols-3">
-              {howItWorks.map((step, i) => {
-                const Icon = step.icon;
-                return (
-                  <GlassCard key={i} className="relative p-8 text-center">
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-legalGold text-navy-950 font-bold text-sm">
-                      {i + 1}
-                    </div>
-                    <div className="mx-auto mb-6 mt-2 flex h-16 w-16 items-center justify-center rounded-2xl bg-legalGold/10 text-legalGold">
-                      <Icon className="h-8 w-8" />
-                    </div>
-                    <h3 className="font-serif text-xl font-bold text-navy-900 dark:text-white">
-                      {step.title}
-                    </h3>
-                    <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                      {step.desc}
-                    </p>
-                  </GlassCard>
-                );
-              })}
+        <section className="pb-14 md:pb-20">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-navy-900 to-navy-800 border border-legalGold/30 p-8 md:p-10 flex flex-col md:flex-row items-center gap-6 shadow-xl">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-legalGold/15 border border-legalGold/30">
+                <Mic className="h-8 w-8 text-legalGold" />
+              </div>
+              <div className="flex-1 text-center md:text-left">
+                <h3 className="font-serif text-xl font-bold text-white">
+                  {isKn ? 'ಕನ್ನಡದಲ್ಲಿ ಮಾತನಾಡಿ, AI ಉತ್ತರ ನೀಡುತ್ತದೆ' : 'Speak in Kannada — AI responds instantly'}
+                </h3>
+                <p className="mt-2 text-sm text-slate-300 max-w-xl">
+                  {isKn
+                    ? 'ಟೈಪ್ ಮಾಡಲು ಕಷ್ಟವಾದರೆ, ನಿಮ್ಮ ಸಮಸ್ಯೆಯನ್ನು ಕನ್ನಡದಲ್ಲಿ ಹೇಳಿ — Sarvam AI ಧ್ವನಿ ಗುರುತಿಸಿ ಕಾನೂನು ಮಾರ್ಗದರ್ಶನ ನೀಡುತ್ತದೆ.'
+                    : "Can't type? Speak your legal question in Kannada or English. Sarvam AI transcribes your voice and the AI responds — including speaking the answer back."}
+                </p>
+              </div>
+              <Link
+                to="/ai-legal-guidance"
+                className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-legalGold hover:bg-yellow-400 text-navy-950 font-bold text-sm px-6 py-3 transition-all shadow-md"
+              >
+                <Mic className="h-4 w-4" />
+                <span>{isKn ? 'ಧ್ವನಿ ಸಹಾಯಕ ತೆರೆಯಿರಿ' : 'Open Voice Assistant'}</span>
+              </Link>
             </div>
           </div>
         </section>

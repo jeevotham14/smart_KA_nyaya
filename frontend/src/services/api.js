@@ -105,9 +105,18 @@ export const legalApi = {
     return data;
   },
   textToSpeech: async ({ text, language }) => {
+    // Map friendly language strings to Sarvam language codes
+    const langMap = {
+      'Kannada': 'kn-IN',
+      'English': 'en-IN',
+      'Kannada + English': 'kn-IN',
+      'kn-IN': 'kn-IN',
+      'en-IN': 'en-IN',
+    };
+    const target_language_code = langMap[language] || 'en-IN';
     const { data } = await aiApi.post('/api/ai/tts', {
       text,
-      target_language_code: language,
+      target_language_code,
       speaker: 'meera'
     });
     return data;

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Bot, Languages, Scale, SendHorizontal, UserRound, Mic, MicOff, Volume2, Loader2, Phone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getApiError, legalApi } from '../services/api.js';
@@ -31,9 +31,17 @@ export default function AssistantChat() {
 
   // Audio Recording (Sarvam ASR) State
   const [isRecording, setIsRecording] = useState(false);
+  const [recordingSecs, setRecordingSecs] = useState(0);
   const [transcribing, setTranscribing] = useState(false);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const recordingTimerRef = useRef(null);
+  const messagesEndRef = useRef(null);
+
+  // Auto-scroll to latest message
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, loading, transcribing]);
 
   const chooseCategory = (item) => {
     setCategory(item.title);
@@ -52,10 +60,12 @@ export default function AssistantChat() {
       };
 
       mediaRecorderRef.current.onstop = async () => {
+        clearInterval(recordingTimerRef.current);
+        setRecordingSecs(0);
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         setTranscribing(true);
         try {
-          const langCode = language.toLowerCase().includes('kannada') ? 'kn-IN' : 'en-IN';
+          const langCode = language === 'Kannada' || language === 'Kannada + English' ? 'kn-IN' : 'en-IN';
           const res = await legalApi.speechToText(audioBlob, langCode);
           if (res.transcript) {
             setQuery(res.transcript);
@@ -74,6 +84,10 @@ export default function AssistantChat() {
 
       mediaRecorderRef.current.start();
       setIsRecording(true);
+      setRecordingSecs(0);
+      recordingTimerRef.current = setInterval(() => {
+        setRecordingSecs((s) => s + 1);
+      }, 1000);
     } catch (err) {
       console.error('Microphone access denied', err);
       setError('Microphone permission required for voice input.');
@@ -84,13 +98,13 @@ export default function AssistantChat() {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      clearInterval(recordingTimerRef.current);
     }
   };
 
   const playTTS = async (text) => {
     try {
-      const langCode = language.toLowerCase().includes('kannada') ? 'kn-IN' : 'en-IN';
-      const res = await legalApi.textToSpeech({ text, target_language_code: langCode });
+      const res = await legalApi.textToSpeech({ text, language });
       if (res.audio_base64) {
         const audio = new Audio('data:audio/wav;base64,' + res.audio_base64);
         audio.play();
@@ -254,10 +268,11 @@ export default function AssistantChat() {
             {transcribing ? (
               <div className="flex items-center gap-2 rounded-xl bg-legalGold/10 p-3 text-xs font-bold text-legalGold">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span>{isKn ? 'Sarvam AI ಧ್ವನಿಯನ್ನು ಪಠ್ಯಕ್ಕೆ ಪರಿವರ್ತಿಸುತ್ತಿದೆ...' : 'Sarvam AI transcribing your speech...'}</span>
+                <span>{isKn ? 'Sarvam AI ಧ್ವನಿಯನ್ನು ಪಠ್ಯಕ್ಕೆ ಪರಿವರ್ತಿಸುತ್ತಿದೆ...' : 'Sarvam AI is transcribing your speech...'}</span>
               </div>
             ) : null}
             {error ? <p className="rounded-xl bg-red-50 dark:bg-red-900/30 p-3 text-xs font-semibold text-alertRed dark:text-red-400">{error}</p> : null}
+            <div ref={messagesEndRef} />
           </div>
 
           <form className="border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-navy-900 p-4" onSubmit={submit}>
@@ -274,17 +289,19 @@ export default function AssistantChat() {
                 <button
                   type="button"
                   onClick={handleStopRecording}
-                  className="p-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs flex items-center justify-center animate-pulse shadow-lg"
+                  className="flex-shrink-0 flex flex-col items-center justify-center gap-0.5 p-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-[10px] animate-pulse shadow-lg min-w-[60px]"
                   title="Stop recording"
                 >
                   <MicOff className="h-5 w-5" />
+                  <span>{recordingSecs}s</span>
                 </button>
               ) : (
                 <button
                   type="button"
                   onClick={handleStartRecording}
-                  className="p-3 rounded-xl bg-slate-200 dark:bg-navy-800 hover:bg-legalGold hover:text-navy-950 text-slate-700 dark:text-white font-bold text-xs flex items-center justify-center transition-all"
-                  title={isKn ? 'Sarvam AI ಧ್ವನಿ ಇನ್‌ಪುಟ್' : 'Sarvam AI Speech Input'}
+                  disabled={transcribing || loading}
+                  className="p-3 rounded-xl bg-slate-200 dark:bg-navy-800 hover:bg-legalGold hover:text-navy-950 text-slate-700 dark:text-white font-bold text-xs flex items-center justify-center transition-all disabled:opacity-50"
+                  title={isKn ? 'Sarvam AI ಧ್ವನಿ ಇನ್‌ಪುಟ್' : 'Sarvam AI Voice Input'}
                 >
                   <Mic className="h-5 w-5" />
                 </button>
