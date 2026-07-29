@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
 import { Phone, AlertTriangle, Shield, HeartPulse, UserCheck, ShieldAlert, Monitor } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { legalApi } from '../services/api';
 
-const CATEGORIES = [
-  { id: 'domestic_violence', label: 'Domestic Violence', icon: HeartPulse },
-  { id: 'cyber_fraud', label: 'Cyber Fraud', icon: Monitor },
-  { id: 'child_abuse', label: 'Child Abuse', icon: Shield },
-  { id: 'police_harassment', label: 'Police Harassment', icon: ShieldAlert },
-  { id: 'women_safety', label: 'Women Safety', icon: UserCheck },
-  { id: 'senior_citizen_abuse', label: 'Senior Citizen Abuse', icon: AlertTriangle },
-];
-
 export default function EmergencyAssistance() {
+  const { t, i18n } = useTranslation();
+  const isKn = i18n.language === 'kn';
+
+  const CATEGORIES = [
+    { id: 'domestic_violence', label: isKn ? 'ಗೃಹ ಹಿಂಸೆ ತಡೆ ಸಹಾಯ' : 'Domestic Violence', icon: HeartPulse },
+    { id: 'cyber_fraud', label: isKn ? 'ಸೈಬರ್ ವಂಚನೆ ನೆರವು' : 'Cyber Fraud', icon: Monitor },
+    { id: 'child_abuse', label: isKn ? 'ಮಕ್ಕಳ ಸಂರಕ್ಷಣೆ ಸಹಾಯ' : 'Child Abuse', icon: Shield },
+    { id: 'police_harassment', label: isKn ? 'ಪೊಲೀಸ್ ಕುಂದುಕೊರತೆ' : 'Police Harassment', icon: ShieldAlert },
+    { id: 'women_safety', label: isKn ? 'ಮಹಿಳಾ ಸುರಕ್ಷತೆ ಕೇಂದ್ರ' : 'Women Safety', icon: UserCheck },
+    { id: 'senior_citizen_abuse', label: isKn ? 'ಹಿರಿಯ ನಾಗರಿಕರ ರಕ್ಷಣೆ' : 'Senior Citizen Abuse', icon: AlertTriangle },
+  ];
+
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -43,14 +47,15 @@ export default function EmergencyAssistance() {
         <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 md:py-20 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
             <p className="inline-flex items-center gap-2 rounded-full border border-alertRed/30 bg-alertRed/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-red-400">
-              <AlertTriangle className="h-3.5 w-3.5" /> Emergency Services
+              <AlertTriangle className="h-3.5 w-3.5" /> {isKn ? 'ತುರ್ತು ಸುರಕ್ಷತೆ ಸೇವೆಗಳು' : 'Emergency Services'}
             </p>
             <h1 className="mt-8 font-display text-4xl font-extrabold leading-[1.1] tracking-tight text-white sm:text-5xl md:text-6xl">
-              Emergency Assistance
+              {isKn ? 'ತುರ್ತು ಸಹಾಯ ಮತ್ತು ಸಹಾಯವಾಣಿಗಳು' : 'Emergency Assistance'}
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-300">
-              If you are in immediate danger, please contact the authorities directly. 
-              Find resources for specific emergencies below.
+              {isKn
+                ? 'ತಕ್ಷಣದ ಅಪಾಯವಿದ್ದರೆ ತಕ್ಷಣ ಪೊಲೀಸ್ ಅಥವಾ ತುರ್ತು ಸಹಾಯವಾಣಿಗೆ ಕರೆ ಮಾಡಿ. ನಿರ್ದಿಷ್ಟ ತುರ್ತು ಪರಿಸ್ಥಿತಿಗಳಿಗೆ ಬೆಂಬಲ ಸಂಪನ್ಮೂಲಗಳನ್ನು ಕೆಳಗೆ ಆಯ್ಕೆಮಾಡಿ.'
+                : 'If you are in immediate danger, please contact the authorities directly. Find resources for specific emergencies below.'}
             </p>
           </div>
         </div>
@@ -60,26 +65,32 @@ export default function EmergencyAssistance() {
       <div className="mx-auto max-w-5xl px-4 py-12">
         <div className="mb-12 rounded-3xl bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 p-8 sm:p-10 text-center shadow-sm glass-panel">
           <AlertTriangle className="mx-auto mb-6 h-16 w-16 text-alertRed dark:text-red-500 animate-pulse" />
-          <h2 className="mb-4 text-3xl font-bold text-navy-900 dark:text-white">National Helplines</h2>
-          <p className="mb-8 text-lg text-slate-700 dark:text-slate-300">Tap to call immediately from your device</p>
+          <h2 className="mb-4 text-3xl font-bold text-navy-900 dark:text-white">
+            {isKn ? 'ರಾಷ್ಟ್ರೀಯ ಮತ್ತು ಕರ್ನಾಟಕ ತುರ್ತು ಸಹಾಯವಾಣಿಗಳು' : 'National Helplines'}
+          </h2>
+          <p className="mb-8 text-lg text-slate-700 dark:text-slate-300">
+            {isKn ? 'ನಿಮ್ಮ ಮೊಬೈಲ್‌ನಿಂದ ತಕ್ಷಣ ಕರೆ ಮಾಡಲು ಸ್ಪರ್ಶಿಸಿ' : 'Tap to call immediately from your device'}
+          </p>
           
           <div className="flex flex-wrap justify-center gap-4">
             <a href="tel:112" className="flex items-center gap-2 rounded-xl bg-alertRed px-8 py-4 text-xl font-bold text-white transition-all hover:bg-red-700 hover:shadow-lg hover:-translate-y-1">
               <Phone className="h-6 w-6" />
-              112 - National Emergency
+              {isKn ? '112 - ರಾಷ್ಟ್ರೀಯ ತುರ್ತು' : '112 - National Emergency'}
             </a>
             <a href="tel:181" className="flex items-center gap-2 rounded-xl bg-pink-600 px-8 py-4 text-xl font-bold text-white transition-all hover:bg-pink-700 hover:shadow-lg hover:-translate-y-1">
               <Phone className="h-6 w-6" />
-              181 - Women Helpline
+              {isKn ? '181 - ಮಹಿಳಾ ಸಹಾಯವಾಣಿ' : '181 - Women Helpline'}
             </a>
             <a href="tel:1098" className="flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-4 text-xl font-bold text-white transition-all hover:bg-blue-700 hover:shadow-lg hover:-translate-y-1">
               <Phone className="h-6 w-6" />
-              1098 - Child Helpline
+              {isKn ? '1098 - ಚೈಲ್ಡ್‌ಲೈನ್ (ಮಕ್ಕಳು)' : '1098 - Child Helpline'}
             </a>
           </div>
         </div>
 
-        <h2 className="mb-8 text-2xl font-serif font-bold text-navy-900 dark:text-white text-center">Select a Category for Specific Resources</h2>
+        <h2 className="mb-8 text-2xl font-serif font-bold text-navy-900 dark:text-white text-center">
+          {isKn ? 'ನಿರ್ದಿಷ್ಟ ತುರ್ತು ಸಂಪನ್ಮೂಲಗಳಿಗಾಗಿ ವಿಭಾಗವನ್ನು ಆಯ್ಕೆಮಾಡಿ' : 'Select a Category for Specific Resources'}
+        </h2>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {CATEGORIES.map((cat) => {
             const Icon = cat.icon;
@@ -104,10 +115,12 @@ export default function EmergencyAssistance() {
 
         {selectedCategory && (
           <div className="mt-10 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-8 shadow-sm glass-panel animate-scale-in">
-            <h3 className="mb-6 text-2xl font-serif font-bold text-navy-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-4">Resources Available</h3>
+            <h3 className="mb-6 text-2xl font-serif font-bold text-navy-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-4">
+              {isKn ? 'ಲಭ್ಯವಿರುವ ಸಹಾಯ ಸಂಪನ್ಮೂಲಗಳು' : 'Resources Available'}
+            </h3>
             {loading ? (
               <div className="flex justify-center p-12 text-legalGold">
-                <span className="animate-pulse font-semibold text-lg">Loading resources...</span>
+                <span className="animate-pulse font-semibold text-lg">{isKn ? 'ಸಂಪನ್ಮೂಲಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...' : 'Loading resources...'}</span>
               </div>
             ) : resources.length > 0 ? (
               <div className="grid gap-6 md:grid-cols-2">
@@ -117,19 +130,14 @@ export default function EmergencyAssistance() {
                     <p className="text-base leading-relaxed text-slate-800 dark:text-slate-200">{res.description}</p>
                     {res.contact && (
                       <a href={`tel:${res.contact}`} className="mt-4 inline-flex items-center gap-2 rounded-lg bg-navy-900 dark:bg-navy-800 border border-slate-200 dark:border-slate-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-legalGold hover:border-legalGold transition-all">
-                        <Phone className="h-4 w-4" />
-                        Call {res.contact}
+                        <Phone className="h-4 w-4" /> {isKn ? 'ಕರೆ ಮಾಡಿ: ' : 'Call: '}{res.contact}
                       </a>
                     )}
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="p-10 text-center rounded-2xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-slate-800">
-                <AlertTriangle className="mx-auto h-12 w-12 text-slate-400 mb-4" />
-                <p className="text-lg font-medium text-slate-700 dark:text-slate-300">No specific resources found for this category.</p>
-                <p className="text-slate-500 dark:text-slate-500 mt-2">Please use the National Helplines above.</p>
-              </div>
+              <p className="text-slate-500 text-center py-6">{isKn ? 'ಲಭ್ಯವಿರುವ ಸಂಪನ್ಮೂಲಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ.' : 'No resources found for this category.'}</p>
             )}
           </div>
         )}

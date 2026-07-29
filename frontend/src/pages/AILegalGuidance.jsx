@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import AssistantChat from '../components/AssistantChat.jsx';
 
 export default function AILegalGuidance() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isKn = i18n.language === 'kn';
 
   const quickNotes = [
     [t('aiAssistant.note1Title'), t('aiAssistant.note1Desc')],
@@ -56,14 +57,18 @@ export default function AILegalGuidance() {
           
           <div className="mb-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-6 sm:p-8 shadow-sm glass-panel sm:flex sm:items-center sm:justify-between transition-all duration-300 hover:shadow-lg">
             <div>
-              <h3 className="text-lg font-bold text-navy-900 dark:text-white">Need specific legal guidance?</h3>
-              <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Try our new step-by-step guided intake process for a more accurate analysis.</p>
+              <h3 className="text-lg font-bold text-navy-900 dark:text-white">
+                {isKn ? 'ನಿರ್ದಿಷ್ಟ ಕಾನೂನು ಮಾರ್ಗದರ್ಶನ ಬೇಕೇ?' : 'Need specific legal guidance?'}
+              </h3>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                {isKn ? 'ಹೆಚ್ಚು ನಿಖರವಾದ ವಿಶ್ಲೇಷಣೆಗಾಗಿ ನಮ್ಮ ಹಂತ-ಹಂತದ ಮಾರ್ಗದರ್ಶನ ಪ್ರಕ್ರಿಯೆಯನ್ನು ಪ್ರಯತ್ನಿಸಿ.' : 'Try our new step-by-step guided intake process for a more accurate analysis.'}
+              </p>
             </div>
             <Link
               to="/guided-intake"
               className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl bg-navy-800 dark:bg-legalGold px-5 py-2.5 text-sm font-bold text-white dark:text-navy-900 shadow-sm transition-all hover:bg-navy-900 dark:hover:bg-yellow-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 sm:mt-0"
             >
-              Start Guided Intake
+              {isKn ? 'ಮಾರ್ಗದರ್ಶನ ಪ್ರಕ್ರಿಯೆ ಪ್ರಾರಂಭಿಸಿ' : 'Start Guided Intake'}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>

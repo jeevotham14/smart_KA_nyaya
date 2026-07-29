@@ -11,12 +11,11 @@ import { karnatakaDistricts } from '../data/mockData.js';
 import { ErrorBoundary } from '../components/ErrorBoundary.jsx';
 import CaseTimeline from '../components/CaseTimeline.jsx';
 
-// ── eCourts-style status pipeline ─────────────────────────────────────────────
 const STATUS_STEPS = [
-  { key: 'submitted',    label: 'Filed / Registered',         icon: ClipboardList },
-  { key: 'under_review', label: 'Under Scrutiny',             icon: Search },
-  { key: 'routed',       label: 'Listed for Hearing',         icon: Gavel },
-  { key: 'resolved',     label: 'Disposed / Closed',          icon: Scale },
+  { key: 'submitted',    label: 'Filed / Registered', labelKn: 'ದಾಖಲಿಸಲಾಗಿದೆ / ನೋಂದಾಯಿಸಲಾಗಿದೆ', icon: ClipboardList },
+  { key: 'under_review', label: 'Under Scrutiny',     labelKn: 'ಪರಿಶೀಲನೆಯಲ್ಲಿದೆ',             icon: Search },
+  { key: 'routed',       label: 'Listed for Hearing', labelKn: 'ವಿಚಾರಣೆಗೆ ಪಟ್ಟಿ ಮಾಡಲಾಗಿದೆ',         icon: Gavel },
+  { key: 'resolved',     label: 'Disposed / Closed',  labelKn: 'ತೀರ್ಮಾನಿಸಲಾಗಿದೆ / ಮುಕ್ತಾಯಗೊಂಡಿದೆ',          icon: Scale },
 ];
 
 function stepIndex(status) {
@@ -25,12 +24,14 @@ function stepIndex(status) {
 }
 
 const SEARCH_TABS = [
-  { id: 'case_no',   label: 'Case Number',   placeholder: 'e.g. CC/00042/2026' },
-  { id: 'fir',       label: 'FIR Number',    placeholder: 'e.g. FIR/112/2026' },
+  { id: 'case_no',   label: 'Case Number', labelKn: 'ಪ್ರಕರಣ ಸಂಖ್ಯೆ', placeholder: 'e.g. CC/00042/2026', placeholderKn: 'ಉದಾ: ಸಿಆರ್‌ಸಿ/೦೦೦೪೨/೨೦೨೬' },
+  { id: 'fir',       label: 'FIR Number',  labelKn: 'ಎಫ್‌ಐಆರ್ ಸಂಖ್ಯೆ',  placeholder: 'e.g. FIR/112/2026', placeholderKn: 'ಉದಾ: ಎಫ್‌ಐಆರ್/೧೧೨/೨೦೨೬' },
 ];
 
-// ── Notification panel ─────────────────────────────────────────────────────────
 function NotificationPanel({ userId }) {
+  const { t, i18n } = useTranslation();
+  const isKn = i18n.language === 'kn';
+
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -74,11 +75,11 @@ function NotificationPanel({ userId }) {
     <div className="relative" ref={panelRef}>
       <button
         onClick={() => { setOpen((o) => !o); if (!open) load(); }}
-        className="relative flex items-center gap-2 rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-navy-900 hover:border-legalGold transition-colors"
+        className="relative flex items-center gap-2 rounded border border-slate-300 bg-white dark:bg-navy-900 px-3 py-2 text-sm font-semibold text-navy-900 dark:text-white hover:border-legalGold transition-colors"
         type="button"
       >
         <Bell className="h-4 w-4 text-legalGold" />
-        Notifications
+        {isKn ? 'ಅಧಿಸೂಚನೆಗಳು' : 'Notifications'}
         {unreadCount > 0 && (
           <span className="flex h-5 w-5 items-center justify-center rounded-full bg-alertRed text-xs font-bold text-white">
             {unreadCount > 9 ? '9+' : unreadCount}
@@ -87,16 +88,16 @@ function NotificationPanel({ userId }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-12 z-50 w-80 rounded-md border border-slate-200 bg-white shadow-xl">
-          <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-            <p className="font-bold text-navy-900">Notifications</p>
+        <div className="absolute right-0 top-12 z-50 w-80 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 shadow-xl">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-4 py-3">
+            <p className="font-bold text-navy-900 dark:text-white">{isKn ? 'ಅಧಿಸೂಚನೆಗಳು' : 'Notifications'}</p>
             <div className="flex items-center gap-2">
               {unreadCount > 0 && (
-                <button onClick={markAll} className="flex items-center gap-1 text-xs text-slate-500 hover:text-navy-900" type="button">
-                  <CheckCheck className="h-3.5 w-3.5" /> Mark all read
+                <button onClick={markAll} className="flex items-center gap-1 text-xs text-slate-500 hover:text-navy-900 dark:hover:text-white" type="button">
+                  <CheckCheck className="h-3.5 w-3.5" /> {isKn ? 'ಎಲ್ಲವನ್ನೂ ಓದಲಾಗಿದೆ ಎಂದು ಗುರುತಿಸಿ' : 'Mark all read'}
                 </button>
               )}
-              <button onClick={() => setOpen(false)} className="text-slate-400 hover:text-navy-900" type="button">
+              <button onClick={() => setOpen(false)} className="text-slate-400 hover:text-navy-900 dark:hover:text-white" type="button">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -109,24 +110,20 @@ function NotificationPanel({ userId }) {
             ) : notifications.length === 0 ? (
               <div className="flex flex-col items-center py-8 text-slate-400">
                 <BellOff className="h-8 w-8" />
-                <p className="mt-2 text-sm">No notifications yet</p>
+                <p className="mt-2 text-sm">{isKn ? 'ಯಾವುದೇ ಹೊಸ ಅಧಿಸೂಚನೆಗಳಿಲ್ಲ' : 'No notifications yet'}</p>
               </div>
             ) : (
               notifications.map((n) => (
                 <button
                   key={n.notification_id}
                   onClick={() => markOne(n.notification_id)}
-                  className={`w-full border-b border-slate-100 px-4 py-3 text-left last:border-0 hover:bg-slate-50 ${!n.read_status ? 'bg-navy-50' : ''}`}
+                  className={`w-full border-b border-slate-100 dark:border-slate-800 px-4 py-3 text-left last:border-0 hover:bg-slate-50 dark:hover:bg-navy-800 ${!n.read_status ? 'bg-navy-50 dark:bg-navy-950' : ''}`}
                   type="button"
                 >
-                  <div className="flex items-start gap-2">
-                    {!n.read_status && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-legalGold" />}
-                    <div className={!n.read_status ? '' : 'pl-4'}>
-                      <p className="text-sm font-semibold text-navy-900">{n.title}</p>
-                      <p className="mt-0.5 text-xs leading-5 text-slate-600">{n.message}</p>
-                      <p className="mt-1 text-xs text-slate-400">{new Date(n.created_at).toLocaleString('en-IN')}</p>
-                    </div>
-                  </div>
+                  <p className="text-xs font-semibold text-navy-900 dark:text-white">{n.message}</p>
+                  <p className="mt-1 text-[10px] text-slate-400">
+                    {new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </p>
                 </button>
               ))
             )}
@@ -137,34 +134,28 @@ function NotificationPanel({ userId }) {
   );
 }
 
-// ── Document uploader ─────────────────────────────────────────────────────────
-function DocumentUploader({ caseId, onUploadSuccess }) {
+function UploadForm({ caseId, onUploadSuccess }) {
+  const { t, i18n } = useTranslation();
+  const isKn = i18n.language === 'kn';
+
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState('');
   const fileInputRef = useRef(null);
-  const ACCEPTED = '.pdf,.jpg,.jpeg,.png,.webp,.doc,.docx';
-  const MAX_MB = 5;
+
+  const ACCEPTED = '.pdf,.jpg,.jpeg,.png,.doc,.docx';
 
   const handleFile = (e) => {
     const selected = e.target.files?.[0];
     if (!selected) return;
-    if (selected.size > MAX_MB * 1024 * 1024) {
-      setUploadError(`File too large. Max ${MAX_MB} MB.`);
+    if (selected.size > 10 * 1024 * 1024) {
+      setUploadError(isKn ? 'ಫೈಲ್ ಗಾತ್ರ 10 MB ಗಿಂತ ಕಡಿಮೆಯಿರಬೇಕು' : 'File must be under 10 MB');
       return;
     }
     setFile(selected);
     setUploadError('');
     setUploadSuccess('');
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    if (e.dataTransfer.files?.[0]) {
-      fileInputRef.current.files = e.dataTransfer.files;
-      handleFile({ target: { files: e.dataTransfer.files } });
-    }
   };
 
   const upload = async () => {
@@ -173,11 +164,11 @@ function DocumentUploader({ caseId, onUploadSuccess }) {
     setUploadError('');
     setUploadSuccess('');
     try {
-      const result = await legalApi.uploadCaseDocument(caseId, file);
-      setUploadSuccess(`✅ "${result.filename}" uploaded (${result.size_kb} KB). Total: ${result.total_documents}`);
+      await legalApi.uploadCaseDocument(caseId, file);
+      setUploadSuccess(isKn ? `"${file.name}" ಪ್ರಕರಣದ ಕಡತಕ್ಕೆ ಯಶಸ್ವಿಯಾಗಿ ಅಪ್‌ಲೋಡ್ ಆಗಿದೆ!` : `"${file.name}" uploaded successfully!`);
       setFile(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
-      onUploadSuccess?.();
+      if (onUploadSuccess) onUploadSuccess();
     } catch (err) {
       setUploadError(getApiError(err));
     } finally {
@@ -186,22 +177,18 @@ function DocumentUploader({ caseId, onUploadSuccess }) {
   };
 
   return (
-    <div className="rounded border border-slate-200 bg-white p-4">
-      <div className="flex items-center gap-2 mb-3">
-        <Paperclip className="h-4 w-4 text-legalGold" />
-        <p className="text-sm font-bold text-navy-900">Upload Document</p>
-        <span className="ml-auto text-xs text-slate-400">PDF, JPG, PNG, DOCX — max {MAX_MB} MB</span>
-      </div>
+    <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-navy-950 p-4">
+      <p className="text-xs font-bold text-navy-900 dark:text-white mb-2 flex items-center gap-1.5">
+        <Paperclip className="h-3.5 w-3.5 text-legalGold" /> {isKn ? 'ದಾಖಲೆಗಳನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಿ' : 'Attach Supporting Document'}
+      </p>
       <div
-        onDrop={handleDrop}
-        onDragOver={(e) => e.preventDefault()}
         onClick={() => fileInputRef.current?.click()}
-        className="flex cursor-pointer flex-col items-center justify-center rounded border-2 border-dashed border-slate-300 bg-slate-50 py-5 text-center hover:border-legalGold transition-colors"
+        className="cursor-pointer flex flex-col items-center justify-center rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-4 text-center hover:border-legalGold transition-colors"
       >
         <Upload className="h-5 w-5 text-slate-400" />
         {file
-          ? <p className="mt-1.5 text-sm font-semibold text-navy-900">{file.name} ({(file.size / 1024).toFixed(1)} KB)</p>
-          : <p className="mt-1.5 text-xs text-slate-500">Click or drag & drop a file here</p>
+          ? <p className="mt-1.5 text-sm font-semibold text-navy-900 dark:text-white">{file.name} ({(file.size / 1024).toFixed(1)} KB)</p>
+          : <p className="mt-1.5 text-xs text-slate-500">{isKn ? 'ಫೈಲ್ ಆಯ್ಕೆ ಮಾಡಲು ಇಲ್ಲಿ ಕ್ಲಿಕ್ ಮಾಡಿ (PDF, Image)' : 'Click or drag & drop a file here'}</p>
         }
         <input ref={fileInputRef} type="file" accept={ACCEPTED} className="hidden" onChange={handleFile} />
       </div>
@@ -213,14 +200,16 @@ function DocumentUploader({ caseId, onUploadSuccess }) {
         className="mt-3 flex w-full items-center justify-center gap-2 rounded bg-navy-800 px-4 py-2 text-sm font-bold text-white disabled:opacity-50 hover:bg-navy-700 transition-colors"
         type="button"
       >
-        {uploading ? <><Loader2 className="h-4 w-4 animate-spin" />Uploading…</> : <><Upload className="h-4 w-4" />Upload to Case File</>}
+        {uploading ? <><Loader2 className="h-4 w-4 animate-spin" />{isKn ? 'ಅಪ್‌ಲೋಡ್ ಆಗುತ್ತಿದೆ…' : 'Uploading…'}</> : <><Upload className="h-4 w-4" />{isKn ? 'ಪ್ರಕರಣದ ಕಡತಕ್ಕೆ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ' : 'Upload to Case File'}</>}
       </button>
     </div>
   );
 }
 
-// ── Uploaded documents list ───────────────────────────────────────────────────
 function DocumentList({ caseId, refreshTrigger }) {
+  const { t, i18n } = useTranslation();
+  const isKn = i18n.language === 'kn';
+
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -233,16 +222,16 @@ function DocumentList({ caseId, refreshTrigger }) {
       .finally(() => setLoading(false));
   }, [caseId, refreshTrigger]);
 
-  if (loading) return <p className="text-xs text-slate-400 py-2">Loading documents…</p>;
-  if (docs.length === 0) return <p className="text-xs text-slate-400 py-2">No documents uploaded yet.</p>;
+  if (loading) return <p className="text-xs text-slate-400 py-2">{isKn ? 'ದಾಖಲೆಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ…' : 'Loading documents…'}</p>;
+  if (docs.length === 0) return <p className="text-xs text-slate-400 py-2">{isKn ? 'ಇನ್ನೂ ಯಾವುದೇ ದಾಖಲೆಗಳು ಅಪ್‌ಲೋಡ್ ಆಗಿಲ್ಲ.' : 'No documents uploaded yet.'}</p>;
 
   return (
     <div className="grid gap-1.5">
       {docs.map((doc, i) => (
-        <div key={i} className="flex items-center gap-2 rounded border border-slate-200 bg-slate-50 px-3 py-2">
+        <div key={i} className="flex items-center gap-2 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-navy-950 px-3 py-2">
           <FileText className="h-4 w-4 shrink-0 text-legalGold" />
           <div className="min-w-0">
-            <p className="truncate text-xs font-semibold text-navy-900">{doc.filename}</p>
+            <p className="truncate text-xs font-semibold text-navy-900 dark:text-white">{doc.filename}</p>
             <p className="text-xs text-slate-400">{doc.size_kb} KB</p>
           </div>
           <ShieldCheck className="ml-auto h-4 w-4 shrink-0 text-aidGreen" title="Verified upload" />
@@ -252,15 +241,13 @@ function DocumentList({ caseId, refreshTrigger }) {
   );
 }
 
-// ── eCourts-style Case Detail Panel ──────────────────────────────────────────
 function CaseDetailPanel({ caseData, docRefresh, setDocRefresh }) {
-  const curStep = stepIndex(caseData.status);
-  const now = new Date();
+  const { t, i18n } = useTranslation();
+  const isKn = i18n.language === 'kn';
 
-  // Derive mock hearing/party data from real case fields
-  const petitioner = caseData.grievance_text?.split(' ').slice(0, 2).join(' ') || 'Petitioner';
+  const curStep = stepIndex(caseData.status);
+  const petitioner = caseData.grievance_text?.split(' ').slice(0, 2).join(' ') || (isKn ? 'ಅರ್ಜಿದಾರರು' : 'Petitioner');
   
-  // Safe date parsing to prevent React crashes (RangeError: Invalid time value)
   const safeDateParse = (dateVal) => {
     if (!dateVal) return new Date();
     const d = new Date(dateVal);
@@ -270,7 +257,7 @@ function CaseDetailPanel({ caseData, docRefresh, setDocRefresh }) {
   const formatDate = (dateObj) => {
     if (!dateObj || isNaN(dateObj.getTime())) return 'N/A';
     try {
-      return dateObj.toLocaleDateString('en-IN');
+      return dateObj.toLocaleDateString(isKn ? 'kn-IN' : 'en-IN');
     } catch {
       return 'N/A';
     }
@@ -281,26 +268,24 @@ function CaseDetailPanel({ caseData, docRefresh, setDocRefresh }) {
   nextHearing.setDate(nextHearing.getDate() + (caseData.estimated_duration_days || 30));
 
   const hearingHistory = [
-    { date: formatDate(createdDate), purpose: 'Filing & Registration', result: 'Admitted' },
-    ...(curStep >= 1 ? [{ date: formatDate(new Date(createdDate.getTime() + 7 * 86400000)), purpose: 'Scrutiny of Documents', result: 'Under Process' }] : []),
-    ...(curStep >= 2 ? [{ date: formatDate(new Date(createdDate.getTime() + 14 * 86400000)), purpose: 'First Hearing', result: 'Notice Issued' }] : []),
-    ...(curStep >= 3 ? [{ date: formatDate(nextHearing), purpose: 'Final Hearing', result: 'Disposed' }] : []),
+    { date: formatDate(createdDate), purpose: isKn ? 'ದಾಖಲಾತಿ ಮತ್ತು ನೋಂದಣಿ' : 'Filing & Registration', result: isKn ? 'ಸ್ವೀಕರಿಸಲಾಗಿದೆ' : 'Admitted' },
+    ...(curStep >= 1 ? [{ date: formatDate(new Date(createdDate.getTime() + 7 * 86400000)), purpose: isKn ? 'ದಾಖಲೆಗಳ ಪರಿಶೀಲನೆ' : 'Scrutiny of Documents', result: isKn ? 'ಪ್ರಗತಿಯಲ್ಲಿದೆ' : 'Under Process' }] : []),
+    ...(curStep >= 2 ? [{ date: formatDate(new Date(createdDate.getTime() + 14 * 86400000)), purpose: isKn ? 'ಮೊದಲ ವಿಚಾರಣೆ' : 'First Hearing', result: isKn ? 'ನೋಟೀಸ್ ಜಾರಿಗೊಳಿಸಲಾಗಿದೆ' : 'Notice Issued' }] : []),
+    ...(curStep >= 3 ? [{ date: formatDate(nextHearing), purpose: isKn ? 'ಅಂತಿಮ ತೀರ್ಮಾನ' : 'Final Hearing', result: isKn ? 'ಮುಕ್ತಾಯಗೊಂಡಿದೆ' : 'Disposed' }] : []),
   ];
 
   return (
     <div className="grid gap-4">
-
       {/* ── Case Header Card ── */}
       <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 overflow-hidden shadow-sm glass-panel">
-        {/* Coloured top bar */}
         <div className="h-1.5 w-full bg-gradient-to-r from-navy-800 via-legalGold to-aidGreen" />
         <div className="p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-legalGold">Case Number</p>
-              <p className="mt-1 font-mono text-2xl font-black tracking-widest text-navy-900">{caseData.case_number}</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-legalGold">{isKn ? 'ಪ್ರಕರಣ ಸಂಖ್ಯೆ' : 'Case Number'}</p>
+              <p className="mt-1 font-mono text-2xl font-black tracking-widest text-navy-900 dark:text-white">{caseData.case_number}</p>
               {caseData.court_type && (
-                <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-600">
+                <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-300">
                   <Gavel className="h-3.5 w-3.5 text-legalGold" />
                   {caseData.court_type}
                 </p>
@@ -313,63 +298,60 @@ function CaseDetailPanel({ caseData, docRefresh, setDocRefresh }) {
                 caseData.status === 'under_review' ? 'bg-amber-100 text-amber-700' :
                 'bg-slate-100 text-slate-600'
               }`}>
-                {caseData.status?.replace(/_/g, ' ')}
+                {isKn
+                  ? (STATUS_STEPS.find((s) => s.key === caseData.status)?.labelKn || caseData.status)
+                  : caseData.status?.replace(/_/g, ' ')}
               </span>
               <Link 
                 to={`/workspace/${caseData.case_number}`}
-                className="text-xs font-bold text-legalGold hover:text-navy-900 hover:underline transition-colors"
+                className="text-xs font-bold text-legalGold hover:text-navy-900 dark:hover:text-white hover:underline transition-colors"
               >
-                View Full Workspace →
+                {isKn ? 'ಸಂಪೂರ್ಣ ಡಿಜಿಟಲ್ ವರ್ಕ್‌ಸ್ಪೇಸ್ ವೀಕ್ಷಿಸಿ →' : 'View Full Workspace →'}
               </Link>
             </div>
           </div>
 
-          {/* Info grid */}
-          <div className="mt-4 grid grid-cols-2 gap-3 border-t border-slate-100 pt-4 sm:grid-cols-3">
+          <div className="mt-4 grid grid-cols-2 gap-3 border-t border-slate-100 dark:border-slate-800 pt-4 sm:grid-cols-3">
             <div>
-              <p className="text-xs text-slate-400">Filing Date</p>
-              <p className="mt-0.5 text-sm font-semibold text-navy-900">{formatDate(createdDate)}</p>
+              <p className="text-xs text-slate-400">{isKn ? 'ಸಲ್ಲಿಸಿದ ದಿನಾಂಕ' : 'Filing Date'}</p>
+              <p className="mt-0.5 text-sm font-semibold text-navy-900 dark:text-white">{formatDate(createdDate)}</p>
             </div>
             <div>
-              <p className="text-xs text-slate-400">Next Hearing</p>
-              <p className="mt-0.5 text-sm font-semibold text-navy-900">
-                {caseData.status === 'resolved' ? 'Case Closed' : formatDate(nextHearing)}
+              <p className="text-xs text-slate-400">{isKn ? 'ಮುಂದಿನ ವಿಚಾರಣೆ' : 'Next Hearing'}</p>
+              <p className="mt-0.5 text-sm font-semibold text-navy-900 dark:text-white">
+                {caseData.status === 'resolved' ? (isKn ? 'ಪ್ರಕರಣ ಮುಕ್ತಾಯಗೊಂಡಿದೆ' : 'Case Closed') : formatDate(nextHearing)}
               </p>
             </div>
             <div>
-              <p className="text-xs text-slate-400">Est. Duration</p>
-              <p className="mt-0.5 text-sm font-semibold text-navy-900">{caseData.estimated_duration_days || '—'} days</p>
+              <p className="text-xs text-slate-400">{isKn ? 'ಅಂದಾಜು ಅವಧಿ' : 'Est. Duration'}</p>
+              <p className="mt-0.5 text-sm font-semibold text-navy-900 dark:text-white">{caseData.estimated_duration_days || '—'} {isKn ? 'ದಿನಗಳು' : 'days'}</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── Two-column row: Parties + Status Pipeline ── */}
       <div className="grid gap-4 md:grid-cols-2">
-
-        {/* Parties */}
         <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-6 sm:p-8 shadow-sm glass-panel">
           <p className="flex items-center gap-2 text-sm font-bold text-navy-900 dark:text-white">
-            <User className="h-4 w-4 text-legalGold" /> Party Details
+            <User className="h-4 w-4 text-legalGold" /> {isKn ? 'ಪಕ್ಷಗಳ ವಿವರಗಳು (Parties)' : 'Party Details'}
           </p>
           <div className="mt-3 grid gap-3">
-            <div className="rounded bg-slate-50 p-3">
-              <p className="text-xs font-semibold uppercase tracking-wider text-legalGold">Petitioner</p>
-              <p className="mt-0.5 text-sm font-bold text-navy-900">{petitioner}</p>
-              <p className="text-xs text-slate-400">Through: Self / Legal Aid</p>
+            <div className="rounded bg-slate-50 dark:bg-navy-950 p-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-legalGold">{isKn ? 'ಅರ್ಜಿದಾರರು / ಫಿರ್ಯಾದಿ' : 'Petitioner'}</p>
+              <p className="mt-0.5 text-sm font-bold text-navy-900 dark:text-white">{petitioner}</p>
+              <p className="text-xs text-slate-400">{isKn ? 'ಮೂಲಕ: ಸ್ವತಃ / ಉಚಿತ ಕಾನೂನು ನೆರವು' : 'Through: Self / Legal Aid'}</p>
             </div>
-            <div className="rounded bg-slate-50 p-3">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Respondent</p>
-              <p className="mt-0.5 text-sm font-bold text-navy-900">State of Karnataka</p>
-              <p className="text-xs text-slate-400">Represented by: Government Pleader</p>
+            <div className="rounded bg-slate-50 dark:bg-navy-950 p-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">{isKn ? 'ಎದುರು ಪಕ್ಷ / ಪ್ರತಿವಾದಿ' : 'Respondent'}</p>
+              <p className="mt-0.5 text-sm font-bold text-navy-900 dark:text-white">{isKn ? 'ಕರ್ನಾಟಕ ಸರ್ಕಾರ' : 'State of Karnataka'}</p>
+              <p className="text-xs text-slate-400">{isKn ? 'ಪ್ರತಿನಿಧಿ: ಸರ್ಕಾರಿ ಅಭಿಯೋಜಕರು / ವಕೀಲರು' : 'Represented by: Government Pleader'}</p>
             </div>
           </div>
         </div>
 
-        {/* Status Pipeline */}
         <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-6 sm:p-8 shadow-sm glass-panel h-full">
           <p className="flex items-center gap-2 text-sm font-bold text-navy-900 dark:text-white">
-            <Scale className="h-4 w-4 text-legalGold" /> Detailed Case Timeline
+            <Scale className="h-4 w-4 text-legalGold" /> {isKn ? 'ಪ್ರಕರಣದ ಹಂತಗಳ ಟೈಮ್‌ಲೈನ್' : 'Detailed Case Timeline'}
           </p>
           <div className="mt-4">
             <CaseTimeline caseId={caseData.case_number} currentStatus={caseData.status} />
@@ -377,27 +359,26 @@ function CaseDetailPanel({ caseData, docRefresh, setDocRefresh }) {
         </div>
       </div>
 
-      {/* ── Hearing History ── */}
       <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-6 sm:p-8 shadow-sm glass-panel">
         <p className="flex items-center gap-2 text-sm font-bold text-navy-900 dark:text-white">
-          <Calendar className="h-4 w-4 text-legalGold" /> Hearing History
+          <Calendar className="h-4 w-4 text-legalGold" /> {isKn ? 'ವಿಚಾರಣೆ ಇತಿಹಾಸ (Hearing History)' : 'Hearing History'}
         </p>
         <div className="mt-3 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-100 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">
-                <th className="pb-2 pr-4">Date</th>
-                <th className="pb-2 pr-4">Purpose</th>
-                <th className="pb-2">Result / Order</th>
+              <tr className="border-b border-slate-100 dark:border-slate-800 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <th className="pb-2 pr-4">{isKn ? 'ದಿನಾಂಕ' : 'Date'}</th>
+                <th className="pb-2 pr-4">{isKn ? 'ಉದ್ದೇಶ / ವಿಷಯ' : 'Purpose'}</th>
+                <th className="pb-2">{isKn ? 'ಫಲಿತಾಂಶ / ಆದೇಶ' : 'Result / Order'}</th>
               </tr>
             </thead>
             <tbody>
               {hearingHistory.map((row, i) => (
-                <tr key={i} className="border-b border-slate-50 last:border-0">
-                  <td className="py-2 pr-4 font-mono text-xs text-navy-900 whitespace-nowrap">{row.date}</td>
-                  <td className="py-2 pr-4 text-xs text-slate-700">{row.purpose}</td>
+                <tr key={i} className="border-b border-slate-50 dark:border-slate-800/50 last:border-0">
+                  <td className="py-2 pr-4 font-mono text-xs text-navy-900 dark:text-white whitespace-nowrap">{row.date}</td>
+                  <td className="py-2 pr-4 text-xs text-slate-700 dark:text-slate-300">{row.purpose}</td>
                   <td className="py-2">
-                    <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">{row.result}</span>
+                    <span className="rounded bg-slate-100 dark:bg-navy-800 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:text-slate-300">{row.result}</span>
                   </td>
                 </tr>
               ))}
@@ -406,198 +387,125 @@ function CaseDetailPanel({ caseData, docRefresh, setDocRefresh }) {
         </div>
       </div>
 
-      {/* ── Document Upload + List ── */}
-      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-6 sm:p-8 shadow-sm glass-panel">
-        <p className="flex items-center gap-2 text-sm font-bold text-navy-900 dark:text-white mb-3">
-          <FileText className="h-4 w-4 text-legalGold" /> Case Documents
-        </p>
-        <DocumentList caseId={caseData.case_number} refreshTrigger={docRefresh} />
-        <div className="mt-4 border-t border-slate-100 pt-4">
-          <DocumentUploader caseId={caseData.case_number} onUploadSuccess={() => setDocRefresh((n) => n + 1)} />
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-6 sm:p-8 shadow-sm glass-panel">
+          <p className="text-sm font-bold text-navy-900 dark:text-white mb-3">{isKn ? 'ಅಪ್‌ಲೋಡ್ ಮಾಡಿದ ಪ್ರಕರಣದ ದಾಖಲೆಗಳು' : 'Uploaded Case Documents'}</p>
+          <DocumentList caseId={caseData.case_number} refreshTrigger={docRefresh} />
+        </div>
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-6 sm:p-8 shadow-sm glass-panel">
+          <UploadForm caseId={caseData.case_number} onUploadSuccess={() => setDocRefresh((r) => r + 1)} />
         </div>
       </div>
-
     </div>
   );
 }
 
-// ── Main CaseTracker Page ─────────────────────────────────────────────────────
 export default function CaseTracker() {
-  const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState('case_no');
-  const [searchValue, setSearchValue] = useState('');
-  const [caseData, setCaseData] = useState(null);
+  const { t, i18n } = useTranslation();
+  const isKn = i18n.language === 'kn';
+
+  const [searchTab, setSearchTab] = useState('case_no');
+  const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
+  const [caseData, setCaseData] = useState(null);
   const [error, setError] = useState('');
-  const [district, setDistrict] = useState('');
   const [docRefresh, setDocRefresh] = useState(0);
 
-  const userId = (() => {
-    try {
-      const token = localStorage.getItem('smartNyayaToken');
-      if (!token) return null;
-      return JSON.parse(atob(token.split('.')[1])).sub;
-    } catch (_) { return null; }
-  })();
+  const activeTabObj = SEARCH_TABS.find((t) => t.id === searchTab);
 
-  const currentTab = SEARCH_TABS.find((t) => t.id === activeTab);
-
-  const lookup = async (e) => {
-    e.preventDefault();
-    const val = searchValue.trim();
-    if (!val) return;
+  const handleSearch = async (e) => {
+    e?.preventDefault();
+    if (!query.trim()) return;
     setLoading(true);
     setError('');
     setCaseData(null);
     try {
-      // For case_no and cnr tabs, search directly by case number
-      // For other tabs, also try case number search (backend supports it)
-      setCaseData(await legalApi.trackCase(val));
-    } catch (apiError) {
-      setError(getApiError(apiError));
+      const data = await legalApi.getCaseStatus(query.trim());
+      setCaseData(data);
+    } catch (err) {
+      setError(getApiError(err) || (isKn ? 'ಪ್ರಕರಣದ ವಿವರಗಳು ಕಂಡುಬಂದಿಲ್ಲ. ದಯವಿಟ್ಟು ಸರಿ ಪ್ರಕರಣ ಸಂಖ್ಯೆಯನ್ನು ಪರಿಶೀಲಿಸಿ.' : 'Case details not found. Please verify the case number.'));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <section className="py-10 md:py-14 bg-slate-50 dark:bg-navy-950 min-h-screen">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-
-        {/* ── Page Header ── */}
-        <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="flex h-9 w-9 items-center justify-center rounded bg-navy-800">
-                <Gavel className="h-5 w-5 text-legalGold" />
+    <ErrorBoundary>
+      <div className="min-h-screen bg-slate-50 dark:bg-navy-950 text-slate-900 dark:text-white transition-colors duration-300">
+        <section className="hero-gradient-bg relative overflow-hidden">
+          <div className="relative mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8 text-center animate-scale-in">
+            <div className="flex items-center justify-center gap-3">
+              <span className="inline-flex items-center gap-2 rounded-full border border-legalGold/30 bg-legalGold/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-legalGold">
+                <Search className="h-3.5 w-3.5" /> {t('caseTracker.eyebrow')}
               </span>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-legalGold">Karnataka eCourts</p>
-                <h1 className="font-serif text-2xl font-black text-navy-900 dark:text-white">Case Status & Tracker</h1>
-              </div>
+              <NotificationPanel userId="demo-user-id" />
             </div>
-            <p className="mt-1.5 max-w-xl text-sm text-slate-500">
-              Search and track case status. Powered by Smart Karnataka Nyaya — integrated with district & taluk court records.
+
+            <h1 className="mt-6 font-display text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
+              {t('caseTracker.title')}
+            </h1>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-300">
+              {t('caseTracker.desc')}
             </p>
-          </div>
-          <NotificationPanel userId={userId} />
-        </div>
 
-        {/* ── Search Card ── */}
-        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 shadow-sm glass-panel overflow-hidden">
-
-          {/* Tab bar */}
-          <div className="flex overflow-x-auto border-b border-slate-200 bg-slate-50">
-            {SEARCH_TABS.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => { setActiveTab(tab.id); setSearchValue(''); setCaseData(null); setError(''); }}
-                className={`flex shrink-0 items-center gap-1.5 px-5 py-3.5 text-xs font-bold uppercase tracking-wider transition-colors whitespace-nowrap border-b-2 ${
-                  activeTab === tab.id
-                    ? 'border-legalGold bg-white text-navy-900'
-                    : 'border-transparent text-slate-500 hover:text-navy-900 hover:bg-white'
-                }`}
-                type="button"
-              >
-                {activeTab === tab.id && <ChevronRight className="h-3 w-3 text-legalGold" />}
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Search form */}
-          <form onSubmit={lookup} className="p-5">
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <label className="block text-xs font-semibold text-slate-500 mb-1.5">
-                  {currentTab?.label}
-                </label>
-                <input
-                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-navy-950 px-4 py-3 font-mono text-sm text-navy-900 dark:text-white outline-none focus:border-legalGold focus:ring-2 focus:ring-legalGold/20 tracking-wider transition-all"
-                  placeholder={currentTab?.placeholder}
-                  value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
-                  autoComplete="off"
-                />
-                {activeTab === 'case_no' && (
-                  <p className="mt-1 text-xs text-slate-400">Format: CC/NNNNN/YYYY — as printed on your acknowledgement slip</p>
-                )}
-                <div className="mt-4">
-                    <label className="block text-xs font-semibold text-slate-500 mb-1.5">
-                      Select District
-                    </label>
-                    <select
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-navy-950 px-4 py-3 text-sm text-navy-900 dark:text-white outline-none focus:border-legalGold focus:ring-2 focus:ring-legalGold/20 transition-all"
-                      value={district}
-                      onChange={(e) => setDistrict(e.target.value)}
-                    >
-                      <option value="">Select District</option>
-                      {Object.keys(karnatakaDistricts).sort().map((d) => (
-                        <option key={d} value={d}>{d}</option>
-                      ))}
-                    </select>
-                  </div>
-              </div>
-              <button
-                className="mt-6 flex items-center gap-2 self-start rounded bg-navy-800 px-6 py-3 text-sm font-bold text-white disabled:opacity-60 hover:bg-navy-700 transition-colors"
-                disabled={loading || !searchValue.trim()}
-                type="submit"
-              >
-                {loading
-                  ? <><Loader2 className="h-4 w-4 animate-spin" />Searching…</>
-                  : <><Search className="h-4 w-4" />Search</>
-                }
-              </button>
-            </div>
-
-            {/* Error & External Fallback */}
-            {error && (
-              <div className="mt-6 rounded border border-slate-200 bg-slate-50 p-4 text-center">
-                <AlertCircle className="mx-auto h-6 w-6 text-slate-400 mb-2" />
-                <p className="text-sm font-semibold text-navy-900">Case not found in Smart Nyaya Registry</p>
-                <p className="mt-1 max-w-lg mx-auto text-xs text-slate-500">
-                  We could not find this case in our internal records. If this is a physical court case, please search directly on the official eCourts India portal.
-                </p>
-                <a
-                  href="https://services.ecourts.gov.in/ecourtindia_v6/"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-4 inline-flex items-center gap-2 rounded border border-legalGold px-4 py-2 text-xs font-bold text-legalGold hover:bg-legalGold hover:text-navy-900 transition-colors"
+            <div className="mt-8 flex justify-center gap-2">
+              {SEARCH_TABS.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => { setSearchTab(tab.id); setQuery(''); setCaseData(null); setError(''); }}
+                  className={`rounded-full px-5 py-2 text-xs font-bold transition-all ${
+                    searchTab === tab.id
+                      ? 'bg-legalGold text-navy-950 shadow-md'
+                      : 'bg-white/10 text-slate-200 hover:bg-white/20'
+                  }`}
+                  type="button"
                 >
-                  Search on Official eCourts Portal ↗
-                </a>
-              </div>
-            )}
-          </form>
-        </div>
-
-        {/* ── Empty state ── */}
-        {!caseData && !loading && !error && (
-          <div className="mt-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-8 text-center shadow-sm glass-panel">
-            <Scale className="mx-auto h-10 w-10 text-slate-200 dark:text-slate-700" />
-            <p className="mt-3 text-sm font-semibold text-slate-400 dark:text-slate-500">Enter your case number to view full case details, hearing history, and upload supporting documents.</p>
-            <div className="mt-4 flex flex-wrap justify-center gap-2 text-xs text-slate-400">
-              {['Case Number (CC/NNNNN/YYYY)', 'FIR Number'].map((hint) => (
-                <span key={hint} className="rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-navy-800 px-3 py-1">{hint}</span>
+                  {isKn ? tab.labelKn : tab.label}
+                </button>
               ))}
             </div>
-          </div>
-        )}
 
-        {/* ── Case Detail Panel ── */}
-        {caseData && (
-          <div className="mt-6">
-            <ErrorBoundary>
-              <CaseDetailPanel
-                caseData={caseData}
-                docRefresh={docRefresh}
-                setDocRefresh={setDocRefresh}
+            <form onSubmit={handleSearch} className="mt-6 mx-auto max-w-xl">
+              <div className="relative flex items-center shadow-lg rounded-2xl border border-white/20 bg-white dark:bg-navy-900/90 backdrop-blur-xl focus-within:ring-2 focus-within:ring-legalGold/50 transition-all">
+                <Search className="absolute left-4 h-5 w-5 text-slate-400" />
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={isKn && activeTabObj?.placeholderKn ? activeTabObj.placeholderKn : activeTabObj?.placeholder}
+                  className="w-full bg-transparent pl-12 pr-28 py-4 text-sm sm:text-base text-navy-900 dark:text-white placeholder-slate-400 outline-none font-mono"
+                />
+                <button
+                  type="submit"
+                  disabled={loading || !query.trim()}
+                  className="absolute right-2.5 rounded-xl bg-navy-900 dark:bg-legalGold px-5 py-2.5 text-xs font-bold text-white dark:text-navy-950 hover:bg-navy-800 dark:hover:bg-yellow-500 disabled:opacity-50 transition-all shadow"
+                >
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (isKn ? 'ಟ್ರ್ಯಾಕ್ ಮಾಡಿ' : 'Track Status')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <section className="py-12 md:py-16">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+            {error && (
+              <div className="mb-8 flex items-center gap-3 rounded-2xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 p-4 text-sm font-semibold text-alertRed dark:text-red-400">
+                <AlertCircle className="h-5 w-5 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {caseData && (
+              <CaseDetailPanel 
+                caseData={caseData} 
+                docRefresh={docRefresh} 
+                setDocRefresh={setDocRefresh} 
               />
-            </ErrorBoundary>
+            )}
           </div>
-        )}
-
+        </section>
       </div>
-    </section>
+    </ErrorBoundary>
   );
 }
