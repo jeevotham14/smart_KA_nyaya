@@ -4,7 +4,7 @@ from typing import Optional
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
-from app.services.llm_router import LLMRouter
+from app.services.llm_router import get_llm_router, TaskType
 
 router = APIRouter(prefix="/ai", tags=["AI – Guided Intake"])
 
@@ -186,20 +186,23 @@ def _compute_health_score(payload: IntakePayload) -> dict:
 
 
 @router.post("/guided-intake")
-async def guided_intake(payload: IntakePayload, db: Session = Depends(get_db)):
+def guided_intake(payload: IntakePayload, db: Session = Depends(get_db)):
     """Process a guided legal intake and return AI-generated legal guidance with health score."""
     prompt = _build_prompt(payload)
     health = _compute_health_score(payload)
 
-    llm = LLMRouter()
-    result = await llm.chat(
-        system_prompt=(
-            "You are a legal awareness assistant for the Karnataka State Legal Services Authority (KSLSA). "
-            "Provide helpful, accurate legal information referencing Indian law. "
-            "Always recommend consulting a qualified advocate for official legal action. "
-            "Format your response with clear headings and bullet points."
-        ),
-        user_message=prompt,
+    llm_router = get_llm_router()
+    system_prompt = (
+        "You are a legal awareness assistant for the Karnataka State Legal Services Authority (KSLSA). "
+        "Provide helpful, accurate legal information referencing Indian and Karnataka law. "
+        "Always recommend consulting a qualified advocate for official legal action. "
+        "Format your response with clear headings and bullet points."
+    )
+    
+    result = llm_router.route(
+        TaskType.CHAT,
+        [{"role": "user", "content": prompt}],
+        system_prompt=system_prompt,
     )
 
     suggested_docs = []
@@ -233,9 +236,11 @@ async def guided_intake(payload: IntakePayload, db: Session = Depends(get_db)):
         "or Taluk Legal Services Committee (TLSC). For emergencies: call 112 (Police) or 181 (Women Helpline)."
     )
 
+    text_output = result.get("text", "")
+
     return {
-        "guidance": result.get("content", result.get("answer", "")),
-        "answer": result.get("content", result.get("answer", "")),
+        "guidance": text_output,
+        "answer": text_output,
         "provider": result.get("provider", "unknown"),
         "model": result.get("model", "unknown"),
         "category": payload.category,
