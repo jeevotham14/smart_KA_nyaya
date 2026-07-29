@@ -157,22 +157,32 @@ export default function Home() {
                       ? 'ಉದಾ: ನನ್ನ ಭೂಮಿಯನ್ನು ಬೇರೆಯವರು ಅಕ್ರಮವಾಗಿ ಆಕ್ರಮಿಸಿಕೊಂಡಿದ್ದಾರೆ...'
                       : 'E.g., My landlord refused to return my security deposit...'
                   }
-                  className="w-full py-4 pl-5 pr-32 text-sm md:text-base text-white placeholder-slate-400 bg-transparent focus:outline-none"
+                  className="w-full py-4 pl-5 pr-44 text-sm md:text-base text-white placeholder-slate-400 bg-transparent focus:outline-none"
                 />
-                <button
-                  type="submit"
-                  disabled={classifying || !situationText.trim()}
-                  className="absolute right-2 top-2 bottom-2 px-5 rounded-xl bg-gradient-to-r from-legalGold to-yellow-500 hover:from-yellow-400 hover:to-yellow-600 text-navy-950 font-bold text-sm flex items-center gap-2 transition-all shadow-md disabled:opacity-50"
-                >
-                  {classifying ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <>
-                      <Sparkles className="h-4 w-4" />
-                      <span>{isKn ? 'ವಿಶ್ಲೇಷಿಸಿ' : 'Analyze'}</span>
-                    </>
-                  )}
-                </button>
+                <div className="absolute right-2 top-2 bottom-2 flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => navigate('/ai-legal-guidance')}
+                    className="p-2.5 rounded-xl text-slate-400 hover:text-legalGold hover:bg-legalGold/10 transition-colors"
+                    title={isKn ? 'ಧ್ವನಿ ಮೂಲಕ ಕೇಳಿ' : 'Ask via Voice'}
+                  >
+                    <Mic className="h-5 w-5" />
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={classifying || !situationText.trim()}
+                    className="h-full px-5 rounded-xl bg-gradient-to-r from-legalGold to-yellow-500 hover:from-yellow-400 hover:to-yellow-600 text-navy-950 font-bold text-sm flex items-center gap-2 transition-all shadow-md disabled:opacity-50"
+                  >
+                    {classifying ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4" />
+                        <span>{isKn ? 'ವಿಶ್ಲೇಷಿಸಿ' : 'Analyze'}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </form>
 
@@ -305,35 +315,6 @@ export default function Home() {
         </section>
       </AnimatedSection>
 
-      {/* ── Voice Assistant CTA Banner ── */}
-      <AnimatedSection>
-        <section className="pb-14 md:pb-20">
-          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-navy-900 to-navy-800 border border-legalGold/30 p-8 md:p-10 flex flex-col md:flex-row items-center gap-6 shadow-xl">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-legalGold/15 border border-legalGold/30">
-                <Mic className="h-8 w-8 text-legalGold" />
-              </div>
-              <div className="flex-1 text-center md:text-left">
-                <h3 className="font-serif text-xl font-bold text-white">
-                  {isKn ? 'ಕನ್ನಡದಲ್ಲಿ ಮಾತನಾಡಿ, AI ಉತ್ತರ ನೀಡುತ್ತದೆ' : 'Speak in Kannada — AI responds instantly'}
-                </h3>
-                <p className="mt-2 text-sm text-slate-300 max-w-xl">
-                  {isKn
-                    ? 'ಟೈಪ್ ಮಾಡಲು ಕಷ್ಟವಾದರೆ, ನಿಮ್ಮ ಸಮಸ್ಯೆಯನ್ನು ಕನ್ನಡದಲ್ಲಿ ಹೇಳಿ — Sarvam AI ಧ್ವನಿ ಗುರುತಿಸಿ ಕಾನೂನು ಮಾರ್ಗದರ್ಶನ ನೀಡುತ್ತದೆ.'
-                    : "Can't type? Speak your legal question in Kannada or English. Sarvam AI transcribes your voice and the AI responds — including speaking the answer back."}
-                </p>
-              </div>
-              <Link
-                to="/ai-legal-guidance"
-                className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-legalGold hover:bg-yellow-400 text-navy-950 font-bold text-sm px-6 py-3 transition-all shadow-md"
-              >
-                <Mic className="h-4 w-4" />
-                <span>{isKn ? 'ಧ್ವನಿ ಸಹಾಯಕ ತೆರೆಯಿರಿ' : 'Open Voice Assistant'}</span>
-              </Link>
-            </div>
-          </div>
-        </section>
-      </AnimatedSection>
     </>
   );
 }
