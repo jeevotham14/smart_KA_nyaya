@@ -76,6 +76,24 @@ class RiskAssessmentRequest(BaseModel):
     legal_category: str | None = None
 
 
+class ActionButton(BaseModel):
+    label: str
+    action: str
+    value: str | None = None
+
+
+class TailoredGuidance(BaseModel):
+    title: str
+    description: str
+    priority: str
+    actions: list[ActionButton] = []
+    recommended_documents: list[str] = []
+    recommended_resources: list[str] = []
+    directory_filter: str | None = None
+    emergency_numbers: list[str] = []
+    notes: str | None = None
+
+
 class EligibilityRequest(BaseModel):
     gender: str | None = None
     category: str | None = None
@@ -91,6 +109,8 @@ class EligibilityRequest(BaseModel):
     is_industrial_workmen: bool = False
     in_custody: bool = False
     trafficking_victim: bool = False
+    urgent_safety_concern: bool = False
+    district: str | None = None
 
 
 class EligibilityResponse(BaseModel):
@@ -102,6 +122,7 @@ class EligibilityResponse(BaseModel):
     disclaimer: str
     what_it_covers: str = ""
     alternate_paths: list[str] = []
+    tailored_guidance: TailoredGuidance | None = None
 
 
 class LegalAidApply(BaseModel):
