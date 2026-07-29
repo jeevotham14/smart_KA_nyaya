@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { Eye, FileText, Save, Shield } from 'lucide-react';
+import { Eye, FileText, Save, Shield, Plus, Trash2, ArrowUp, ArrowDown, PlusCircle, Sliders } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import FormInput from '../components/FormInput.jsx';
 import DownloadButtons from '../components/DownloadButtons.jsx';
@@ -8,6 +8,107 @@ import DocumentPreview from '../components/DocumentPreview.jsx';
 import { useDraftManager } from '../components/DraftManager.jsx';
 import { karnatakaDistricts, documentTemplates } from '../data/mockData.js';
 import { getApiError, legalApi } from '../services/api.js';
+
+function SentenceManager({ draft, setDraft }) {
+  const lines = useMemo(() => draft.split('\n'), [draft]);
+
+  const updateLine = (idx, newText) => {
+    const next = [...lines];
+    next[idx] = newText;
+    setDraft(next.join('\n'));
+  };
+
+  const removeLine = (idx) => {
+    const next = lines.filter((_, i) => i !== idx);
+    setDraft(next.join('\n'));
+  };
+
+  const addLineAfter = (idx) => {
+    const next = [...lines];
+    next.splice(idx + 1, 0, 'New clause / sentence...');
+    setDraft(next.join('\n'));
+  };
+
+  const moveLine = (idx, dir) => {
+    if ((dir === -1 && idx === 0) || (dir === 1 && idx === lines.length - 1)) return;
+    const next = [...lines];
+    const temp = next[idx];
+    next[idx] = next[idx + dir];
+    next[idx + dir] = temp;
+    setDraft(next.join('\n'));
+  };
+
+  const activeLines = lines.map((l, i) => ({ text: l, index: i })).filter((item) => item.text.trim().length > 0);
+
+  return (
+    <div className="flex-1 flex flex-col gap-3 overflow-y-auto max-h-[600px] pr-1 custom-scrollbar">
+      <div className="flex items-center justify-between bg-slate-100 dark:bg-navy-800 p-3 rounded-xl">
+        <span className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+          <Sliders className="h-3.5 w-3.5 text-legalGold" /> Sentence & Clause Manager ({activeLines.length} sentences)
+        </span>
+        <button
+          type="button"
+          onClick={() => setDraft(draft + '\nNew clause / statement.')}
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-white dark:text-navy-900 bg-navy-800 dark:bg-legalGold hover:bg-navy-700 dark:hover:bg-yellow-500 px-3 py-1.5 rounded-lg transition-all shadow-sm"
+        >
+          <Plus className="h-3.5 w-3.5" /> Add Sentence
+        </button>
+      </div>
+
+      {lines.map((line, idx) => {
+        if (!line.trim()) return null;
+        return (
+          <div key={idx} className="group relative flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-950 p-3 shadow-sm hover:border-legalGold/60 transition-all">
+            <div className="flex-1">
+              <input
+                type="text"
+                value={line}
+                onChange={(e) => updateLine(idx, e.target.value)}
+                className="w-full bg-transparent text-sm text-slate-800 dark:text-slate-200 outline-none focus:text-navy-900 dark:focus:text-white font-serif leading-relaxed"
+              />
+            </div>
+            <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity shrink-0">
+              <button
+                type="button"
+                onClick={() => moveLine(idx, -1)}
+                title="Move Up"
+                disabled={idx === 0}
+                className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-navy-800 text-slate-400 hover:text-navy-900 dark:hover:text-white disabled:opacity-30"
+              >
+                <ArrowUp className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => moveLine(idx, 1)}
+                title="Move Down"
+                disabled={idx === lines.length - 1}
+                className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-navy-800 text-slate-400 hover:text-navy-900 dark:hover:text-white disabled:opacity-30"
+              >
+                <ArrowDown className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => addLineAfter(idx)}
+                title="Insert Sentence Below"
+                className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-navy-800 text-slate-400 hover:text-legalGold"
+              >
+                <PlusCircle className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => removeLine(idx)}
+                title="Remove Sentence"
+                className="p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-900/30 text-slate-400 hover:text-alertRed transition-colors"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 const DISTRICT_NAMES = Object.keys(karnatakaDistricts).sort();
 const documentTypes = Object.keys(documentTemplates);
@@ -61,7 +162,7 @@ export default function DocumentGenerator() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [activeTab, setActiveTab] = useState('editor');
+  const [activeTab, setActiveTab] = useState('sentences');
   const { draft, setDraft, saveDraft, saved } = useDraftManager('docGenDraft', buildDraft({ type: 'Complaint' }));
   const { register, handleSubmit, watch, reset } = useForm({
     defaultValues: {
@@ -228,7 +329,14 @@ export default function DocumentGenerator() {
                 />
               </div>
               
-              <div className="mt-6 flex gap-6 border-b border-slate-200 dark:border-slate-800">
+              <div className="mt-6 flex flex-wrap gap-4 border-b border-slate-200 dark:border-slate-800">
+                <button 
+                  type="button"
+                  className={`pb-3 text-sm font-bold transition-all border-b-2 flex items-center gap-1.5 ${activeTab === 'sentences' ? 'border-legalGold text-navy-900 dark:text-legalGold' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-navy-900 dark:hover:text-white'}`}
+                  onClick={() => setActiveTab('sentences')}
+                >
+                  <Sliders className="h-3.5 w-3.5 text-legalGold" /> Add / Remove Sentences
+                </button>
                 <button 
                   type="button"
                   className={`pb-3 text-sm font-bold transition-all border-b-2 ${activeTab === 'editor' ? 'border-legalGold text-navy-900 dark:text-legalGold' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-navy-900 dark:hover:text-white'}`}
@@ -246,7 +354,9 @@ export default function DocumentGenerator() {
               </div>
 
               <div className="flex-1 mt-6 flex flex-col min-h-0">
-                {activeTab === 'editor' ? (
+                {activeTab === 'sentences' ? (
+                  <SentenceManager draft={draft} setDraft={setDraft} />
+                ) : activeTab === 'editor' ? (
                   <textarea
                     className="flex-1 w-full resize-none rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-navy-950 p-6 text-sm leading-7 text-slate-700 dark:text-slate-200 outline-none focus:border-legalGold focus:ring-2 focus:ring-legalGold/20 custom-scrollbar font-mono"
                     value={draft}
