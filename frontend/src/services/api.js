@@ -104,6 +104,14 @@ export const legalApi = {
     });
     return data;
   },
+  textToSpeech: async ({ text, language }) => {
+    const { data } = await aiApi.post('/api/ai/tts', {
+      text,
+      target_language_code: language,
+      speaker: 'meera'
+    });
+    return data;
+  },
   classifyIssue: async ({ text, language }) => {
     const { data } = await api.post('/api/ai/classify-issue', { text, language });
     return data;
@@ -152,6 +160,10 @@ export const legalApi = {
         relief: values.relief,
       },
     });
+    return data;
+  },
+  classifyDocument: async (payload) => {
+    const { data } = await api.post('/api/documents/classify', payload);
     return data;
   },
   searchDirectory: async ({ district, taluk, serviceType, q }) => {

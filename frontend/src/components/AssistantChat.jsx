@@ -143,6 +143,28 @@ export default function AssistantChat() {
                     </a>
                   )}
                   <p className="whitespace-pre-wrap">{message.text}</p>
+                  
+                  {message.role === 'assistant' && (
+                    <button
+                      onClick={async () => {
+                        try {
+                          const res = await legalApi.textToSpeech({ text: message.text, language });
+                          if (res.audio_base64) {
+                            const audio = new Audio("data:audio/wav;base64," + res.audio_base64);
+                            audio.play();
+                          }
+                        } catch (err) {
+                          console.error('TTS failed', err);
+                        }
+                      }}
+                      className="mt-2 flex items-center gap-1.5 text-xs font-bold text-legalGold hover:text-yellow-600 transition-colors"
+                      title="Read aloud"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-volume-2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+                      Listen
+                    </button>
+                  )}
+
                   {message.role === 'assistant' && message.provider && (
                     <p className="mt-3 text-xs text-slate-400">Powered by {message.provider} / {message.model}</p>
                   )}

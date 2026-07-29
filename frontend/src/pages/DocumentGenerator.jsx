@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, FileText, Eye, Save, Sparkles, X, ChevronRight, ArrowLeft, ArrowRight,
   Clock, CheckCircle2, Shield, Download, Printer, Copy, Check, Sliders, RefreshCw,
-  Globe, Plus, Trash2, ArrowUp, ArrowDown, PlusCircle, Star, Zap, ChevronUp
+  Globe, Plus, Trash2, ArrowUp, ArrowDown, PlusCircle, Star, Zap, ChevronUp, Loader2
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { DOCUMENT_CATALOG, CATEGORIES } from '../data/documentCatalog.js';
@@ -13,6 +13,7 @@ import DownloadButtons from '../components/DownloadButtons.jsx';
 import DocumentPreview from '../components/DocumentPreview.jsx';
 import { useDraftManager } from '../components/DraftManager.jsx';
 import { getFormattedDraft } from '../data/documentTemplates.js';
+import { RESOURCE_CONTENT, ResourceCard } from './Resources.jsx';
 
 const DISTRICT_NAMES = Object.keys(karnatakaDistricts).sort();
 
@@ -137,6 +138,11 @@ export default function DocumentGenerator() {
     try { return JSON.parse(localStorage.getItem('favDocs') || '[]'); } catch { return ['Complaint', 'Police Complaint', 'Vakalatnama placeholder']; }
   });
 
+  const [situationText, setSituationText] = useState('');
+  const [classifying, setClassifying] = useState(false);
+  const [suggestions, setSuggestions] = useState(null);
+  const [resourceSuggestions, setResourceSuggestions] = useState(null);
+
   // Selected Document & Drawer State
   const [selectedDoc, setSelectedDoc] = useState(null);
 
@@ -182,7 +188,6 @@ export default function DocumentGenerator() {
     });
   }, [searchQuery, activeCategory, quickFilter, favorites]);
 
-  // Group by category
   const groupedCatalog = useMemo(() => {
     const map = {};
     filteredCatalog.forEach((doc) => {
@@ -192,6 +197,22 @@ export default function DocumentGenerator() {
     });
     return map;
   }, [filteredCatalog]);
+
+  const handleClassify = async () => {
+    if (!situationText.trim()) return;
+    setClassifying(true);
+    setSuggestions(null);
+    setResourceSuggestions(null);
+    try {
+      const res = await legalApi.classifyDocument({ description: situationText });
+      setSuggestions(res.documents || res.suggestions || []);
+      setResourceSuggestions(res.resources || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setClassifying(false);
+    }
+  };
 
   // Start AI Interview
   const startInterview = (doc) => {
@@ -283,34 +304,57 @@ export default function DocumentGenerator() {
             </p>
           </motion.div>
 
-          {/* Search Bar */}
+          {/* AI Situation Classification Box */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="mt-8 mx-auto max-w-2xl"
+            className="mt-8 mx-auto max-w-3xl"
           >
-            <div className="relative flex items-center shadow-lg rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-navy-900/90 backdrop-blur-xl focus-within:ring-2 focus-within:ring-legalGold/50 transition-all">
-              <Search className="absolute left-4 h-5 w-5 text-slate-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={
-                  isKn
-                    ? 'ದಾಖಲೆಗಳನ್ನು ಹುಡುಕಿ... (ಉದಾ: ಪೊಲೀಸ್, ವಕಾಲತ್ನಾಮಾ, ಆರ್‌ಟಿಐ, ಬಾಡಿಗೆ)'
-                    : 'Search documents... (e.g. Police, Vakalatnama, RTI, Rental)'
-                }
-                className="w-full bg-transparent pl-12 pr-10 py-4 text-sm sm:text-base text-navy-900 dark:text-white placeholder-slate-400 outline-none"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-4 p-1 text-slate-400 hover:text-navy-900 dark:hover:text-white"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
+            <div className="relative flex flex-col sm:flex-row items-center gap-3 shadow-lg rounded-3xl border border-legalGold/30 bg-white/80 dark:bg-navy-900/90 backdrop-blur-xl p-3 focus-within:ring-2 focus-within:ring-legalGold/50 transition-all">
+              <div className="flex-1 w-full relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-legalGold" />
+                <textarea
+                  value={situationText}
+                  onChange={(e) => setSituationText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleClassify();
+                    }
+                  }}
+                  placeholder={
+                    isKn
+                      ? 'ನಿಮ್ಮ ಪರಿಸ್ಥಿತಿಯನ್ನು ವಿವರಿಸಿ (ಉದಾ: ನನ್ನ ಮಾಲೀಕರು ನನ್ನ ವೇತನವನ್ನು ನೀಡುತ್ತಿಲ್ಲ...)'
+                      : 'Describe your situation (e.g. My landlord refuses to return my security deposit...)'
+                  }
+                  className="w-full bg-transparent pl-12 pr-4 py-4 text-sm sm:text-base text-navy-900 dark:text-white placeholder-slate-400 outline-none resize-none h-14 custom-scrollbar"
+                  rows={1}
+                />
+              </div>
+              <button
+                onClick={handleClassify}
+                disabled={classifying || !situationText.trim()}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-2xl bg-legalGold px-6 py-4 text-sm font-bold text-navy-950 hover:bg-yellow-400 disabled:opacity-50 transition-all shadow-md shrink-0"
+              >
+                {classifying ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Sparkles className="h-5 w-5" />
+                )}
+                {isKn ? 'ದಾಖಲೆ ಹುಡುಕಿ' : 'Find Documents'}
+              </button>
+            </div>
+            {/* Regular Search / fallback */}
+            <div className="mt-4 flex justify-center items-center gap-2">
+               <span className="text-xs text-slate-500">Or search by name:</span>
+               <input 
+                  type="text" 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="e.g. Police Complaint"
+                  className="bg-transparent border-b border-slate-300 dark:border-slate-700 text-sm outline-none px-2 py-1"
+               />
             </div>
           </motion.div>
 
@@ -493,6 +537,70 @@ export default function DocumentGenerator() {
                 ) : (
                   <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-navy-950 p-4 min-h-[500px]">
                     <DocumentPreview content={draft} />
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+
+          {/* AI Suggestions Section */}
+          {suggestions && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-14 rounded-2xl border border-legalGold/30 bg-legalGold/5 p-6 shadow-sm"
+            >
+              <h3 className="font-serif text-xl font-bold text-navy-900 dark:text-white flex items-center gap-2 mb-6">
+                <Sparkles className="h-5 w-5 text-legalGold" />
+                {isKn ? 'ಶಿಫಾರಸು ಮಾಡಿದ ದಾಖಲೆಗಳು ಮತ್ತು ಸಂಪನ್ಮೂಲಗಳು' : 'Recommended Actions & Resources'}
+              </h3>
+              
+              <div className="grid lg:grid-cols-2 gap-8">
+                {/* Recommended Documents */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                    {isKn ? 'ದಾಖಲೆಗಳು' : 'Documents to File'}
+                  </h4>
+                  {suggestions.length === 0 ? (
+                    <p className="text-sm text-slate-500">No specific documents found. Try browsing below.</p>
+                  ) : (
+                    suggestions.map((sug, i) => {
+                      const docObj = DOCUMENT_CATALOG.find(d => d.id === sug.id || d.title === sug.id || d.id.includes(sug.id));
+                      if (!docObj) return null;
+                      return (
+                        <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-legalGold/40 bg-white dark:bg-navy-900 p-4 shadow-sm">
+                          <div>
+                            <h5 className="font-bold text-navy-900 dark:text-white flex items-center gap-2">
+                              {docObj.icon && <docObj.icon className="h-4 w-4 text-legalGold" />}
+                              {isKn && docObj.titleKn ? docObj.titleKn : docObj.title}
+                            </h5>
+                            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">{sug.reason}</p>
+                          </div>
+                          <button
+                            onClick={() => startInterview(docObj)}
+                            className="shrink-0 flex items-center justify-center gap-1.5 rounded-lg bg-navy-900 dark:bg-legalGold px-4 py-2 text-xs font-bold text-white dark:text-navy-950 hover:bg-navy-800 dark:hover:bg-yellow-500 transition-colors"
+                          >
+                            <Sparkles className="h-3 w-3" /> {isKn ? 'ರಚಿಸಿ' : 'Generate'}
+                          </button>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
+                {/* Recommended Resources */}
+                {resourceSuggestions && resourceSuggestions.length > 0 && (
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                      {isKn ? 'ಕಾನೂನು ಮಾರ್ಗದರ್ಶಿ' : 'Learn Your Rights'}
+                    </h4>
+                    <div className="grid gap-4">
+                      {resourceSuggestions.map((resug, i) => {
+                        const resData = RESOURCE_CONTENT[resug.id.toLowerCase()];
+                        if (!resData) return null;
+                        return <ResourceCard key={i} resourceKey={resug.id} data={resData} />;
+                      })}
+                    </div>
                   </div>
                 )}
               </div>

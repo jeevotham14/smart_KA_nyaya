@@ -6,7 +6,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { legalApi } from '../services/api.js';
 
-const RESOURCE_CONTENT = {
+export const RESOURCE_CONTENT = {
   dlsa: {
     icon: Scale,
     color: 'text-legalGold',
@@ -176,7 +176,7 @@ const RESOURCE_CONTENT = {
   },
 };
 
-function ResourceCard({ resourceKey, data }) {
+export function ResourceCard({ resourceKey, data }) {
   const { t, i18n } = useTranslation();
   const isKn = i18n.language === 'kn';
 

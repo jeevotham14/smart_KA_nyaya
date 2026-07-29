@@ -275,6 +275,26 @@ export default function AILegalGuidance() {
                         {analysisResult.guidance || analysisResult.answer}
                       </div>
 
+                      <button
+                        onClick={async () => {
+                          try {
+                            const text = analysisResult.guidance || analysisResult.answer;
+                            const res = await legalApi.textToSpeech({ text, language: isKn ? 'Kannada' : 'English' });
+                            if (res.audio_base64) {
+                              const audio = new Audio("data:audio/wav;base64," + res.audio_base64);
+                              audio.play();
+                            }
+                          } catch (err) {
+                            console.error('TTS failed', err);
+                          }
+                        }}
+                        className="mt-6 flex items-center gap-2 rounded-xl bg-legalGold/10 px-4 py-2 text-sm font-bold text-legalGold hover:bg-legalGold/20 transition-colors"
+                        title="Read aloud"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-volume-2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+                        {isKn ? 'ಆಲಿಸಿ (Listen)' : 'Listen to Analysis'}
+                      </button>
+
                       <div className="mt-8 rounded-2xl bg-slate-50 dark:bg-navy-950 p-4 border border-slate-200 dark:border-slate-800 text-xs text-slate-500">
                         {analysisResult.disclaimer}
                       </div>

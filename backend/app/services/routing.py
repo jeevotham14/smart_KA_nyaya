@@ -70,8 +70,9 @@ def route_chat_request(message: str, language: str, history: List[Dict[str, str]
     llm_router = get_llm_router()
     try:
         result = llm_router.legal_chat(message, language, history)
+        answer_text = result["text"].replace("*", "").replace("#", "").replace("=", "")
         return {
-            "answer": result["text"],
+            "answer": answer_text,
             "provider": result["provider"],
             "model": result["model"],
             "category": None, # Handled by calling function if needed

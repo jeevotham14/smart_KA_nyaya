@@ -12,6 +12,7 @@ from app.db.session import get_db
 from app.models.domain import GeneratedDocument, DocumentDraft
 from app.schemas import DocumentGenerateRequest, GeneratedDocumentRead
 from app.services.ai_service import AIService, get_ai_service
+from app.services.llm_router import get_llm_router, TaskType
 from app.services.doc_export import generate_pdf_buffer, generate_docx_buffer
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
@@ -104,3 +105,64 @@ def save_draft(payload: DocumentDraftCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(row)
     return row
+
+
+class ClassifyRequest(BaseModel):
+    description: str
+
+@router.post("/classify")
+def classify_document(payload: ClassifyRequest):
+    """Classifies a user's free-text situation and returns the top matching documents and resources."""
+    llm_router = get_llm_router()
+    
+    system_prompt = (
+        "You are an expert legal assistant in Karnataka. A user will describe their situation. "
+        "You must determine which 1 to 3 legal documents they need to generate from the following list:\n"
+        "Complaint, Petition Draft, Written Statement, Police Complaint, Cyber Crime Complaint, "
+        "Consumer Complaint, RTI Application, Legal aid application, Rental Agreement, Power of Attorney, "
+        "Affidavit, Legal Notice, Reply Notice.\n\n"
+        "ALSO, determine which 1 or 2 legal resources they should read from the following list:\n"
+        "dlsa, police, women, consumer\n\n"
+        "Respond strictly with a JSON object in this format:\n"
+        "{\n"
+        '  "documents": [\n'
+        '    {"id": "Exact Name of Document from list", "reason": "A 1-line reason why"}\n'
+        '  ],\n'
+        '  "resources": [\n'
+        '    {"id": "Exact Resource ID from list"}\n'
+        '  ]\n'
+        "}"
+    )
+    
+    result = llm_router.route(
+        TaskType.CHAT,
+        [{"role": "user", "content": payload.description}],
+        system_prompt=system_prompt,
+    )
+    
+    text = result.get("text", "{}")
+    import json
+    
+    # Try to parse the JSON output from the LLM
+    try:
+        # Strip potential markdown formatting (like ```json ... ```)
+        text = text.strip()
+        if text.startswith("```json"):
+            text = text[7:]
+        if text.startswith("```"):
+            text = text[3:]
+        if text.endswith("```"):
+            text = text[:-3]
+        text = text.strip()
+        
+        parsed = json.loads(text)
+        return parsed
+    except json.JSONDecodeError:
+        # Fallback if LLM failed to return pure JSON
+        return {
+            "documents": [
+                {"id": "Complaint", "reason": "General complaint based on your description."}
+            ],
+            "resources": [{"id": "dlsa"}]
+        }
+

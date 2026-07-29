@@ -147,3 +147,48 @@ def risk_assessment(payload: RiskAssessmentRequest, ai_service: AIService = Depe
         "category": payload.legal_category or classification["category"],
         "disclaimer": LEGAL_DISCLAIMER,
     }
+
+
+class TTSRequest(BaseModel):
+    text: str
+    target_language_code: str = "en-IN"
+    speaker: str = "meera"
+
+@router.post("/tts")
+async def text_to_speech(payload: TTSRequest):
+    """Convert text to speech using Sarvam AI API."""
+    import httpx
+    url = "https://api.sarvam.ai/text-to-speech"
+    headers = {
+        "api-subscription-key": "sk_dn271vgk_7oau1Ae1w3KFQ33Zt1HzQnpY",
+        "Content-Type": "application/json"
+    }
+    # map frontend languages to Sarvam format
+    # Kannada: kn-IN, English: en-IN, Hindi: hi-IN
+    target_lang = payload.target_language_code
+    if target_lang.lower() == "kannada":
+        target_lang = "kn-IN"
+    elif target_lang.lower() == "english":
+        target_lang = "en-IN"
+    
+    body = {
+        "inputs": [payload.text[:500]], # limit text length for safety
+        "target_language_code": target_lang,
+        "speaker": payload.speaker,
+        "pitch": 0,
+        "pace": 1.0,
+        "loudness": 1.5,
+        "speech_sample_rate": 8000,
+        "enable_preprocessing": True,
+        "model": "sarvam-tts"
+    }
+    
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(url, headers=headers, json=body, timeout=20.0)
+            response.raise_for_status()
+            data = response.json()
+            return {"audio_base64": data.get("audios", [])[0] if data.get("audios") else None}
+        except Exception as e:
+            from fastapi import HTTPException
+            raise HTTPException(status_code=500, detail=str(e))
