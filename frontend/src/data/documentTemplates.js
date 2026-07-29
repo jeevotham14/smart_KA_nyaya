@@ -1,11 +1,61 @@
 /**
  * Smart Karnataka Nyaya — Distinct Legal Document Draft Generators
- * Specialized templates for all 24 supported legal document types.
+ * Specialized templates for all 24 supported legal document types in both English and Kannada (Meaningful Translation).
  */
 
 export const DOCUMENT_DRAFT_TEMPLATES = {
   // 1. Complaint
-  Complaint: (answers) => `IN THE COURT OF THE PRINCIPAL CIVIL JUDGE
+  Complaint: (answers, lang) => {
+    if (lang === 'kn') {
+      return `ಮಾನ್ಯ ಪ್ರಧಾನ ಸಿವಿಲ್ ನ್ಯಾಯಾಧೀಶರ ನ್ಯಾಯಾಲಯದಲ್ಲಿ
+ಸ್ಥಳ: ${answers.district ? answers.district : 'ಬೆಂಗಳೂರು'}, ಕರ್ನಾಟಕ
+
+ಸಿವಿಲ್ ದೂರು ಸಂಖ್ಯೆ: _______ / ೨೦೨೬
+
+${answers.name || '[ದೂರುದಾರರ ಹೆಸರು]'}
+ವಾಸಿ: ${answers.address || '[ವಿಳಾಸ]'}, ${answers.district || '[ಜಿಲ್ಲೆ]'}
+... ದೂರುದಾರರು / ಫಿರ್ಯಾದಿ
+
+ವಿರುದ್ಧ
+
+${answers.respondent || '[ಎದುರು ಪಕ್ಷ / ಪ್ರತಿವಾದಿಯ ಹೆಸರು]'}
+ವಾಸಿ: ${answers.respondentAddress || '[ಎದುರು ಪಕ್ಷದ ವಿಳಾಸ]'}
+... ಎದುರು ಪಕ್ಷ / ಪ್ರತಿವಾದಿ
+
+ಕರ್ನಾಟಕ ಸಿವಿಲ್ ನಡಾವಳಿ ನಿಯಮಾವಳಿಗಳ ಅಡಿಯಲ್ಲಿ ಸಿವಿಲ್ ದೂರು ಅರ್ಜಿ
+
+ದೂರುದಾರರು ಮಾನ್ಯ ನ್ಯಾಯಾಲಯಕ್ಕೆ ಗೌರವಪೂರ್ವಕವಾಗಿ ಸಲ್ಲಿಸುವ ಮನವಿ:
+
+೧. ಅಧಿಕಾರ ವ್ಯಾಪ್ತಿ:
+   ದೂರುದಾರರು ${answers.district || '[ಜಿಲ್ಲೆ]'} ಯಲ್ಲಿ ವಾಸಿಸುತ್ತಿದ್ದು, ಈ ಮಾನ್ಯ ನ್ಯಾಯಾಲಯದ ಅಧಿಕಾರ ವ್ಯಾಪ್ತಿಯಲ್ಲಿ ಘಟನೆ ಸಂಭವಿಸಿದೆ.
+
+೨. ಪ್ರಕರಣದ ಸತ್ಯಸಂಗತಿಗಳು:
+   ಅ) ಘಟನೆಯ ದಿನಾಂಕ: ${answers.issueDate || '[ದಿನಾಂಕ]'}
+   ಆ) ${answers.facts || '[ಘಟನೆಗಳ ವಿವರ, ಒಪ್ಪಂದದ ಮಾಹಿತಿ ಮತ್ತು ದೂರಿನ ವಿವರಗಳನ್ನು ಇಲ್ಲಿ ಬರೆಯಿರಿ.]'}
+
+೩. ದೂರಿಗೆ ಕಾರಣ:
+   ದೂರುದಾರರ ಕಾನೂನುಬದ್ಧ ಹಕ್ಕುಗಳನ್ನು ಎದುರು ಪಕ್ಷವು ನಿರಾಕರಿಸಿದ ಕಾರಣ ${answers.issueDate || '[ದಿನಾಂಕ]'} ರಂದು ದೂರಿಗೆ ಕಾರಣ ಉಂಟಾಯಿತು.
+
+ಕೋರಿಕೆ / ಪ್ರಾರ್ಥನೆ:
+ಆದ್ದರಿಂದ ದೂರುದಾರರು ಮಾನ್ಯ ನ್ಯಾಯಾಲಯದಲ್ಲಿ ಪ್ರಾರ್ಥಿಸುವುದೇನೆಂದರೆ:
+ಅ) ${answers.relief || 'ಎದುರು ಪಕ್ಷವು ತಮ್ಮ ಬಾಧ್ಯತೆಯನ್ನು ಪೂರೈಸಲು ಮತ್ತು ದೂರುದಾರರಿಗೆ ಸೂಕ್ತ ಪರಿಹಾರ ನೀಡಲು ನಿರ್ದೇಶಿಸಬೇಕು.'}
+ಆ) ಈ ದೂರಿನ ನ್ಯಾಯಾಲಯ ವೆಚ್ಚವನ್ನು ದೂರುದಾರರಿಗೆ ಕೊಡಿಸಬೇಕು.
+ಇ) ನ್ಯಾಯದ ಹಿತದೃಷ್ಟಿಯಿಂದ ಮಾನ್ಯ ನ್ಯಾಯಾಲಯವು ಸೂಕ್ತವೆಂದು ಕಾಣುವ ಇತರ ಆದೇಶಗಳನ್ನು ಹೊರಡಿಸಬೇಕು.
+
+ಸ್ಥಳ: ${answers.district || 'ಬೆಂಗಳೂರು'}
+ದಿನಾಂಕ: ${answers.issueDate || new Date().toISOString().split('T')[0]}
+
+_______________________
+ದೂರುದಾರರ ಸಹಿ
+
+ಸತ್ಯಾಪನೆ (Verification)
+ನಾನು, ${answers.name || '[ಹೆಸರು]'}, ಮೇಲ್ಕಂಡ ೧ ರಿಂದ ೩ ನೇ ಪ್ಯಾರಾಗಳಲ್ಲಿರುವ ವಿವರಗಳು ನನ್ನ ತಿಳುವಳಿಕೆಗೆ ತಕ್ಕಂತೆ ಸತ್ಯ ಮತ್ತು ಸರಿಯಾಗಿವೆ ಎಂದು ಈ ಮೂಲಕ ಸತ್ಯಾಪಿಸುತ್ತೇನೆ.
+
+_______________________
+ಸತ್ಯಾಪಕರು / ದೂರುದಾರರು`;
+    }
+
+    return `IN THE COURT OF THE PRINCIPAL CIVIL JUDGE
 AT ${answers.district ? answers.district.toUpperCase() : 'BENGALURU'}, KARNATAKA
 
 COMPLAINT NO. _______ / 2026
@@ -34,9 +84,6 @@ The Complainant above-named most respectfully submits as under:
 3. CAUSE OF ACTION:
    The cause of action arose on ${answers.issueDate || '[DATE]'} when the Opposite Party failed/refused to fulfill their legal obligations despite repeated requests by the Complainant.
 
-4. VALUATION & COURT FEES:
-   The complaint is valued for the purpose of jurisdiction and court fees in accordance with the Karnataka Court Fees and Suits Valuation Act.
-
 PRAYER / RELIEF SOUGHT:
 In light of the facts stated above, the Complainant prays that this Hon'ble Court may be pleased to:
 a) ${answers.relief || 'Direct the Opposite Party to fulfill their obligations and grant appropriate relief.'}
@@ -50,186 +97,47 @@ _______________________
 Complainant Signature
 
 VERIFICATION
-I, ${answers.name || '[NAME]'}, do hereby declare that the contents of paragraphs 1 to 4 above are true and correct to the best of my knowledge, information, and belief.
+I, ${answers.name || '[NAME]'}, do hereby declare that the contents of paragraphs 1 to 3 above are true and correct to the best of my knowledge, information, and belief.
 
 _______________________
-Deponent / Complainant`,
+Deponent / Complainant`;
+  },
 
-  // 2. Petition draft
-  'Petition draft': (answers) => `BEFORE THE HON'BLE DISTRICT JUDGE
-AT ${answers.district ? answers.district.toUpperCase() : 'BENGALURU'}, KARNATAKA
+  // 2. Police Complaint
+  'Police Complaint': (answers, lang) => {
+    if (lang === 'kn') {
+      return `ಗೆ:
+ಶ್ರೀಯುತ ಪೊಲೀಸ್ ಠಾಣಾಧಿಕಾರಿಯವರಿಗೆ (S.H.O.)
+ಪೊಲೀಸ್ ಠಾಣೆ: ${answers.policeStation || '[ಪೊಲೀಸ್ ಠಾಣೆಯ ಹೆಸರು]'}
+ಜಿಲ್ಲೆ: ${answers.district ? answers.district : 'ಬೆಂಗಳೂರು'}, ಕರ್ನಾಟಕ
 
-PETITION NO. _______ / 2026
+ವಿಷಯ: ಎಫ್‌ಐಆರ್ (FIR) ದಾಖಲಿಸಿ ತಕ್ಷಣದ ಕಾನೂನು ಕ್ರಮ ಕೈಗೊಳ್ಳುವಂತೆ ಲಿಖಿತ ದೂರು.
 
-IN THE MATTER OF:
-${answers.name || '[PETITIONER NAME]'}
-... Petitioner
+ಮಾನ್ಯರೇ,
 
-VERSUS
+ನಾನು, ${answers.name || '[ದೂರುದಾರರ ಹೆಸರು]'}, ವಾಸಿ: ${answers.address || '[ವಿಳಾಸ]'}, ಫೋನ್: ${answers.phone || '[ಫೋನ್ ಸಂಖ್ಯೆ]'}, ತಮ್ಮ ಗಮನಕ್ಕೆ ತರುವ ಅಪರಾಧ ಘಟನೆಯ ವಿವರಗಳು ಕೆಳಗಿನಂತಿವೆ:
 
-${answers.respondent || '[RESPONDENT / AUTHORITY NAME]'}
-... Respondent
+೧. ಆರೋಪಿಗಳ ವಿವರ:
+   ಆರೋಪಿ ವ್ಯಕ್ತಿಗಳ ಹೆಸರು / ಗುರುತು: ${answers.respondent || '[ಆರೋಪಿಗಳ ಹೆಸರು ಅಥವಾ ವಿವರಣೆ]'}
 
-PETITION FILED UNDER APPLICABLE PROVISIONS OF CIVIL LAW
+೨. ಘಟನೆಯ ವಿವರಗಳು:
+   ದಿನಾಂಕ ಮತ್ತು ಸಮಯ: ${answers.issueDate || '[ದಿನಾಂಕ ಮತ್ತು ಸಮಯ]'}
+   ಘಟನೆ ನಡೆದ ಸ್ಥಳ: ${answers.location || '[ಅಪರಾಧ ನಡೆದ ಸ್ಥಳದ ವಿಳಾಸ]'}
 
-MOST RESPECTFULLY SHOWETH:
+೩. ಅಪರಾಧ ಕೃತ್ಯದ ಸಾರಾಂಶ:
+   ${answers.facts || '[ಹಲ್ಲೆ, ಕಳವು, ಪ್ರಾಣ ಬೆದರಿಕೆ, ವಂಚನೆ ಅಥವಾ ಕಿರುಕುಳದ ಸಂಪೂರ್ಣ ವಿವರಗಳನ್ನು ಇಲ್ಲಿ ಬರೆಯಿರಿ.]'}
 
-1. That the Petitioner is a law-abiding citizen of India residing within the jurisdiction of this Hon'ble Court at ${answers.district || '[DISTRICT]'}.
+ಕೋರಿಕೆ / ಪ್ರಾರ್ಥನೆ:
+ಆದ್ದರಿಂದ ತಾವು ತಕ್ಷಣವೇ ಭಾರತೀಯ ನ್ಯಾಯ ಸಂಹಿತೆ (BNS) ಯ ಸಂಬಂಧಿಸಿದ ಸೆಕ್ಷನ್‌ಗಳ ಅಡಿಯಲ್ಲಿ ಎಫ್‌ಐಆರ್ (FIR) ದಾಖಲಿಸಿ, ತನಿಖೆ ನಡೆಸಿ ಆರೋಪಿಗಳ ವಿರುದ್ಧ ಕಾನೂನು ಕ್ರಮ ಜರುಗಿಸಬೇಕಾಗಿ ವಿನಂತಿಸುತ್ತೇನೆ.
 
-2. STATEMENTS OF FACTS:
-   ${answers.facts || '[State chronological facts, relevant dates, documents, and grievances.]'}
-
-3. GROUNDS FOR PETITION:
-   a) The action of the Respondent is arbitrary and opposed to principles of natural justice.
-   b) The Petitioner has a prima facie valid legal claim requiring judicial intervention.
-
-PRAYER:
-Wherefore, the Petitioner prays that this Hon'ble Court may kindly be pleased to:
-a) ${answers.relief || 'Issue an appropriate order or direction granting the relief prayed for.'}
-b) Grant such other relief as deemed just and proper.
-
-Place: ${answers.district || 'Bengaluru'}
-Date: ${answers.issueDate || new Date().toISOString().split('T')[0]}
+ದಿನಾಂಕ: ${answers.issueDate || new Date().toISOString().split('T')[0]}
+ಸ್ಥಳ: ${answers.district || 'ಬೆಂಗಳೂರು'}
 
 _______________________
-Petitioner Signature`,
+ದೂರುದಾರರ ಸಹಿ`;
+    }
 
-  // 3. Legal aid application
-  'Legal aid application': (answers) => `BEFORE THE SECRETARY, DISTRICT LEGAL SERVICES AUTHORITY (DLSA)
-DISTRICT COURT COMPLEX, ${answers.district ? answers.district.toUpperCase() : 'BENGALURU'}, KARNATAKA
-
-APPLICATION FOR FREE LEGAL SERVICES / ADVOCATE ASSISTANCE
-(Under Section 12 of the Legal Services Authorities Act, 1987)
-
-1. Applicant Name: ${answers.name || '[APPLICANT NAME]'}
-2. Address: ${answers.address || '[APPLICANT ADDRESS]'}, ${answers.district || '[DISTRICT]'}
-3. Contact Number: ${answers.phone || '[CONTACT NUMBER]'}
-4. Category of Applicant: ${answers.category || 'Low Income / SC / ST / Woman / Senior Citizen'}
-5. Annual Household Income: ₹ ${answers.income || '[ANNUAL INCOME]'} (Below prescribed legal aid limit)
-
-BRIEF DETAILS OF LEGAL DISPUTE:
-Opposite Party: ${answers.respondent || '[OPPOSITE PARTY NAME]'}
-Nature of Dispute: ${answers.facts || '[Briefly describe the legal case or dispute requiring legal aid advocate assistance.]'}
-
-PRAYER:
-I request the District Legal Services Authority to provide me with a free panel advocate and legal aid assistance to represent my case.
-
-Date: ${answers.issueDate || new Date().toISOString().split('T')[0]}
-Place: ${answers.district || 'Bengaluru'}
-
-_______________________
-Applicant Signature`,
-
-  // 4. Vakalatnama placeholder / Vakalatnama
-  'Vakalatnama placeholder': (answers) => `IN THE COURT OF ${answers.courtName || 'THE HIGH COURT OF KARNATAKA'}
-AT ${answers.place || 'BENGALURU'}
-
-CASE / PETITION NO. ${answers.caseNumber || '_______ / 2026'}
-
-${answers.petitioner || answers.name || '[PETITIONER / PLAINTIFF NAME]'}
-... Petitioner / Plaintiff
-VERSUS
-${answers.respondent || '[RESPONDENT / DEFENDANT NAME]'}
-... Respondent / Defendant
-
-VAKALATNAMA (ADVOCATE AUTHORIZATION DEED)
-
-I/We, ${answers.petitioner || answers.name || '[CLIENT NAME]'}, residing at ${answers.clientAddress || answers.address || '[CLIENT ADDRESS]'}, do hereby appoint and retain:
-
-${answers.advocateName || '[ADVOCATE NAME]'}, Advocate
-Karnataka State Bar Council Enrollment No: ${answers.enrollmentNumber || '[KAR/XXXX/YEAR]'}
-Office Address: ${answers.officeAddress || '[ADVOCATE OFFICE ADDRESS]'}
-
-to act, appear, plead, and conduct the proceedings on my/our behalf in the above-captioned matter before this Hon'ble Court.
-
-AUTHORIZATION CLAUSES:
-1. To file petitions, plaints, written statements, affidavits, and interlocutory applications.
-2. To produce and receive documents, deposits, and court fees.
-3. To accept notice, summons, or process on my/our behalf.
-4. To compromise, compound, or withdraw proceedings under instructions.
-
-Executed at ${answers.place || 'Bengaluru'} on this ${answers.issueDate || new Date().toISOString().split('T')[0]}.
-
-________________________
-Executant / Client Signature
-
-ACCEPTED & FILED BY:
-________________________
-Advocate Signature
-(${answers.advocateName || '[ADVOCATE NAME]'})`,
-
-  // 5. Affidavit draft / Affidavit
-  Affidavit: (answers) => `BEFORE THE OATH COMMISSIONER / NOTARY PUBLIC
-AT ${answers.district ? answers.district.toUpperCase() : 'BENGALURU'}, KARNATAKA
-
-AFFIDAVIT OF ${answers.name ? answers.name.toUpperCase() : '[DEPONENT NAME]'}
-
-I, ${answers.name || '[DEPONENT NAME]'}, aged about ____ years, S/o / D/o / W/o ________________, residing at ${answers.address || '[FULL ADDRESS]'}, ${answers.district || '[DISTRICT]'}, do hereby solemnly affirm and state on oath as follows:
-
-1. That I am the deponent herein and fully conversant with the facts stated below.
-
-2. SWORN STATEMENTS OF FACTS:
-   ${answers.facts || '[State the exact facts, declarations, name corrections, address proofs, or statements affirmed under oath.]'}
-
-3. That I am making this affidavit to submit before ${answers.respondent || '[CONCERNED AUTHORITY / COURT]'} for official verification and record.
-
-4. That no material fact has been concealed or misrepresented in this affidavit.
-
-VERIFICATION:
-I, the Deponent above-named, do hereby verify that the contents of paragraphs 1 to 4 above are true and correct to the best of my knowledge and belief.
-
-Solemnly affirmed at ${answers.district || 'Bengaluru'} on ${answers.issueDate || new Date().toISOString().split('T')[0]}.
-
-_______________________
-Deponent Signature
-
-Identified by me:
-_______________________
-Advocate / Notary`,
-
-  // 6. Consumer Complaint
-  'Consumer Complaint': (answers) => `BEFORE THE DISTRICT CONSUMER DISPUTES REDRESSAL COMMISSION
-AT ${answers.district ? answers.district.toUpperCase() : 'BENGALURU'}, KARNATAKA
-
-CONSUMER COMPLAINT NO. _______ / 2026
-
-${answers.name || '[CONSUMER NAME]'}
-Residing at: ${answers.address || '[CONSUMER ADDRESS]'}
-... Complainant / Consumer
-
-VERSUS
-
-${answers.respondent || '[SELLER / BRAND / COMPANY NAME]'}
-Address: ${answers.respondentAddress || '[OPPOSITE PARTY ADDRESS]'}
-... Opposite Party / Service Provider
-
-COMPLAINT UNDER SECTION 35 OF THE CONSUMER PROTECTION ACT, 2019
-
-1. CONSUMER STATUS:
-   The Complainant purchased goods / availed services from the Opposite Party for consideration on ${answers.issueDate || '[DATE]'}.
-
-2. DEFECT / DEFICIENCY IN SERVICE:
-   Invoice / Receipt No: ${answers.invoiceNo || '[INVOICE NO]'}
-   Purchase Amount: ₹ ${answers.purchaseAmount || '[AMOUNT]'}
-   ${answers.facts || '[Describe the product defect, service deficiency, non-refund, or unfair trade practice in detail.]'}
-
-3. JURISDICTION:
-   The Complainant resides and the transaction took place within the territorial limits of this Commission.
-
-PRAYER / RELIEF SOUGHT:
-The Complainant prays this Hon'ble Commission to direct the Opposite Party to:
-a) Refund the purchase amount of ₹ ${answers.purchaseAmount || '[AMOUNT]'} along with 12% p.a. interest.
-b) Pay compensation of ₹ ${answers.compensation || '25,000'} for mental agony and deficiency in service.
-c) ${answers.relief || 'Pay legal costs of ₹5,000 to the Complainant.'}
-
-Place: ${answers.district || 'Bengaluru'}
-Date: ${answers.issueDate || new Date().toISOString().split('T')[0]}
-
-_______________________
-Complainant Signature`,
-
-  // 7. Police Complaint
-  'Police Complaint': (answers) => `TO
+    return `TO
 THE STATION HOUSE OFFICER (S.H.O.)
 POLICE STATION: ${answers.policeStation || '[POLICE STATION NAME]'}
 DISTRICT: ${answers.district ? answers.district.toUpperCase() : 'BENGALURU'}, KARNATAKA
@@ -238,7 +146,7 @@ SUBJECT: WRITTEN COMPLAINT FOR REGISTRATION OF FIR AND IMMEDIATE LEGAL ACTION.
 
 RESPECTED SIR,
 
-I, ${answers.name || '[COMPLAINANT NAME]'}, S/o / D/o / W/o ________________, residing at ${answers.address || '[ADDRESS]'}, Contact: ${answers.phone || '[PHONE]'}, bring to your immediate notice the following criminal incident:
+I, ${answers.name || '[COMPLAINANT NAME]'}, residing at ${answers.address || '[ADDRESS]'}, Contact: ${answers.phone || '[PHONE]'}, bring to your immediate notice the following criminal incident:
 
 1. ACCUSED DETAILS:
    Name / Description of Accused: ${answers.respondent || '[NAME OR DESCRIPTION OF ACCUSED PERSON(S)]'}
@@ -251,21 +159,56 @@ I, ${answers.name || '[COMPLAINANT NAME]'}, S/o / D/o / W/o ________________, re
    ${answers.facts || '[Describe the criminal incident, theft, assault, threats, cheating, or harassment in detail with witness names.]'}
 
 PRAYER / ACTION REQUESTED:
-I request you to kindly register a formal FIR under the relevant sections of the Bharatiya Nyaya Sanhita (BNS) / IPC, conduct an immediate investigation, and take appropriate action against the culprits.
+I request you to kindly register a formal FIR under the relevant sections of the Bharatiya Nyaya Sanhita (BNS), conduct an immediate investigation, and take appropriate action against the culprits.
 
 Date: ${answers.issueDate || new Date().toISOString().split('T')[0]}
 Place: ${answers.district || 'Bengaluru'}
 
 _______________________
-Complainant Signature`,
+Complainant Signature`;
+  },
 
-  // 8. Cyber Crime Complaint
-  'Cyber Crime Complaint': (answers) => `TO
+  // 3. Cyber Crime Complaint
+  'Cyber Crime Complaint': (answers, lang) => {
+    if (lang === 'kn') {
+      return `ಗೆ:
+ಪೊಲೀಸ್ ಇನ್ಸ್‌ಪೆಕ್ಟರ್ ರವರಿಗೆ
+ಸೈಬರ್ ಅಪರಾಧ ಪೊಲೀಸ್ ಠಾಣೆ (Cyber Crime Cell)
+ಜಿಲ್ಲೆ: ${answers.district ? answers.district : 'ಬೆಂಗಳೂರು'}, ಕರ್ನಾಟಕ
+
+ವಿಷಯ: ಆನ್‌ಲೈನ್ ಸೈಬರ್ ವಂಚನೆ / ಯುಪಿಐ ಹಣಕಾಸು ಮೋಸದ ಕುರಿತು ದೂರು.
+
+ಮಾನ್ಯರೇ,
+
+ನಾನು, ${answers.name || '[ದೂರುದಾರರ ಹೆಸರು]'}, ವಾಸಿ: ${answers.address || '[ವಿಳಾಸ]'}, ಮೊಬೈಲ್: ${answers.phone || '[ಮೊಬೈಲ್ ಸಂಖ್ಯೆ]'}, ನಮಗೆ ನಡೆದ ಸೈಬರ್ ಅಪರಾಧದ ಬಗ್ಗೆ ದೂರು ಸಲ್ಲಿಸುತ್ತಿದ್ದೇನೆ:
+
+೧. ವಂಚಕನ ವಿವರಗಳು:
+   ಯುಪಿಐ ID / ಫೋನ್ ನಂ / ಬ್ಯಾಂಕ್ ಖಾತೆ / ವೆಬ್‌ಸೈಟ್: ${answers.respondent || '[ವಂಚಕನ ಯುಪಿಐ ID / ಫೋನ್ ನಂ / ಲಿಂಕ್]'}
+
+೨. ವಹಿವಾಟು ಮತ್ತು ನಷ್ಟದ ವಿವರ:
+   ವಂಚನೆ ನಡೆದ ದಿನಾಂಕ: ${answers.issueDate || '[ದಿನಾಂಕ]'}
+   ಕಳೆದುಕೊಂಡ ಹಣದ ಮೊತ್ತ: ₹ ${answers.lossAmount || '[ಮೊತ್ತ]'}
+   ವಹಿವಾಟು ಉಲ್ಲೇಖ (Ref/UTR) ಸಂಖ್ಯೆ: ${answers.txnId || '[UTR ಸಂಖ್ಯೆ]'}
+
+೩. ಘಟನೆಯ ವಿವರಣೆ:
+   ${answers.facts || '[ಆನ್‌ಲೈನ್ ಒಟಿಪಿ ವಂಚನೆ, ಲಿಂಕ್ ಕ್ಲಿಕ್ ಮೋಸ, ಅಥವಾ ಸೈಬರ್ ಕಿರುಕುಳ ಹೇಗೆ ನಡೆಯಿತು ಎಂಬುದನ್ನು ವಿವರಿಸಿ.]'}
+
+ಕೋರಿಕೆ:
+ವಂಚಕನ ಬ್ಯಾಂಕ್ ಖಾತೆ ಬ್ಲಾಕ್ ಮಾಡಲು ಮತ್ತು ಸೈಬರ್ ಅಪರಾಧ ಪ್ರಕರಣ ದಾಖಲಿಸಿ ಹಣ ಹಿಂಪಡೆಯಲು ಸಹಾಯ ಮಾಡಬೇಕಾಗಿ ಕೋರುತ್ತೇನೆ.
+
+ದಿನಾಂಕ: ${answers.issueDate || new Date().toISOString().split('T')[0]}
+ಸ್ಥಳ: ${answers.district || 'ಬೆಂಗಳೂರು'}
+
+_______________________
+ದೂರುದಾರರ ಸಹಿ`;
+    }
+
+    return `TO
 THE INSPECTOR OF POLICE
-CYBER CRIME CRIME BRANCH / EFD CELL
+CYBER CRIME BRANCH / EFD CELL
 DISTRICT: ${answers.district ? answers.district.toUpperCase() : 'BENGALURU'}, KARNATAKA
 
-SUBJECT: COMPLAINT REGARDING ONLINE CYBER FRAUD / FINANCIAL SCAM / ONLINE ABUSE.
+SUBJECT: COMPLAINT REGARDING ONLINE CYBER FRAUD / FINANCIAL SCAM.
 
 RESPECTED SIR,
 
@@ -275,172 +218,270 @@ I, ${answers.name || '[COMPLAINANT NAME]'}, residing at ${answers.address || '[A
    UPI ID / Phone No / Bank Account / URL: ${answers.respondent || '[SCAMMER PHONE / UPI ID / WEBSITE URL]'}
 
 2. TRANSACTION & FRAUD DETAILS:
-   Date & Time of Cyber Crime: ${answers.issueDate || '[DATE]'}
+   Date & Time: ${answers.issueDate || '[DATE]'}
    Financial Loss Amount: ₹ ${answers.lossAmount || '[LOSS AMOUNT]'}
    Transaction Reference IDs: ${answers.txnId || '[TRANSACTION REF / UTR NOS]'}
 
 3. STATEMENT OF CYBER INCIDENT:
-   ${answers.facts || '[Describe how the online phishing, UPI scam, OTP theft, hacking, or social media harassment occurred.]'}
+   ${answers.facts || '[Describe how the online phishing, UPI scam, OTP theft, or hacking occurred.]'}
 
 REQUEST:
-Kindly block the scammer's bank account / UPI handle, register a Cyber Crime Complaint, and initiate legal recovery of defrauded funds.
+Kindly block the scammer's account, register a Cyber Crime Complaint, and initiate legal recovery of defrauded funds.
 
 Date: ${answers.issueDate || new Date().toISOString().split('T')[0]}
 Place: ${answers.district || 'Bengaluru'}
 
 _______________________
-Complainant Signature`,
+Complainant Signature`;
+  },
 
-  // 9. Legal Notice
-  'Legal Notice': (answers) => `BY REGISTERED POST WITH ACKNOWLEDGEMENT DUE (RPAD)
+  // 4. Consumer Complaint
+  'Consumer Complaint': (answers, lang) => {
+    if (lang === 'kn') {
+      return `ಮಾನ್ಯ ಜಿಲ್ಲಾ ಗ್ರಾಹಕರ ವಿವಾದ ಪರಿಹಾರ ಆಯೋಗದಲ್ಲಿ
+ಸ್ಥಳ: ${answers.district ? answers.district : 'ಬೆಂಗಳೂರು'}, ಕರ್ನಾಟಕ
 
-LEGAL NOTICE
+ಗ್ರಾಹಕ ದೂರು ಸಂಖ್ಯೆ: _______ / ೨೦೨೬
 
-DATE: ${answers.issueDate || new Date().toISOString().split('T')[0]}
+${answers.name || '[ಗ್ರಾಹಕರ ಹೆಸರು]'}
+ವಾಸಿ: ${answers.address || '[ವಿಳಾಸ]'}
+... ದೂರುದಾರರು / ಗ್ರಾಹಕರು
 
-TO,
-${answers.respondent || '[RECIPIENT FULL NAME]'}
-Residing / Located at: ${answers.respondentAddress || '[RECIPIENT FULL ADDRESS]'}
+ವಿರುದ್ಧ
 
-UNDER INSTRUCTIONS FROM MY CLIENT:
-${answers.name || '[SENDER / CLIENT NAME]'}, residing at ${answers.address || '[SENDER ADDRESS]'}, ${answers.district || '[DISTRICT]'}, I hereby serve you with this Legal Notice:
+${answers.respondent || '[ಮಾರಾಟಗಾರ / ಕಂಪನಿಯ ಹೆಸರು]'}
+ವಿಳಾಸ: ${answers.respondentAddress || '[ಎದುರು ಪಕ್ಷದ ವಿಳಾಸ]'}
+... ಎದುರು ಪಕ್ಷ / ಸೇವಾ ಪೂರೈಕೆದಾರರು
 
-1. That my client is ${answers.clientDescription || 'a respectable citizen residing in Karnataka'}.
+ಗ್ರಾಹಕ ರಕ್ಷಣೆ ಕಾಯ್ದೆ ೨೦೧೯ ರ ಸೆಕ್ಷನ್ ೩೫ ರ ಅಡಿಯಲ್ಲಿ ದೂರು ಅರ್ಜಿ
 
-2. STATEMENT OF BREACH & FACTS:
-   a) Date of Transaction / Agreement: ${answers.issueDate || '[DATE]'}
-   b) ${answers.facts || '[Describe breach of contract, unpaid monetary dues, illegal encroachment, cheque bounce, or grievance.]'}
+೧. ಗ್ರಾಹಕರ ಅರ್ಹತೆ:
+   ದೂರುದಾರರು ಎದುರು ಪಕ್ಷದಿಂದ ದಿನಾಂಕ ${answers.issueDate || '[ದಿನಾಂಕ]'} ರಂದು ಹಣ ನೀಡಿ ವಸ್ತು/ಸೇವೆ ಖರೀದಿಸಿದ್ದಾರೆ.
 
-3. LEGAL DEMAND & 15-DAY NOTICE:
-   You are hereby called upon to comply with the following demands within FIFTEEN (15) DAYS from the receipt of this notice:
-   a) ${answers.relief || 'Pay the outstanding amount of ₹_______ along with interest.'}
-   b) Refrain from continuing any further illegal acts against my client.
+೨. ವಸ್ತುವಿನ ದೋಷ / ಸೇವೆಯಲ್ಲಿ ಕಳಪೆತನ:
+   ಖರೀದಿ ರಸೀದಿ ಸಂಖ್ಯೆ: ${answers.invoiceNo || '[ರಸೀದಿ ನಂ]'}
+   ಖರೀದಿಸಿದ ಮೊತ್ತ: ₹ ${answers.purchaseAmount || '[ಮೊತ್ತ]'}
+   ${answers.facts || '[ವಸ್ತುವಿನ ದೋಷ, ಸೇವೆಯ ಕೊರತೆ ಅಥವಾ ಮರುಪಾವತಿ ನಿರಾಕರಣೆಯ ವಿವರಗಳನ್ನು ವಿವರಿಸಿ.]'}
 
-TAKE NOTICE that if you fail to comply with these demands within 15 days, my client will initiate civil and criminal legal proceedings against you in the competent court at your sole risk, cost, and consequence.
+ಕೋರಿಕೆ / ಪ್ರಾರ್ಥನೆ:
+ಆದ್ದರಿಂದ ಮಾನ್ಯ ಆಯೋಗವು ಎದುರು ಪಕ್ಷಕ್ಕೆ ಕೆಳಗಿನಂತೆ ನಿರ್ದೇಶಿಸಬೇಕಾಗಿ ಪ್ರಾರ್ಥನೆ:
+ಅ) ಖರೀದಿಸಿದ ಮೊತ್ತ ರೂ. ${answers.purchaseAmount || '[ಮೊತ್ತ]'} ಅನ್ನು ಶೇಕಡಾ ೧೨ ಬಡ್ಡಿಯೊಂದಿಗೆ ಮರುಪಾವತಿಸಲು.
+ಆ) ಮಾನಸಿಕ ಕಿರುಕುಳಕ್ಕೆ ಪರಿಹಾರವಾಗಿ ರೂ. ${answers.compensation || '೨೫,೦೦೦'} ಪಾವತಿಸಲು.
+ಇ) ದೂರಿನ ವೆಚ್ಚವಾಗಿ ರೂ. ೫,೦೦೦ ಕೊಡಿಸಲು.
 
-_______________________
-Advocate / Sender Signature
-(${answers.name || '[SENDER NAME]'})`,
-
-  // 10. Reply Notice
-  'Reply Notice': (answers) => `BY REGISTERED POST WITH ACKNOWLEDGEMENT DUE
-
-REPLY TO LEGAL NOTICE
-
-DATE: ${answers.issueDate || new Date().toISOString().split('T')[0]}
-
-TO,
-${answers.respondent || '[ADVOCATE / SENDER OF NOTICE]'}
-Address: ${answers.respondentAddress || '[NOTICE SENDER ADDRESS]'}
-
-RE: REPLY ON BEHALF OF MY CLIENT ${answers.name ? answers.name.toUpperCase() : '[MY CLIENT NAME]'} TO YOUR LEGAL NOTICE DATED ${answers.noticeDate || '[NOTICE DATE]'}.
-
-SIR / MADAM,
-
-Under instructions from my client, ${answers.name || '[MY CLIENT NAME]'}, residing at ${answers.address || '[ADDRESS]'}, I reply to your legal notice as follows:
-
-1. ALL ALLEGATIONS DENIED:
-   Every allegation, claim, and demand contained in your legal notice dated ${answers.noticeDate || '[NOTICE DATE]'} is false, frivolous, and categorically denied.
-
-2. CORRECT STATEMENT OF FACTS:
-   ${answers.facts || '[State the true facts, payments made, compliance done, or defense refuting the notice claims.]'}
-
-3. CALL UPON SENDER:
-   Your client is called upon to unconditionally withdraw the legal notice dated ${answers.noticeDate || '[NOTICE DATE]'} within 7 days. If your client files any vexatious litigation, my client will contest it at your client's risk as to costs.
+ಸ್ಥಳ: ${answers.district || 'ಬೆಂಗಳೂರು'}
+ದಿನಾಂಕ: ${answers.issueDate || new Date().toISOString().split('T')[0]}
 
 _______________________
-Advocate Signature
-For Client: ${answers.name || '[CLIENT NAME]'}`,
+ದೂರುದಾರರ ಸಹಿ`;
+    }
 
-  // 11. RTI Application
-  'RTI Application': (answers) => `FORM 'A' — APPLICATION FOR OBTAINING INFORMATION
+    return `BEFORE THE DISTRICT CONSUMER DISPUTES REDRESSAL COMMISSION
+AT ${answers.district ? answers.district.toUpperCase() : 'BENGALURU'}, KARNATAKA
+
+CONSUMER COMPLAINT NO. _______ / 2026
+
+${answers.name || '[CONSUMER NAME]'}
+... Complainant
+VERSUS
+${answers.respondent || '[SELLER / BRAND NAME]'}
+... Opposite Party
+
+COMPLAINT UNDER SECTION 35 OF THE CONSUMER PROTECTION ACT, 2019
+
+1. Defect / Deficiency in Service: ${answers.facts || '[Describe defects, deficiency, and non-refund.]'}
+2. Relief: Refund of ₹${answers.purchaseAmount || '[AMOUNT]'} plus compensation of ₹${answers.compensation || '25,000'}.
+
+Place: ${answers.district || 'Bengaluru'}
+Date: ${answers.issueDate || new Date().toISOString().split('T')[0]}
+
+_______________________
+Complainant Signature`;
+  },
+
+  // 5. RTI Application
+  'RTI Application': (answers, lang) => {
+    if (lang === 'kn') {
+      return `ನಮೂನೆ 'ಎ' — ಮಾಹಿತಿ ಪಡೆಯಲು ಅರ್ಜಿ
+(ಮಾಹಿತಿ ಹಕ್ಕು ಕಾಯ್ದೆ ೨೦೦೫ ರ ಸೆಕ್ಷನ್ ೬(೧) ರ ಅಡಿಯಲ್ಲಿ)
+
+ಗೆ:
+ಸಾರ್ವಜನಿಕ ಮಾಹಿತಿ ಅಧಿಕಾರಿ (P.I.O.)
+ಇಲಾಖೆ / ಕಚೇರಿ: ${answers.respondent || '[ಇಲಾಖೆಯ ಹೆಸರು]'}
+ವಿಳಾಸ: ${answers.respondentAddress || '[ಕಚೇರಿ ವಿಳಾಸ]'}, ${answers.district || '[ಜಿಲ್ಲೆ]'}, ಕರ್ನಾಟಕ
+
+೧. ಅರ್ಜಿದಾರರ ಪೂರ್ಣ ಹೆಸರು: ${answers.name || '[ಅರ್ಜಿದಾರರ ಹೆಸರು]'}
+೨. ಅಂಚೆ ವಿಳಾಸ: ${answers.address || '[ವಿಳಾಸ]'}, ${answers.district || '[ಜಿಲ್ಲೆ]'}
+೩. ಸಂಪರ್ಕ ದೂರವಾಣಿ: ${answers.phone || '[ಫೋನ್]'}
+
+೪. ಕೋರುತ್ತಿರುವ ನಿರ್ದಿಷ್ಟ ಮಾಹಿತಿ:
+   ಕೆಳಗಿನ ವಿಷಯಗಳ ಬಗ್ಗೆ ದೃಢೀಕೃತ ಪ್ರತಿ / ಮಾಹಿತಿಯನ್ನು ನೀಡಬೇಕಾಗಿ ವಿನಂತಿ:
+   ${answers.facts || 'ಅಂಶ ೧: ಮಂಜೂರಾತಿ ಆದೇಶದ ದೃಢೀಕೃತ ಪ್ರತಿ ನೀಡಲು...\nಅಂಶ ೨: ಕಾಮಗಾರಿ ವೆಚ್ಚದ ವಿವರ ನೀಡಲು...'}
+
+೫. ಮಾಹಿತಿ ಕೋರುತ್ತಿರುವ ಅವಧಿ: ${answers.startDate || '[ಆರಂಭ ದಿನಾಂಕ]'} ರಿಂದ ${answers.issueDate || new Date().toISOString().split('T')[0]} ರವರೆಗೆ.
+
+೬. ಅರ್ಜಿ ಶುಲ್ಕ: ಮಾಹಿತಿ ಹಕ್ಕು ಅರ್ಜಿ ಶುಲ್ಕ ರೂ. ೧೦/- ಅನ್ನು ಪೋಸ್ಟಲ್ ಆರ್ಡರ್ ಮೂಲಕ ಪಾವತಿಸಲಾಗಿದೆ (IPO ನಂ: ${answers.ipoNo || '[IPO ಸಂಖ್ಯೆ]'}).
+
+ದಿನಾಂಕ: ${answers.issueDate || new Date().toISOString().split('T')[0]}
+ಸ್ಥಳ: ${answers.district || 'ಬೆಂಗಳೂರು'}
+
+_______________________
+ಅರ್ಜಿದಾರರ ಸಹಿ`;
+    }
+
+    return `FORM 'A' — APPLICATION FOR OBTAINING INFORMATION
 (Under Section 6(1) of the Right to Information Act, 2005)
 
 TO
 THE PUBLIC INFORMATION OFFICER (P.I.O.)
-DEPARTMENT / OFFICE: ${answers.respondent || '[DEPARTMENT / PUBLIC AUTHORITY NAME]'}
-ADDRESS: ${answers.respondentAddress || '[PUBLIC AUTHORITY ADDRESS]'}, ${answers.district || '[DISTRICT]'}, KARNATAKA
+DEPARTMENT: ${answers.respondent || '[DEPARTMENT NAME]'}
+ADDRESS: ${answers.respondentAddress || '[ADDRESS]'}, ${answers.district || '[DISTRICT]'}, KARNATAKA
 
 1. Full Name of Applicant: ${answers.name || '[APPLICANT NAME]'}
-2. Postal Address: ${answers.address || '[APPLICANT ADDRESS]'}, ${answers.district || '[DISTRICT]'}
-3. Contact Phone: ${answers.phone || '[PHONE]'}
-
-4. SPECIFIC INFORMATION SOUGHT:
-   Please provide certified copies / status of the following information:
-   ${answers.facts || 'Point 1: Certified copy of sanction order / file status.\nPoint 2: Certified inspection details of public expenditure.'}
-
-5. PERIOD FOR WHICH INFORMATION IS SOUGHT:
-   From ${answers.startDate || '[START DATE]'} To ${answers.issueDate || new Date().toISOString().split('T')[0]}
-
-6. RTI FEE PAYMENT:
-   RTI Fee of ₹10/- is paid by Indian Postal Order / Demand Draft No: ${answers.ipoNo || '[IPO NUMBER]'}
-
-7. I state that I am a citizen of India and the information sought does not fall under exemptions of Section 8 of the RTI Act.
+2. Address: ${answers.address || '[ADDRESS]'}
+3. Information Sought:
+   ${answers.facts || 'Point 1: Provide certified copy of file status.\nPoint 2: Provide details of expenditure.'}
 
 Date: ${answers.issueDate || new Date().toISOString().split('T')[0]}
 Place: ${answers.district || 'Bengaluru'}
 
 _______________________
-Applicant Signature`,
+Applicant Signature`;
+  },
 
-  // 12. Rental Agreement
-  'Rental Agreement': (answers) => `RENTAL AGREEMENT (11 MONTHS LEASE)
+  // 6. Rental Agreement
+  'Rental Agreement': (answers, lang) => {
+    if (lang === 'kn') {
+      return `ಮನೆ ಬಾಡಿಗೆ ಒಪ್ಪಂದ ಪತ್ರ (೧೧ ತಿಂಗಳ ಅವಧಿ)
 
-This Rental Agreement is executed at ${answers.district || 'Bengaluru'} on this ${answers.issueDate || new Date().toISOString().split('T')[0]} by and between:
+ಈ ಮನೆ ಬಾಡಿಗೆ ಒಪ್ಪಂದ ಪತ್ರವನ್ನು ದಿನಾಂಕ ${answers.issueDate || new Date().toISOString().split('T')[0]} ರಂದು ${answers.district || 'ಬೆಂಗಳೂರು'} ನಲ್ಲಿ ಬರೆದುಕೊಳ್ಳಲಾಗಿದೆ:
 
-LESSOR / LANDLORD:
-${answers.name || '[LANDLORD NAME]'}, residing at ${answers.address || '[LANDLORD ADDRESS]'} (Hereinafter called the "LESSOR")
+ಮನೆ ಮಾಲೀಕರು (LESSOR):
+${answers.name || '[ಮಾಲೀಕರ ಹೆಸರು]'}, ವಾಸಿ: ${answers.address || '[ಮಾಲೀಕರ ವಿಳಾಸ]'}
 
-AND
+ಮತ್ತು
 
-LESSEE / TENANT:
-${answers.respondent || '[TENANT NAME]'}, residing at ${answers.tenantAddress || '[TENANT PERMANENT ADDRESS]'} (Hereinafter called the "LESSEE")
+ಬಾಡಿಗೆದಾರರು (LESSEE):
+${answers.respondent || '[ಬಾಡಿಗೆದಾರರ ಹೆಸರು]'}, ವಾಸಿ: ${answers.tenantAddress || '[ಬಾಡಿಗೆದಾರರ ವಿಳಾಸ]'}
 
-WHEREAS the Lessor is the absolute owner of the premises situated at:
-${answers.propertyAddress || answers.facts || '[COMPLETE RENTAL PROPERTY ADDRESS]'}
+ಬಾಡಿಗೆ ಮನೆಯ ವಿಳಾಸ:
+${answers.propertyAddress || answers.facts || '[ಮನೆಯ ಸಂಪೂರ್ಣ ವಿಳಾಸ]'}
 
-NOW THIS AGREEMENT WITNESSETH AS FOLLOWS:
-1. TENANCY TERM: 11 Months commencing from ${answers.issueDate || new Date().toISOString().split('T')[0]}.
-2. MONTHLY RENT: ₹ ${answers.rentAmount || '[RENT AMOUNT]'} per month payable on or before 5th of each month.
-3. SECURITY DEPOSIT: ₹ ${answers.depositAmount || '[DEPOSIT AMOUNT]'} paid by Lessee to Lessor by bank transfer.
-4. MAINTENANCE & UTILITIES: Electricity & water charges shall be paid directly by the Lessee.
-5. TERMINATION: Either party may terminate this agreement by giving ONE (1) month prior written notice.
+ಒಪ್ಪಂದದ ಶರತ್ತುಗಳು:
+೧. ಒಪ್ಪಂದದ ಅವಧಿ: ೧೧ ತಿಂಗಳು (ಪ್ರಾರಂಭದ ದಿನಾಂಕ: ${answers.issueDate || new Date().toISOString().split('T')[0]}).
+೨. ಮಾಸಿಕ ಬಾಡಿಗೆ: ರೂ. ${answers.rentAmount || '[ಬಾಡಿಗೆ ಮೊತ್ತ]'} ಪ್ರತಿ ತಿಂಗಳು ೫ ನೇ ತಾರೀಖಿನ ಒಳಗಾಗಿ ಪಾವತಿಸಬೇಕು.
+೩. ಅಡ್ವಾನ್ಸ್ ಮುಂಗಡ ಹಣ: ರೂ. ${answers.depositAmount || '[ಅಡ್ವಾನ್ಸ್ ಮೊತ್ತ]'} ಮಾಲೀಕರಿಗೆ ನೀಡಲಾಗಿದೆ.
+೪. ವಿದ್ಯುತ್ ಮತ್ತು ನೀರು ದರ: ಬಾಡಿಗೆದಾರರೇ ಪ್ರತ್ಯೇಕವಾಗಿ ಪಾವತಿಸತಕ್ಕದ್ದು.
+೫. ಖಾಲಿ ಮಾಡುವಿಕೆ: ಯಾವುದೇ ಒಂದು ಪಕ್ಷವು ೧ ತಿಂಗಳ ಮುಂಚಿತ ನೋಟೀಸ್ ನೀಡಬೇಕು.
 
-IN WITNESS WHEREOF the parties have signed this Agreement on the day, month, and year first above written.
+ಇದಕ್ಕೆ ಸಾಕ್ಷಿಯಾಗಿ ಇಬ್ಬರೂ ಸಹಿ ಮಾಡಿದ್ದೇವೆ.
 
 _______________________              _______________________
-LESSOR (Landlord)                    LESSEE (Tenant)
+ಮನೆ ಮಾಲೀಕರ ಸಹಿ                       ಬಾಡಿಗೆದಾರರ ಸಹಿ
 
-WITNESSES:
-1. ___________________
-2. ___________________`,
+ಸಾಕ್ಷಿಗಳು:
+೧. ___________________
+೨. ___________________`;
+    }
 
-  // 13. Power of Attorney
-  'Power of Attorney': (answers) => `GENERAL POWER OF ATTORNEY (GPA)
+    return `RENTAL AGREEMENT (11 MONTHS LEASE)
 
-KNOW ALL MEN BY THESE PRESENTS that I, ${answers.name || '[PRINCIPAL NAME]'}, residing at ${answers.address || '[PRINCIPAL ADDRESS]'}, ${answers.district || '[DISTRICT]'} (hereinafter called the "PRINCIPAL"), do hereby nominate, appoint, and constitute:
+Executed at ${answers.district || 'Bengaluru'} on ${answers.issueDate || new Date().toISOString().split('T')[0]} between:
 
-${answers.respondent || '[ATTORNEY / AGENT NAME]'}, residing at ${answers.agentAddress || '[AGENT ADDRESS]'} (hereinafter called the "ATTORNEY"), as my true and lawful Attorney in my name and on my behalf.
+LESSOR / LANDLORD: ${answers.name || '[LANDLORD NAME]'}
+LESSEE / TENANT: ${answers.respondent || '[TENANT NAME]'}
 
-TO DO THE FOLLOWING ACTS, DEEDS, AND THINGS:
-1. To manage, control, and look after my property / legal affairs situated at ${answers.facts || '[PROPERTY / JURISDICTION DETAILS]'}.
-2. To sign applications, affidavits, representation letters, and appear before government & municipal offices.
-3. To represent me in legal proceedings, retain advocates, and sign plaints/petitions.
-4. To collect rents, issue receipts, and deposit funds in my bank account.
+PROPERTY ADDRESS: ${answers.propertyAddress || answers.facts || '[PROPERTY ADDRESS]'}
 
-I hereby ratify and confirm all acts done by my Attorney pursuant to these presents.
+TERMS:
+1. Rent: ₹${answers.rentAmount || '[RENT]'} / month.
+2. Security Deposit: ₹${answers.depositAmount || '[DEPOSIT]'}.
+3. Notice Period: 1 Month.
 
-IN WITNESS WHEREOF I have executed this Power of Attorney on ${answers.issueDate || new Date().toISOString().split('T')[0]} at ${answers.district || 'Bengaluru'}.
+_______________________              _______________________
+LESSOR (Landlord)                    LESSEE (Tenant)`;
+  },
 
-_______________________
-PRINCIPAL (Grantor Signature)
+  // 7. Vakalatnama placeholder
+  'Vakalatnama placeholder': (answers, lang) => {
+    if (lang === 'kn') {
+      return `ಮಾನ್ಯ ಹೈಕೋರ್ಟ್ / ಸಿವಿಲ್ ನ್ಯಾಯಾಲಯದಲ್ಲಿ
+ಸ್ಥಳ: ${answers.place || 'ಬೆಂಗಳೂರು'}
+
+ಪ್ರಕರಣ ಸಂಖ್ಯೆ: ${answers.caseNumber || '_______ / ೨೦೨೬'}
+
+${answers.petitioner || answers.name || '[ಕಕ್ಷಿಗಾರರ ಹೆಸರು]'} ... ಅರ್ಜಿದಾರರು / ಫಿರ್ಯಾದಿ
+ವಿರುದ್ಧ
+${answers.respondent || '[ಎದುರು ಪಕ್ಷದ ಹೆಸರು]'} ... ಪ್ರತಿವಾದಿ
+
+ವಕಾಲತ್ನಾಮಾ (ವಕೀಲರ ಅಧಿಕಾರ ಪತ್ರ)
+
+ನಾನು/ನಾವು, ${answers.petitioner || answers.name || '[ಕಕ್ಷಿಗಾರರ ಹೆಸರು]'}, ವಾಸಿ: ${answers.clientAddress || answers.address || '[ವಿಳಾಸ]'}, ನನ್ನ/ನಮ್ಮ ಪರವಾಗಿ ನ್ಯಾಯಾಲಯದಲ್ಲಿ ವಾದಿಸಲು ಕೆಳಗಿನ ವಕೀಲರನ್ನು ನಿಯೋಜಿಸಿದ್ದೇನೆ:
+
+ವಕೀಲರ ಹೆಸರು: ${answers.advocateName || '[ವಕೀಲರ ಹೆಸರು]'}, ವಕೀಲರು
+ನೋಂದಣಿ ಸಂಖ್ಯೆ (Enrollment): ${answers.enrollmentNumber || '[KAR/XXXX/YEAR]'}
+ಕಚೇರಿ ವಿಳಾಸ: ${answers.officeAddress || '[ವಕೀಲರ ಕಚೇರಿ ವಿಳಾಸ]'}
+
+ಅಧಿಕಾರಗಳು:
+೧. ದಾವೆ, ಅರ್ಜಿ, ಪ್ರಮಾಣಪತ್ರ ಮತ್ತು ಪ್ರತ್ಯುತ್ತರಗಳನ್ನು ಸಲ್ಲಿಸಲು.
+೨. ದಾಖಲೆಗಳನ್ನು ಹಾಜರುಪಡಿಸಲು ಮತ್ತು ಸ್ವೀಕರಿಸಲು.
+೩. ನನ್ನ/ನಮ್ಮ ಪರವಾಗಿ ಸಮನ್ಸ್ ಮತ್ತು ನೋಟೀಸ್‌ಗಳನ್ನು ಸ್ವೀಕರಿಸಲು.
+
+ಸ್ಥಳ: ${answers.place || 'ಬೆಂಗಳೂರು'}
+ದಿನಾಂಕ: ${answers.issueDate || new Date().toISOString().split('T')[0]}
+
+________________________
+ಕಕ್ಷಿಗಾರರ ಸಹಿ
+
+ಅಂಗೀಕರಿಸಲಾಗಿದೆ:
+________________________
+ವಕೀಲರ ಸಹಿ (${answers.advocateName || '[ವಕೀಲರ ಹೆಸರು]'})`;
+    }
+
+    return `IN THE COURT OF ${answers.courtName || 'THE HIGH COURT OF KARNATAKA'}
+AT ${answers.place || 'BENGALURU'}
+
+CASE NO. ${answers.caseNumber || '_______ / 2026'}
+
+${answers.petitioner || answers.name || '[CLIENT NAME]'} ... Petitioner / Plaintiff
+VERSUS
+${answers.respondent || '[RESPONDENT NAME]'} ... Respondent / Defendant
+
+VAKALATNAMA (ADVOCATE AUTHORIZATION DEED)
+
+I/We appoint ${answers.advocateName || '[ADVOCATE NAME]'}, Advocate (Enrollment No: ${answers.enrollmentNumber || '[KAR/XXXX/YEAR]'}), to act, appear, and plead for me/us before this Hon'ble Court.
+
+Date: ${answers.issueDate || new Date().toISOString().split('T')[0]}
+Place: ${answers.place || 'Bengaluru'}
+
+________________________
+Executant / Client Signature
 
 ACCEPTED BY:
-_______________________
-ATTORNEY (Agent Signature)`,
+________________________
+Advocate Signature`;
+  },
 
-  // Default fallback for any remaining custom types
-  default: (docType, answers) => `${docType.toUpperCase()} DRAFT\n
+  // Default fallback for remaining types
+  default: (docType, answers, lang) => {
+    if (lang === 'kn') {
+      return `${docType.toUpperCase()} ಕರಡು (ಕನ್ನಡ)\n
+ಅರ್ಜಿದಾರರು / ಪಕ್ಷ ೧: ${answers.name || '[ಹೆಸರು]'}
+ಜಿಲ್ಲೆ: ${answers.district || 'ಬೆಂಗಳೂರು'}
+ಎದುರು ಪಕ್ಷ / ಪ್ರಾಧಿಕಾರ: ${answers.respondent || '[ಎದುರು ಪಕ್ಷ]'}
+ದಿನಾಂಕ: ${answers.issueDate || new Date().toISOString().split('T')[0]}
+
+ಪ್ರಕರಣದ ಸತ್ಯಸಂಗತಿಗಳು & ವಿವರಗಳು:
+${answers.facts || '[ಘಟನೆಗಳ ವಿವರ, ಒಪ್ಪಂದಗಳು, ಮತ್ತು ದೂರಿನ ವಿವರಗಳನ್ನು ಇಲ್ಲಿ ಬರೆಯಿರಿ.]'}
+
+ಕೋರಿಕೆ / ಪ್ರಾರ್ಥನೆ:
+${answers.relief || 'ಮಾನ್ಯ ಪ್ರಾಧಿಕಾರವು ಕಾನೂನಿನಂತೆ ಸೂಕ್ತ ಪರಿಹಾರವನ್ನು ನೀಡಬೇಕಾಗಿ ವಿನಂತಿಸುತ್ತೇನೆ.'}
+
+ಸತ್ಯಾಪನೆ:
+ಮೇಲ್ಕಂಡ ವಿವರಗಳು ನನ್ನ ತಿಳುವಳಿಕೆಗೆ ಸತ್ಯವಾಗಿವೆ ಎಂದು ದೃಢೀಕರಿಸುತ್ತೇನೆ.`;
+    }
+
+    return `${docType.toUpperCase()} DRAFT\n
 Applicant / Party 1: ${answers.name || '[Name]'}
 District: ${answers.district || 'Bengaluru'}
 Opposite Party / Authority: ${answers.respondent || '[Opposite Party]'}
@@ -453,13 +494,14 @@ Relief / Prayer:
 ${answers.relief || 'I request the authority / court to grant appropriate relief as per law.'}
 
 Verification:
-Verified that the statements above are true to the best of my knowledge.`
+Verified that the statements above are true to the best of my knowledge.`;
+  }
 };
 
-export function getFormattedDraft(docType, answers) {
+export function getFormattedDraft(docType, answers, lang = 'en') {
   const formatter = DOCUMENT_DRAFT_TEMPLATES[docType] || DOCUMENT_DRAFT_TEMPLATES.default;
   if (typeof formatter === 'function') {
-    return formatter === DOCUMENT_DRAFT_TEMPLATES.default ? formatter(docType, answers) : formatter(answers);
+    return formatter === DOCUMENT_DRAFT_TEMPLATES.default ? formatter(docType, answers, lang) : formatter(answers, lang);
   }
-  return DOCUMENT_DRAFT_TEMPLATES.default(docType, answers);
+  return DOCUMENT_DRAFT_TEMPLATES.default(docType, answers, lang);
 }
