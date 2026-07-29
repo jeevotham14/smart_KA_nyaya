@@ -138,7 +138,9 @@ export default function AssistantChat() {
                   }`}
                 >
                   {message.role === 'assistant' && message.urgency === 'emergency' && (
-                    <span className="mb-2 inline-block rounded-sm bg-red-100 px-2 py-1 text-xs font-bold text-red-700">⚠️ EMERGENCY — Call 112 immediately</span>
+                    <a href="tel:112" className="mb-2 inline-flex items-center gap-1.5 rounded bg-red-600 px-3 py-1 text-xs font-extrabold text-white hover:bg-red-700 transition-colors shadow">
+                      <Phone className="h-3.5 w-3.5 animate-bounce" /> ⚠️ EMERGENCY — Call 112 Immediately
+                    </a>
                   )}
                   <p className="whitespace-pre-wrap">{message.text}</p>
                   {message.role === 'assistant' && message.provider && (
