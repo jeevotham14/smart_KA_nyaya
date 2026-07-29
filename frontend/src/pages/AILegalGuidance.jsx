@@ -15,7 +15,7 @@ export default function AILegalGuidance() {
   const { t, i18n } = useTranslation();
   const isKn = i18n.language === 'kn';
 
-  const [activeMode, setActiveMode] = useState('specific'); // 'specific' | 'chat'
+  const [activeMode, setActiveMode] = useState('chat'); // 'chat' | 'specific'
   
   // Specific Legal Guidance state
   const [selectedCategory, setSelectedCategory] = useState('consumer');
@@ -94,20 +94,8 @@ export default function AILegalGuidance() {
                 : 'Get tailored LLM analysis, legal health scores, applicable Indian/Karnataka acts, and recommended document drafts for your specific legal case.'}
             </p>
 
-            {/* Mode Switcher Tabs */}
+            {/* Mode Switcher Tabs — Voice Assistant first */}
             <div className="mt-8 flex items-center justify-center gap-3">
-              <button
-                type="button"
-                onClick={() => setActiveMode('specific')}
-                className={`flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-bold transition-all shadow-md ${
-                  activeMode === 'specific'
-                    ? 'bg-legalGold text-navy-950 ring-2 ring-yellow-400'
-                    : 'bg-navy-900/80 text-slate-200 border border-white/20 hover:bg-navy-800'
-                }`}
-              >
-                <Sparkles className="h-4 w-4" />
-                {isKn ? ' ನಿರ್ದಿಷ್ಟ ಪ್ರಕರಣದ AI ವಿಶ್ಲೇಷಣೆ' : ' Specific Legal Guidance (LLM)'}
-              </button>
               <button
                 type="button"
                 onClick={() => setActiveMode('chat')}
@@ -118,7 +106,19 @@ export default function AILegalGuidance() {
                 }`}
               >
                 <Bot className="h-4 w-4" />
-                {isKn ? ' ಸಾಮಾನ್ಯ ಕಾನೂನು ಚಾಟ್' : ' General AI Assistant Chat'}
+                {isKn ? ' ಕನ್ನಡ AI ಧ್ವನಿ ಸಹಾಯಕ' : ' Voice + AI Chat Assistant'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveMode('specific')}
+                className={`flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-bold transition-all shadow-md ${
+                  activeMode === 'specific'
+                    ? 'bg-legalGold text-navy-950 ring-2 ring-yellow-400'
+                    : 'bg-navy-900/80 text-slate-200 border border-white/20 hover:bg-navy-800'
+                }`}
+              >
+                <Sparkles className="h-4 w-4" />
+                {isKn ? ' ನಿರ್ದಿಷ್ಟ ಪ್ರಕರಣದ AI ವಿಶ್ಲೇಷಣೆ' : ' Specific Case Analysis (LLM)'}
               </button>
             </div>
           </div>
