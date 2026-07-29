@@ -12,6 +12,7 @@
   "dependencies": {
     "@vitejs/plugin-react": "^5.0.0",
     "axios": "^1.7.9",
+    "framer-motion": "^12.43.0",
     "i18next": "^24.2.0",
     "lucide-react": "^0.468.0",
     "react": "^19.0.0",
