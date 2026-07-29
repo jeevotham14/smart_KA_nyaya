@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle2, ClipboardCheck, FileText, Info, Scale, UserCheck, ShieldCheck, Download, AlertTriangle, ArrowRight } from 'lucide-react';
+import { BookOpen, CheckCircle2, ClipboardCheck, FileText, Info, Scale, UserCheck, ShieldCheck, Download, AlertTriangle, ArrowRight } from 'lucide-react';
 import FormInput from '../components/FormInput.jsx';
 import { karnatakaDistricts } from '../data/mockData.js';
 import { getApiError, legalApi } from '../services/api.js';
