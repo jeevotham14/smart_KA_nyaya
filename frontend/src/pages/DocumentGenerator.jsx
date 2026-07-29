@@ -5,71 +5,19 @@ import {
   Clock, CheckCircle2, Shield, Download, Printer, Copy, Check, Sliders, RefreshCw,
   Globe, Plus, Trash2, ArrowUp, ArrowDown, PlusCircle, Star, Zap, ChevronUp
 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { DOCUMENT_CATALOG, CATEGORIES } from '../data/documentCatalog.js';
-import { karnatakaDistricts, documentTemplates } from '../data/mockData.js';
+import { karnatakaDistricts } from '../data/mockData.js';
 import { getApiError, legalApi } from '../services/api.js';
 import DownloadButtons from '../components/DownloadButtons.jsx';
 import DocumentPreview from '../components/DocumentPreview.jsx';
 import { useDraftManager } from '../components/DraftManager.jsx';
+import { getFormattedDraft } from '../data/documentTemplates.js';
 
 const DISTRICT_NAMES = Object.keys(karnatakaDistricts).sort();
 
-// Helper to build local draft text fallback
+// Helper to build local draft text fallback using specialized document templates
 function buildLocalDraft(docType, answers) {
-  const template = documentTemplates[docType] || documentTemplates.Complaint;
-  
-  if (docType === 'Vakalatnama placeholder') {
-    return `IN THE ${answers.courtName || '[COURT NAME]'}
-AT ${answers.place || 'BENGALURU'}
-
-CASE NO. ${answers.caseNumber || '[CASE NUMBER]'}
-
-${answers.petitioner || '[PETITIONER NAME]'} ... Petitioner / Plaintiff
-
-VERSUS
-
-${answers.respondent || '[RESPONDENT NAME]'} ... Respondent / Defendant
-
-VAKALATNAMA
-
-I/We, ${answers.petitioner || '[CLIENT NAME]'}, residing at ${answers.clientAddress || '[CLIENT ADDRESS]'}, do hereby appoint and retain ${answers.advocateName || '[ADVOCATE NAME]'}, Advocate (Enrollment No: ${answers.enrollmentNumber || '[ENROLLMENT NUMBER]'}), having office at ${answers.officeAddress || '[OFFICE ADDRESS]'}, to act, appear and plead for me/us in the above-mentioned matter.
-
-I/We authorize the said Advocate to:
-1. File, present, and defend any application, petition, or reply.
-2. Produce and receive documents/money.
-3. Accept service of notice or summons.
-4. Compromise, compound, or withdraw the case if deemed necessary.
-
-I/We agree to ratify all acts done by the said Advocate in pursuance of this authority.
-
-Date: ${answers.issueDate || new Date().toISOString().split('T')[0]}
-Place: ${answers.place || 'Bengaluru'}
-
-______________________
-Signature of Client (Executant)
-
-ACCEPTED
-______________________
-Signature of Advocate
-${answers.advocateName || '[ADVOCATE NAME]'}
-`;
-  }
-
-  return `${template.heading || (docType + ' Draft')}\n
-Applicant: ${answers.name || '[Applicant Name]'}
-District: ${answers.district || 'Bengaluru Urban'}
-Opposite Party / Authority: ${answers.respondent || '[Opposite Party Name]'}
-Date of Incident / Execution: ${answers.issueDate || new Date().toISOString().split('T')[0]}
-
-Facts:
-${answers.facts || '[Details of facts, chronological events, and background.]'}
-
-Relief / Prayer Requested:
-${answers.relief || template.request}
-
-Declaration:
-The above document draft is generated based on user input for legal aid & preparation support.`;
+  return getFormattedDraft(docType, answers);
 }
 
 // ── Interactive Sentence Manager Component ──
