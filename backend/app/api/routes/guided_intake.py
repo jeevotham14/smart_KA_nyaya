@@ -39,14 +39,15 @@ def _build_prompt(payload: IntakePayload) -> str:
     lines.append("")
     lines.append(
         "Based on the above details, provide comprehensive legal guidance including:\n"
-        "1. **Applicable Laws & Sections** relevant under Indian and Karnataka law\n"
-        "2. **Your Legal Rights** in this situation\n"
-        "3. **Recommended Next Steps** (step-by-step)\n"
-        "4. **Required Documents** to gather\n"
-        "5. **Authority to Approach** (which court, tribunal, or authority)\n"
-        "6. **Time Limits** (limitation periods, if applicable)\n"
-        "7. **Possible Outcomes** and what to expect\n\n"
-        "Respond in a clear, citizen-friendly format. Reference specific Acts and Sections."
+        "1. Applicable Laws & Sections relevant under Indian and Karnataka law\n"
+        "2. Your Legal Rights in this situation\n"
+        "3. Recommended Next Steps (step-by-step)\n"
+        "4. Required Documents to gather\n"
+        "5. Authority to Approach (which court, tribunal, or authority)\n"
+        "6. Time Limits (limitation periods, if applicable)\n"
+        "7. Possible Outcomes and what to expect\n\n"
+        "Respond in a clear, citizen-friendly format. Reference specific Acts and Sections.\n"
+        "IMPORTANT: Do NOT use any markdown formatting symbols like *, =, or # in your response. Just use plain text, spacing, and standard numbers."
     )
     return "\n".join(lines)
 
@@ -196,7 +197,7 @@ def guided_intake(payload: IntakePayload, db: Session = Depends(get_db)):
         "You are a legal awareness assistant for the Karnataka State Legal Services Authority (KSLSA). "
         "Provide helpful, accurate legal information referencing Indian and Karnataka law. "
         "Always recommend consulting a qualified advocate for official legal action. "
-        "Format your response with clear headings and bullet points."
+        "Format your response with clear plain text and spacing. Do NOT use markdown symbols like *, =, or #."
     )
     
     result = llm_router.route(
@@ -237,6 +238,7 @@ def guided_intake(payload: IntakePayload, db: Session = Depends(get_db)):
     )
 
     text_output = result.get("text", "")
+    text_output = text_output.replace("*", "").replace("#", "").replace("=", "")
 
     return {
         "guidance": text_output,
