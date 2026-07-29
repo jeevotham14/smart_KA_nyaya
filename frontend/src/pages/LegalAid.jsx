@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { BookOpen, CheckCircle2, ClipboardCheck, FileText, Info, Scale, UserCheck, ShieldCheck, Download, AlertTriangle, ArrowRight } from 'lucide-react';
@@ -9,6 +10,7 @@ import { getApiError, legalApi } from '../services/api.js';
 const DISTRICT_NAMES = Object.keys(karnatakaDistricts).sort();
 
 export default function LegalAid() {
+  const navigate = useNavigate();
   const [result, setResult] = useState(null);
   const [submittedValues, setSubmittedValues] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -78,6 +80,27 @@ export default function LegalAid() {
       setResult(null);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleActionClick = (action) => {
+    if (action.label === 'Apply for Free Legal Aid') {
+      handleDownloadDLSAForm();
+      return;
+    }
+    
+    if (action.action === 'call') {
+      window.location.href = `tel:${action.value}`;
+    } else if (action.action === 'navigate') {
+      if (action.value === 'documents' || action.value === 'domestic_violence_application') {
+         navigate('/document-generator');
+      } else if (action.value === 'guides' || action.value === 'lok_adalat') {
+         navigate('/resources');
+      } else if (action.value === 'dlsa' || action.value === 'protection_officer') {
+         navigate('/directory');
+      } else if (action.value.startsWith('/')) {
+         navigate(action.value);
+      }
     }
   };
 
@@ -266,7 +289,7 @@ Signature: __________________________
                         <p className="text-xs font-bold uppercase tracking-wider">{isKn ? 'ಶಿಫಾರಸು ಮಾಡಿದ ಕ್ರಮಗಳು:' : 'Recommended Actions:'}</p>
                         <div className="flex flex-col gap-2">
                            {result.tailored_guidance.actions.map((action, idx) => (
-                             <button key={idx} onClick={() => { if(action.label === 'Apply for Free Legal Aid') handleDownloadDLSAForm(); }} className={`premium-btn text-xs py-2.5 flex items-center justify-center gap-2 ${result.tailored_guidance.priority === 'emergency' ? 'premium-btn-red bg-alertRed text-white hover:bg-red-700' : 'premium-btn-gold'}`}>
+                             <button key={idx} onClick={() => handleActionClick(action)} className={`premium-btn text-xs py-2.5 flex items-center justify-center gap-2 ${result.tailored_guidance.priority === 'emergency' ? 'premium-btn-red bg-alertRed text-white hover:bg-red-700' : 'premium-btn-gold'}`}>
                                <span>{action.label}</span>
                              </button>
                            ))}
