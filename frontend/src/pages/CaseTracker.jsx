@@ -431,7 +431,16 @@ export default function CaseTracker() {
 
   const handleSearch = async (e) => {
     e?.preventDefault();
-    if (!query.trim()) return;
+    if (!district) {
+      setError(isKn ? 'ದಯವಿಟ್ಟು ಜಿಲ್ಲೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ' : 'Please choose the district');
+      setCaseData(null);
+      return;
+    }
+    if (!query.trim()) {
+      setError(isKn ? 'ದಯವಿಟ್ಟು ಪ್ರಕರಣ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ' : 'Please enter the case number');
+      setCaseData(null);
+      return;
+    }
     setLoading(true);
     setError('');
     setCaseData(null);
@@ -484,13 +493,18 @@ export default function CaseTracker() {
             <form onSubmit={handleSearch} className="mt-6 mx-auto max-w-2xl">
               <div className="grid gap-3 sm:grid-cols-[1fr_2fr_auto] items-center p-2 shadow-lg rounded-2xl border border-white/20 bg-white dark:bg-navy-900/90 backdrop-blur-xl focus-within:ring-2 focus-within:ring-legalGold/50 transition-all">
                 
-                {/* District Dropdown */}
+                {/* Mandatory District Dropdown */}
                 <select
                   value={district}
-                  onChange={(e) => setDistrict(e.target.value)}
-                  className="w-full bg-slate-100 dark:bg-navy-800 text-xs sm:text-sm font-semibold text-navy-900 dark:text-white px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:border-legalGold"
+                  onChange={(e) => {
+                    setDistrict(e.target.value);
+                    if (e.target.value) setError('');
+                  }}
+                  className={`w-full bg-slate-100 dark:bg-navy-800 text-xs sm:text-sm font-semibold text-navy-900 dark:text-white px-3 py-2.5 rounded-xl border ${
+                    !district ? 'border-amber-400 dark:border-amber-500/50' : 'border-slate-200 dark:border-slate-700'
+                  } outline-none focus:border-legalGold`}
                 >
-                  <option value="">{isKn ? 'ಎಲ್ಲಾ ಜಿಲ್ಲೆಗಳು (All Districts)' : 'All Districts (ಜಿಲ್ಲೆ)'}</option>
+                  <option value="">{isKn ? '-- ಜಿಲ್ಲೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ (Required) * --' : '-- Choose District (Required) * --'}</option>
                   {DISTRICT_LIST.map((dist) => (
                     <option key={dist} value={dist}>
                       {isKn && DISTRICT_NAMES_KN[dist] ? `${DISTRICT_NAMES_KN[dist]} (${dist})` : dist}
@@ -513,7 +527,7 @@ export default function CaseTracker() {
                 {/* Submit button */}
                 <button
                   type="submit"
-                  disabled={loading || !query.trim()}
+                  disabled={loading || !district || !query.trim()}
                   className="w-full sm:w-auto rounded-xl bg-navy-900 dark:bg-legalGold px-5 py-2.5 text-xs font-bold text-white dark:text-navy-950 hover:bg-navy-800 dark:hover:bg-yellow-500 disabled:opacity-50 transition-all shadow"
                 >
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (isKn ? 'ಟ್ರ್ಯಾಕ್ ಮಾಡಿ' : 'Track Status')}
@@ -526,7 +540,7 @@ export default function CaseTracker() {
         <section className="py-12 md:py-16">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
             {error && (
-              <div className="mb-8 flex items-center gap-3 rounded-2xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 p-4 text-sm font-semibold text-alertRed dark:text-red-400">
+              <div className="mb-8 flex items-center gap-3 rounded-2xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 p-4 text-sm font-semibold text-alertRed dark:text-red-400 animate-scale-in">
                 <AlertCircle className="h-5 w-5 shrink-0" />
                 <span>{error}</span>
               </div>
