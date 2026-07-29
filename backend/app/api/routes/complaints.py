@@ -87,14 +87,16 @@ def create_complaint(payload: ComplaintCreate, request: Request, background_task
     db.commit()
     db.refresh(row)
     
-    # Dispatch email asynchronously
-    background_tasks.add_task(
-        send_complaint_email_task, 
-        str(row.complaint_id), 
-        row.complaint_type, 
-        row.description, 
-        row.routed_authority
-    )
+    # Dispatch email synchronously to guarantee delivery before returning response
+    try:
+        send_complaint_email_task(
+            str(row.complaint_id), 
+            row.complaint_type, 
+            row.description, 
+            row.routed_authority
+        )
+    except Exception as err:
+        print(f"Error sending email: {err}", flush=True)
     
     return row
 
