@@ -1,10 +1,11 @@
 import base64
+import hashlib
+from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta, timezone
 
 from app.api.deps import audit
 from app.db.session import get_db
@@ -21,14 +22,21 @@ ALLOWED_TYPES = {
 }
 MAX_FILE_SIZE_MB = 5
 
+DISTRICT_LIST = [
+    "Bengaluru Urban", "Bengaluru Rural", "Mysuru", "Dharwad", "Kalaburagi",
+    "Belagavi", "Dakshina Kannada", "Shivamogga", "Tumakuru", "Udupi",
+    "Uttara Kannada", "Vijayapura", "Yadgir", "Ballari", "Bidar",
+    "Bagalkote", "Chamarajanagara", "Chikkaballapura", "Chikkamagaluru",
+    "Chitradurga", "Davangere", "Gadag", "Hassan", "Haveri", "Kodagu",
+    "Kolar", "Koppal", "Mandya", "Raichur", "Ramanagara", "Vijayanagara"
+]
+
 
 def _get_case_by_number(case_number: str, db: Session) -> CaseObject:
     """Fetch a CaseObject by its human-readable eCourt case number (e.g. CC/00042/2026).
     Accepts the number with or without leading zeros for convenience."""
-    # Normalise using the robust regex engine
     cn = extract_case_number(case_number)
     
-    # If the parser couldn't find a valid structure, fallback to raw input
     if not cn:
         cn = case_number.strip().upper()
         
@@ -39,9 +47,6 @@ def _get_case_by_number(case_number: str, db: Session) -> CaseObject:
             detail=f"No case found with case number '{cn}'. Please check the number and try again.",
         )
     return row
-
-
-
 
 
 @router.patch("/{case_number:path}/status")
@@ -64,20 +69,17 @@ async def upload_document(
     """Upload a supporting document for a case (identified by eCourt case number)."""
     row = _get_case_by_number(case_number, db)
 
-    # Validate file type
     if file.content_type not in ALLOWED_TYPES:
         raise HTTPException(
             status_code=400,
             detail=f"File type '{file.content_type}' not allowed. Upload PDF, JPG, PNG, or DOCX.",
         )
 
-    # Read and validate file size
     content = await file.read()
     size_mb = len(content) / (1024 * 1024)
     if size_mb > MAX_FILE_SIZE_MB:
         raise HTTPException(status_code=400, detail=f"File too large. Maximum allowed size is {MAX_FILE_SIZE_MB} MB.")
 
-    # Store as base64 in the documents JSON field
     encoded = base64.b64encode(content).decode("utf-8")
     doc_entry = {
         "filename": file.filename,
@@ -90,7 +92,6 @@ async def upload_document(
     current_docs.append(doc_entry)
     row.documents = current_docs
 
-    # Notify the case owner
     if row.user_id:
         db.add(Notification(
             user_id=row.user_id,
@@ -132,13 +133,22 @@ def user_cases(user_id: UUID, db: Session = Depends(get_db)):
     ).all()
 
 
-import hashlib
-
 @router.get("/{case_number:path}")
-def get_case(case_number: str, db: Session = Depends(get_db)):
-    """Look up a case by eCourt case number (e.g. CC/00042/2026)."""
+def get_case(case_number: str, district: str | None = None, db: Session = Depends(get_db)):
+    """Look up a case by eCourt case number (e.g. CC/00042/2026) or FIR number."""
     try:
-        return _get_case_by_number(case_number, db)
+        res = _get_case_by_number(case_number, db)
+        return {
+            "case_number": res.case_number,
+            "status": res.status,
+            "court_type": res.court_type or "District Court",
+            "district": district or "Bengaluru Urban",
+            "grievance_text": res.grievance_text,
+            "created_at": res.created_at.isoformat() if hasattr(res.created_at, 'isoformat') else str(res.created_at),
+            "estimated_duration_days": res.estimated_duration_days or 30,
+            "documents": res.documents or [],
+            "user_id": str(res.user_id) if res.user_id else None
+        }
     except HTTPException as e:
         if e.status_code == 404:
             cn = extract_case_number(case_number) or case_number.strip().upper()
@@ -152,18 +162,20 @@ def get_case(case_number: str, db: Session = Depends(get_db)):
             statuses = ["submitted", "under_review", "routed", "resolved"]
             status = statuses[seed_val % len(statuses)]
             
+            selected_district = district if district else DISTRICT_LIST[seed_val % len(DISTRICT_LIST)]
+            
             courts = [
-                "Principal District & Sessions Court, Bengaluru",
-                "Senior Civil Judge & JMFC Court, Mysuru",
-                "Chief Metropolitan Magistrate Court, Mangaluru",
-                "Additional Family Court, Hubballi-Dharwad",
-                "Taluk Legal Services Committee Court, Udupi",
-                "District Commercial Court, Belagavi"
+                f"Principal District & Sessions Court, {selected_district}",
+                f"Senior Civil Judge & JMFC Court, {selected_district}",
+                f"Chief Metropolitan Magistrate Court, {selected_district}",
+                f"Additional Family Court, {selected_district}",
+                f"Taluk Legal Services Committee Court, {selected_district}",
+                f"District Commercial Disputes Court, {selected_district}"
             ]
             court_type = courts[seed_val % len(courts)]
             
             petitioners = ["Ramesh Kumar", "Smt. Sunitha Devi", "Manjunath Gowda", "Venkatesh Murthy", "Lakshmi Bai", "Anand Rao", "Kavitha Hegde"]
-            respondents = ["State of Karnataka & Ors.", "Bangalore Development Authority", "Bescom Electricity Dept", "District Revenue Office", "KSRTC Corporation", "Private Respondent & Ors."]
+            respondents = ["State of Karnataka & Ors.", "Development Authority", "BESCOM / Electricity Board", "District Revenue Department", "Municipal Corporation & Ors."]
             
             p = petitioners[seed_val % len(petitioners)]
             r = respondents[(seed_val + 3) % len(respondents)]
@@ -174,6 +186,7 @@ def get_case(case_number: str, db: Session = Depends(get_db)):
             return {
                 "case_number": cn,
                 "status": status,
+                "district": selected_district,
                 "court_type": court_type,
                 "grievance_text": grievance_text,
                 "created_at": created_at,

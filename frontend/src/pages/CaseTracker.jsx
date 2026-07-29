@@ -2,12 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   AlertCircle, Bell, BellOff, Calendar, CheckCheck, ChevronRight,
-  ClipboardList, FileText, Gavel, Loader2, Paperclip, Scale,
+  ClipboardList, FileText, Gavel, Loader2, MapPin, Paperclip, Scale,
   Search, ShieldCheck, Upload, User, X,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getApiError, legalApi, notificationApi } from '../services/api.js';
 import { karnatakaDistricts } from '../data/mockData.js';
+import { DISTRICT_NAMES_KN } from './Directory.jsx';
 import { ErrorBoundary } from '../components/ErrorBoundary.jsx';
 import CaseTimeline from '../components/CaseTimeline.jsx';
 
@@ -27,6 +28,8 @@ const SEARCH_TABS = [
   { id: 'case_no',   label: 'Case Number', labelKn: 'ಪ್ರಕರಣ ಸಂಖ್ಯೆ', placeholder: 'e.g. CC/00042/2026', placeholderKn: 'ಉದಾ: ಸಿಆರ್‌ಸಿ/೦೦೦೪೨/೨೦೨೬' },
   { id: 'fir',       label: 'FIR Number',  labelKn: 'ಎಫ್‌ಐಆರ್ ಸಂಖ್ಯೆ',  placeholder: 'e.g. FIR/112/2026', placeholderKn: 'ಉದಾ: ಎಫ್‌ಐಆರ್/೧೧೨/೨೦೨೬' },
 ];
+
+const DISTRICT_LIST = Object.keys(karnatakaDistricts).sort();
 
 function NotificationPanel({ userId }) {
   const { t, i18n } = useTranslation();
@@ -248,6 +251,9 @@ function CaseDetailPanel({ caseData, docRefresh, setDocRefresh }) {
   const curStep = stepIndex(caseData.status);
   const petitioner = caseData.grievance_text?.split(' ').slice(0, 2).join(' ') || (isKn ? 'ಅರ್ಜಿದಾರರು' : 'Petitioner');
   
+  const districtName = caseData.district || 'Bengaluru Urban';
+  const districtDisplay = isKn && DISTRICT_NAMES_KN[districtName] ? DISTRICT_NAMES_KN[districtName] : districtName;
+
   const safeDateParse = (dateVal) => {
     if (!dateVal) return new Date();
     const d = new Date(dateVal);
@@ -282,7 +288,12 @@ function CaseDetailPanel({ caseData, docRefresh, setDocRefresh }) {
         <div className="p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-legalGold">{isKn ? 'ಪ್ರಕರಣ ಸಂಖ್ಯೆ' : 'Case Number'}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-xs font-semibold uppercase tracking-widest text-legalGold">{isKn ? 'ಪ್ರಕರಣ ಸಂಖ್ಯೆ' : 'Case Number'}</p>
+                <span className="inline-flex items-center gap-1 rounded-full bg-legalGold/10 dark:bg-legalGold/20 px-2.5 py-0.5 text-xs font-bold text-legalGold">
+                  <MapPin className="h-3 w-3" /> {districtDisplay}
+                </span>
+              </div>
               <p className="mt-1 font-mono text-2xl font-black tracking-widest text-navy-900 dark:text-white">{caseData.case_number}</p>
               {caseData.court_type && (
                 <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-300">
@@ -311,7 +322,11 @@ function CaseDetailPanel({ caseData, docRefresh, setDocRefresh }) {
             </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-3 border-t border-slate-100 dark:border-slate-800 pt-4 sm:grid-cols-3">
+          <div className="mt-4 grid grid-cols-2 gap-3 border-t border-slate-100 dark:border-slate-800 pt-4 sm:grid-cols-4">
+            <div>
+              <p className="text-xs text-slate-400">{isKn ? 'ಜಿಲ್ಲೆ (District)' : 'District'}</p>
+              <p className="mt-0.5 text-sm font-semibold text-navy-900 dark:text-white">{districtDisplay}</p>
+            </div>
             <div>
               <p className="text-xs text-slate-400">{isKn ? 'ಸಲ್ಲಿಸಿದ ದಿನಾಂಕ' : 'Filing Date'}</p>
               <p className="mt-0.5 text-sm font-semibold text-navy-900 dark:text-white">{formatDate(createdDate)}</p>
@@ -406,6 +421,7 @@ export default function CaseTracker() {
 
   const [searchTab, setSearchTab] = useState('case_no');
   const [query, setQuery] = useState('');
+  const [district, setDistrict] = useState('');
   const [loading, setLoading] = useState(false);
   const [caseData, setCaseData] = useState(null);
   const [error, setError] = useState('');
@@ -420,7 +436,7 @@ export default function CaseTracker() {
     setError('');
     setCaseData(null);
     try {
-      const data = await legalApi.getCaseStatus(query.trim());
+      const data = await legalApi.getCaseStatus(query.trim(), district);
       setCaseData(data);
     } catch (err) {
       setError(getApiError(err) || (isKn ? 'ಪ್ರಕರಣದ ವಿವರಗಳು ಕಂಡುಬಂದಿಲ್ಲ. ದಯವಿಟ್ಟು ಸರಿ ಪ್ರಕರಣ ಸಂಖ್ಯೆಯನ್ನು ಪರಿಶೀಲಿಸಿ.' : 'Case details not found. Please verify the case number.'));
@@ -465,20 +481,40 @@ export default function CaseTracker() {
               ))}
             </div>
 
-            <form onSubmit={handleSearch} className="mt-6 mx-auto max-w-xl">
-              <div className="relative flex items-center shadow-lg rounded-2xl border border-white/20 bg-white dark:bg-navy-900/90 backdrop-blur-xl focus-within:ring-2 focus-within:ring-legalGold/50 transition-all">
-                <Search className="absolute left-4 h-5 w-5 text-slate-400" />
-                <input
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder={isKn && activeTabObj?.placeholderKn ? activeTabObj.placeholderKn : activeTabObj?.placeholder}
-                  className="w-full bg-transparent pl-12 pr-28 py-4 text-sm sm:text-base text-navy-900 dark:text-white placeholder-slate-400 outline-none font-mono"
-                />
+            <form onSubmit={handleSearch} className="mt-6 mx-auto max-w-2xl">
+              <div className="grid gap-3 sm:grid-cols-[1fr_2fr_auto] items-center p-2 shadow-lg rounded-2xl border border-white/20 bg-white dark:bg-navy-900/90 backdrop-blur-xl focus-within:ring-2 focus-within:ring-legalGold/50 transition-all">
+                
+                {/* District Dropdown */}
+                <select
+                  value={district}
+                  onChange={(e) => setDistrict(e.target.value)}
+                  className="w-full bg-slate-100 dark:bg-navy-800 text-xs sm:text-sm font-semibold text-navy-900 dark:text-white px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:border-legalGold"
+                >
+                  <option value="">{isKn ? 'ಎಲ್ಲಾ ಜಿಲ್ಲೆಗಳು (All Districts)' : 'All Districts (ಜಿಲ್ಲೆ)'}</option>
+                  {DISTRICT_LIST.map((dist) => (
+                    <option key={dist} value={dist}>
+                      {isKn && DISTRICT_NAMES_KN[dist] ? `${DISTRICT_NAMES_KN[dist]} (${dist})` : dist}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Case Number / FIR Query input */}
+                <div className="relative flex items-center w-full">
+                  <Search className="absolute left-3 h-4 w-4 text-slate-400" />
+                  <input
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder={isKn && activeTabObj?.placeholderKn ? activeTabObj.placeholderKn : activeTabObj?.placeholder}
+                    className="w-full bg-transparent pl-9 pr-3 py-2.5 text-xs sm:text-sm text-navy-900 dark:text-white placeholder-slate-400 outline-none font-mono"
+                  />
+                </div>
+
+                {/* Submit button */}
                 <button
                   type="submit"
                   disabled={loading || !query.trim()}
-                  className="absolute right-2.5 rounded-xl bg-navy-900 dark:bg-legalGold px-5 py-2.5 text-xs font-bold text-white dark:text-navy-950 hover:bg-navy-800 dark:hover:bg-yellow-500 disabled:opacity-50 transition-all shadow"
+                  className="w-full sm:w-auto rounded-xl bg-navy-900 dark:bg-legalGold px-5 py-2.5 text-xs font-bold text-white dark:text-navy-950 hover:bg-navy-800 dark:hover:bg-yellow-500 disabled:opacity-50 transition-all shadow"
                 >
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (isKn ? 'ಟ್ರ್ಯಾಕ್ ಮಾಡಿ' : 'Track Status')}
                 </button>

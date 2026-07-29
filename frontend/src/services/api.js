@@ -7,7 +7,6 @@ const api = axios.create({
   timeout: 30000,
 });
 
-// Separate client with longer timeout for AI calls
 const aiApi = axios.create({
   baseURL: API_BASE_URL,
   timeout: 45000,
@@ -37,8 +36,6 @@ function incomeToAnnualIncome(income) {
 }
 
 function serviceTypeToBackend(value) {
-  // Directory filter values are already backend enum strings (e.g. 'court', 'dlsa')
-  // Keep legacy label→value map for any old callsites
   const legacy = {
     Court: 'court',
     DLSA: 'dlsa',
@@ -91,7 +88,7 @@ export const legalApi = {
     });
     return {
       answer: data.answer,
-      steps: [],          // steps now embedded in the answer text
+      steps: [],
       category: data.category,
       urgency: data.urgency,
       provider: data.provider,
@@ -168,12 +165,20 @@ export const legalApi = {
     });
     return data;
   },
-  trackCase: async (trackingId) => {
-    const { data } = await api.get(`/api/tracker/${trackingId}`);
+  getCaseStatus: async (trackingId, district) => {
+    const { data } = await api.get(`/api/tracker/${encodeURIComponent(trackingId)}`, {
+      params: { district: district || undefined }
+    });
+    return data;
+  },
+  trackCase: async (trackingId, district) => {
+    const { data } = await api.get(`/api/tracker/${encodeURIComponent(trackingId)}`, {
+      params: { district: district || undefined }
+    });
     return data;
   },
   getCaseTimeline: async (caseId) => {
-    const { data } = await api.get(`/api/timeline/${caseId}`);
+    const { data } = await api.get(`/api/timeline/${encodeURIComponent(caseId)}`);
     return data;
   },
   uploadEvidence: async (caseId, file) => {
@@ -195,13 +200,13 @@ export const legalApi = {
   uploadCaseDocument: async (caseId, file) => {
     const formData = new FormData();
     formData.append('file', file);
-    const { data } = await api.post(`/api/tracker/${caseId}/upload-document`, formData, {
+    const { data } = await api.post(`/api/tracker/${encodeURIComponent(caseId)}/upload-document`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return data;
   },
   listCaseDocuments: async (caseId) => {
-    const { data } = await api.get(`/api/tracker/${caseId}/documents`);
+    const { data } = await api.get(`/api/tracker/${encodeURIComponent(caseId)}/documents`);
     return data;
   },
   submitIntake: async (payload) => {
@@ -256,7 +261,6 @@ export const notificationApi = {
     return data;
   },
   markAllRead: async (userId) => {
-    // Mark all unread notifications as read for a user
     const notifications = await notificationApi.fetchForUser(userId);
     const unread = notifications.filter((n) => !n.read_status);
     await Promise.all(unread.map((n) => notificationApi.markRead(n.notification_id)));
