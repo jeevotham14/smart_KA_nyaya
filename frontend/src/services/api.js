@@ -143,7 +143,9 @@ export const legalApi = {
       category: values.category,
       annual_income: incomeToAnnualIncome(values.income),
       disability: values.disability === 'Yes',
-      case_type: values.caseType,
+      case_type: values.case_type,
+      urgent_safety_concern: values.urgent_safety_concern || false,
+      district: values.district || null,
     });
     return data;
   },

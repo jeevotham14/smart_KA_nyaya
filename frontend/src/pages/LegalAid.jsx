@@ -27,6 +27,7 @@ export default function LegalAid() {
       is_transgender: false,
       is_ex_serviceman: false,
       is_industrial_workmen: false,
+      urgent_safety_concern: false,
     },
   });
 
@@ -67,6 +68,8 @@ export default function LegalAid() {
         is_transgender: values.category === 'Transgender',
         is_ex_serviceman: values.category === 'Ex-serviceman',
         is_industrial_workmen: values.category === 'Industrial Workmen',
+        district: values.district,
+        urgent_safety_concern: values.urgent_safety_concern,
       };
       const res = await legalApi.checkEligibility(payload);
       setResult(res);
@@ -211,7 +214,19 @@ Signature: __________________________
                 )}
 
                 <FormInput label={t('legalAid.gender')} name="gender" register={register} options={[t('legalAid.female'), t('legalAid.male'), t('legalAid.other')]} />
-                <FormInput label={t('legalAid.caseType')} name="caseType" register={register} options={[t('legalAid.family'), t('legalAid.civil'), t('legalAid.criminal'), t('legalAid.labourCase'), t('legalAid.domesticViolence'), t('legalAid.propertyCase')]} />
+                <FormInput label={t('legalAid.caseType')} name="caseType" register={register} options={['consumer', 'property', 'family', 'employment', 'cyber', 'criminal', 'domestic_violence']} />
+              </div>
+
+              <div className="mt-4 flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="urgent_safety_concern"
+                  {...register('urgent_safety_concern')}
+                  className="h-4 w-4 rounded border-slate-300 text-alertRed focus:ring-alertRed"
+                />
+                <label htmlFor="urgent_safety_concern" className="text-sm font-semibold text-alertRed">
+                  {isKn ? 'ಇದು ತುರ್ತು ಸುರಕ್ಷತಾ ಕಾಳಜಿಯಾಗಿದೆ (ಉದಾ: ಗೃಹ ಹಿಂಸೆ)' : 'This is an urgent safety concern (e.g., domestic violence)'}
+                </label>
               </div>
 
               <div className="mt-6 flex flex-col gap-3 border-t border-slate-200 dark:border-slate-800 pt-5 sm:flex-row sm:items-center sm:justify-between">
@@ -228,51 +243,72 @@ Signature: __________________________
                 <h3 className="font-serif text-2xl font-bold text-navy-900 dark:text-white">{t('legalAid.eligibilityResult')}</h3>
                 {error ? <p className="mt-5 rounded-lg bg-red-50 dark:bg-red-900/30 p-3 text-sm font-semibold text-alertRed dark:text-red-400">{error}</p> : null}
                 {result ? (
-                  <div className={`mt-5 rounded-xl border p-5 text-sm leading-6 ${result.eligible ? 'border-emerald-300 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-100' : 'border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40 text-amber-900 dark:text-amber-100'}`}>
+                  <div className={`mt-5 rounded-xl border p-5 text-sm leading-6 ${result.tailored_guidance?.priority === 'emergency' ? 'border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950/40 text-red-900 dark:text-red-100' : result.eligible ? 'border-emerald-300 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-100' : 'border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40 text-amber-900 dark:text-amber-100'}`}>
                     <div className="flex items-center gap-3 mb-2">
-                      {result.eligible ? (
+                      {result.tailored_guidance?.priority === 'emergency' ? (
+                        <AlertTriangle className="h-7 w-7 text-red-600 dark:text-red-400" />
+                      ) : result.eligible ? (
                         <CheckCircle2 className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />
                       ) : (
                         <AlertTriangle className="h-7 w-7 text-amber-600 dark:text-amber-400" />
                       )}
                       <div>
                         <p className="font-bold text-base">
-                          {result.eligible
-                            ? (isKn ? 'ನೀವು ಉಚಿತ ಕಾನೂನು ನೆರವಿಗೆ ಅರ್ಹರಾಗಿದ್ದೀರಿ!' : 'Eligible for Free Legal Aid!')
-                            : (isKn ? 'ಆದಾಯ ಮಿತಿ ಮೀರಿದೆ —ರ್ಯಾಯ ಮಾರ್ಗಗಳು' : 'Exceeds Income Threshold — Alternate Options')}
+                          {result.tailored_guidance ? result.tailored_guidance.title : (result.eligible ? (isKn ? 'ನೀವು ಉಚಿತ ಕಾನೂನು ನೆರವಿಗೆ ಅರ್ಹರಾಗಿದ್ದೀರಿ!' : 'Eligible for Free Legal Aid!') : (isKn ? 'ಆದಾಯ ಮಿತಿ ಮೀರಿದೆ —ರ್ಯಾಯ ಮಾರ್ಗಗಳು' : 'Exceeds Income Threshold — Alternate Options'))}
                         </p>
                       </div>
                     </div>
 
-                    <p className="mt-2 font-medium">{result.reason}</p>
+                    <p className="mt-2 font-medium">{result.tailored_guidance ? result.tailored_guidance.description : result.reason}</p>
 
-                    {result.eligible ? (
-                      <div className="mt-4 pt-4 border-t border-emerald-200 dark:border-emerald-800 space-y-3">
-                        <button
-                          type="button"
-                          onClick={handleDownloadDLSAForm}
-                          className="w-full premium-btn premium-btn-gold text-xs py-2.5 flex items-center justify-center gap-2"
-                        >
-                          <Download className="h-4 w-4" />
-                          <span>{isKn ? 'ಡಿಎಲ್‌ಎಸ್‌ಎ ಅರ್ಜಿ ನಮೂನೆ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ' : 'Download Pre-filled DLSA Form'}</span>
-                        </button>
-                        <p className="text-xs text-emerald-700 dark:text-emerald-300">
-                          {submittedValues?.district} DLSA Desk: Court Buildings, {submittedValues?.district}, Karnataka.
-                        </p>
+                    {result.tailored_guidance && result.tailored_guidance.actions?.length > 0 && (
+                      <div className="mt-4 pt-4 border-t border-opacity-30 border-current space-y-3">
+                        <p className="text-xs font-bold uppercase tracking-wider">{isKn ? 'ಶಿಫಾರಸು ಮಾಡಿದ ಕ್ರಮಗಳು:' : 'Recommended Actions:'}</p>
+                        <div className="flex flex-col gap-2">
+                           {result.tailored_guidance.actions.map((action, idx) => (
+                             <button key={idx} onClick={() => { if(action.label === 'Apply for Free Legal Aid') handleDownloadDLSAForm(); }} className={`premium-btn text-xs py-2.5 flex items-center justify-center gap-2 ${result.tailored_guidance.priority === 'emergency' ? 'premium-btn-red bg-alertRed text-white hover:bg-red-700' : 'premium-btn-gold'}`}>
+                               <span>{action.label}</span>
+                             </button>
+                           ))}
+                        </div>
                       </div>
-                    ) : (
-                      <div className="mt-4 pt-4 border-t border-amber-200 dark:border-amber-800 space-y-2">
-                        <p className="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-200">
-                          {isKn ? 'ಲಭ್ಯವಿರುವ ಪರ್ಯಾಯ ಮಾರ್ಗಗಳು:' : 'Recommended Alternate Action Paths:'}
-                        </p>
-                        {result.alternate_paths?.map((path, idx) => (
-                          <div key={idx} className="flex items-start gap-2 text-xs text-amber-900 dark:text-amber-200">
-                            <ArrowRight className="h-3.5 w-3.5 shrink-0 mt-0.5 text-amber-600" />
-                            <span>{path}</span>
+                    )}
+
+                    {result.tailored_guidance && result.tailored_guidance.emergency_numbers?.length > 0 && (
+                      <div className="mt-4 pt-4 border-t border-opacity-30 border-current space-y-2">
+                         <p className="text-xs font-bold uppercase tracking-wider">{isKn ? 'ತುರ್ತು ಸಂಪರ್ಕಗಳು:' : 'Emergency Contacts:'}</p>
+                         <div className="flex gap-3">
+                           {result.tailored_guidance.emergency_numbers.map((num, idx) => (
+                              <a key={idx} href={`tel:${num}`} className="font-bold text-lg text-red-600 dark:text-red-400 underline">{num}</a>
+                           ))}
+                         </div>
+                      </div>
+                    )}
+
+                    {result.tailored_guidance && result.tailored_guidance.recommended_documents?.length > 0 && (
+                      <div className="mt-4 pt-4 border-t border-opacity-30 border-current space-y-2">
+                        <p className="text-xs font-bold uppercase tracking-wider">{isKn ? 'ದಾಖಲೆಗಳು:' : 'Documents:'}</p>
+                        {result.tailored_guidance.recommended_documents.map((doc, idx) => (
+                          <div key={idx} className="flex items-start gap-2 text-xs">
+                            <FileText className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                            <span>{doc}</span>
                           </div>
                         ))}
                       </div>
                     )}
+                    
+                    {result.tailored_guidance && result.tailored_guidance.recommended_resources?.length > 0 && (
+                      <div className="mt-4 pt-4 border-t border-opacity-30 border-current space-y-2">
+                        <p className="text-xs font-bold uppercase tracking-wider">{isKn ? 'ಮಾರ್ಗದರ್ಶಿಗಳು:' : 'Guides:'}</p>
+                        {result.tailored_guidance.recommended_resources.map((res, idx) => (
+                          <div key={idx} className="flex items-start gap-2 text-xs">
+                            <BookOpen className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                            <span>{res}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
                   </div>
                 ) : !error ? (
                   <p className="mt-5 text-sm leading-6 text-slate-600 dark:text-slate-400">{t('legalAid.submitPrompt')}</p>
