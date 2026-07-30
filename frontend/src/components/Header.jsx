@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { Languages, Menu, Scale, Search, Sparkles, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import ThemeToggle from './ThemeToggle';
-
 const navItems = [
   ['nav.home', '/'],
   ['nav.about', '/about'],
@@ -81,7 +79,6 @@ export default function Header() {
               </span>
             </Link>
             <div className="hidden items-center gap-3 lg:flex">
-              <ThemeToggle />
               <button
                 className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm font-semibold transition-all duration-300 hover:border-legalGold hover:text-legalGold hover:shadow-[0_0_15px_rgba(196,154,58,0.15)]"
                 onClick={() => i18n.changeLanguage(nextLang)}
@@ -120,7 +117,6 @@ export default function Header() {
               ))}
             </div>
             <div className="flex gap-3 lg:hidden">
-              <ThemeToggle />
               <button
                 className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-white/20 px-3 py-2 text-sm font-bold"
                 onClick={() => i18n.changeLanguage(nextLang)}

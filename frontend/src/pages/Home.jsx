@@ -62,6 +62,41 @@ export default function Home() {
   const [classifying, setClassifying] = useState(false);
   const [classifyResult, setClassifyResult] = useState(null);
   const [error, setError] = useState('');
+  const [isListening, setIsListening] = useState(false);
+
+  const startListening = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert(isKn ? 'ನಿಮ್ಮ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಧ್ವನಿ ಗುರುತಿಸುವಿಕೆ ಲಭ್ಯವಿಲ್ಲ.' : 'Speech recognition is not supported in this browser.');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = isKn ? 'kn-IN' : 'en-IN';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setSituationText(transcript);
+      navigate(`/ai-legal-guidance?q=${encodeURIComponent(transcript)}`);
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error', event.error);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.start();
+  };
 
   const handleHeroClassify = async (e) => {
     e.preventDefault();
@@ -162,8 +197,8 @@ export default function Home() {
                 <div className="absolute right-2 top-2 bottom-2 flex items-center gap-1.5">
                   <button
                     type="button"
-                    onClick={() => navigate('/ai-legal-guidance')}
-                    className="p-2.5 rounded-xl text-slate-400 hover:text-legalGold hover:bg-legalGold/10 transition-colors"
+                    onClick={startListening}
+                    className={`p-2.5 rounded-xl transition-colors ${isListening ? 'text-red-500 animate-pulse bg-red-500/10' : 'text-slate-400 hover:text-legalGold hover:bg-legalGold/10'}`}
                     title={isKn ? 'ಧ್ವನಿ ಮೂಲಕ ಕೇಳಿ' : 'Ask via Voice'}
                   >
                     <Mic className="h-5 w-5" />
@@ -258,8 +293,7 @@ export default function Home() {
       <AnimatedSection>
         <section className="relative -mt-6 z-10">
           <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-            <div className="glass-card grid grid-cols-2 gap-6 p-8 md:grid-cols-4 md:gap-8 bg-white dark:bg-navy-900 border border-slate-200 dark:border-slate-800 shadow-xl rounded-2xl">
-              <StatItem value={50000} suffix="+" label={isKn ? 'ನೆರವು ಪಡೆದ ನಾಗರಿಕರು' : 'Citizens Helped'} />
+            <div className="glass-card grid grid-cols-1 gap-6 p-8 md:grid-cols-3 md:gap-8 bg-white dark:bg-navy-900 border border-slate-200 dark:border-slate-800 shadow-xl rounded-2xl">
               <StatItem value={31} label={isKn ? 'ಒಳಗೊಂಡ ಜಿಲ್ಲೆಗಳು' : 'Districts Covered'} />
               <StatItem value={24} suffix="/7" label={isKn ? 'AI ಬೆಂಬಲ' : 'AI Support'} />
               <StatItem value={100} suffix="%" label={isKn ? 'ಉಚಿತ ಸಾರ್ವಜನಿಕ ಸೇವೆ' : 'Free Access'} />
