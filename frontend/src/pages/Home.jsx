@@ -65,6 +65,8 @@ export default function Home() {
   const [isListening, setIsListening] = useState(false);
 
   const startListening = () => {
+    if (isListening) return;
+
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       alert(isKn ? 'ನಿಮ್ಮ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಧ್ವನಿ ಗುರುತಿಸುವಿಕೆ ಲಭ್ಯವಿಲ್ಲ.' : 'Speech recognition is not supported in this browser.');
@@ -73,29 +75,54 @@ export default function Home() {
 
     const recognition = new SpeechRecognition();
     recognition.lang = isKn ? 'kn-IN' : 'en-IN';
-    recognition.interimResults = false;
+    recognition.interimResults = true;
     recognition.maxAlternatives = 1;
 
     recognition.onstart = () => {
       setIsListening(true);
+      setSituationText('');
     };
 
     recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      setSituationText(transcript);
-      navigate(`/ai-legal-guidance?q=${encodeURIComponent(transcript)}`);
+      let finalTranscript = '';
+      let interimTranscript = '';
+      
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        } else {
+          interimTranscript += event.results[i][0].transcript;
+        }
+      }
+      
+      const currentText = finalTranscript || interimTranscript;
+      setSituationText(currentText);
+      
+      if (finalTranscript.trim()) {
+         setIsListening(false);
+         recognition.stop();
+         navigate(`/ai-legal-guidance?q=${encodeURIComponent(finalTranscript.trim())}`);
+      }
     };
 
     recognition.onerror = (event) => {
       console.error('Speech recognition error', event.error);
       setIsListening(false);
+      if (event.error === 'not-allowed') {
+        alert(isKn ? 'ದಯವಿಟ್ಟು ಮೈಕ್ರೊಫೋನ್ ಅನುಮತಿಯನ್ನು ನೀಡಿ.' : 'Please allow microphone access to use voice search.');
+      }
     };
 
     recognition.onend = () => {
       setIsListening(false);
     };
 
-    recognition.start();
+    try {
+      recognition.start();
+    } catch (e) {
+      console.error(e);
+      setIsListening(false);
+    }
   };
 
   const handleHeroClassify = async (e) => {
