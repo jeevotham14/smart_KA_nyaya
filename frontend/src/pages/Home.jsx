@@ -101,7 +101,7 @@ export default function Home() {
       if (finalTranscript.trim()) {
          setIsListening(false);
          recognition.stop();
-         navigate(`/ai-legal-guidance?q=${encodeURIComponent(finalTranscript.trim())}`);
+         submitClassification(finalTranscript.trim());
       }
     };
 
@@ -125,25 +125,29 @@ export default function Home() {
     }
   };
 
-  const handleHeroClassify = async (e) => {
-    e.preventDefault();
-    if (!situationText.trim()) return;
+  const submitClassification = async (text) => {
+    if (!text.trim()) return;
     setClassifying(true);
     setError('');
     setClassifyResult(null);
     try {
       const res = await legalApi.classifyDocument({
-        text: situationText.trim(),
+        text: text.trim(),
         language: isKn ? 'kn' : 'en',
       });
       setClassifyResult(res);
     } catch (err) {
       console.error('Hero classification failed', err);
       // Fallback redirect to AI guidance if API fails
-      navigate(`/ai-legal-guidance?q=${encodeURIComponent(situationText)}`);
+      navigate(`/ai-legal-guidance?q=${encodeURIComponent(text)}`);
     } finally {
       setClassifying(false);
     }
+  };
+
+  const handleHeroClassify = async (e) => {
+    e.preventDefault();
+    await submitClassification(situationText);
   };
 
   // 3-card "What We Do" section — focused, not a feature dump
