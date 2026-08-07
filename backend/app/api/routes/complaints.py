@@ -1,8 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, BackgroundTasks
-import smtplib
-from email.message import EmailMessage
+import httpx
 import os
 
 from sqlalchemy import select
@@ -28,43 +27,43 @@ from app.core.config import get_settings
 
 def send_email(subject: str, body: str, to_email: str):
     settings = get_settings()
-    host = settings.smtp_host
-    port = settings.smtp_port
-    username = settings.smtp_username
-    password = settings.smtp_password
-    from_email = settings.smtp_from or username
+    api_key = settings.email_api_key
+    from_email = settings.smtp_from or "jeevpai2005@gmail.com"
 
-    if not password or not username:
-        raise ValueError("Missing SMTP_USERNAME or SMTP_PASSWORD in environment variables.")
+    if not api_key:
+        raise ValueError("Missing EMAIL_API_KEY in environment variables.")
 
-    msg = EmailMessage()
-    msg.set_content(body)
-    msg['Subject'] = subject
-    msg['From'] = from_email
-    msg['To'] = to_email
+    url = "https://api.brevo.com/v3/smtp/email"
+    headers = {
+        "accept": "application/json",
+        "api-key": api_key,
+        "content-type": "application/json"
+    }
+    payload = {
+        "sender": {"name": "Smart Karnataka Nyaya", "email": from_email},
+        "to": [{"email": to_email}],
+        "subject": subject,
+        "textContent": body
+    }
 
     try:
-        with smtplib.SMTP(host, port, timeout=10) as server:
-            server.ehlo()
-            server.starttls()
-            server.login(username, password)
-            server.send_message(msg)
+        with httpx.Client(timeout=10.0) as client:
+            response = client.post(url, headers=headers, json=payload)
+            response.raise_for_status()
         print(f"Successfully sent email to {to_email}", flush=True)
-    except smtplib.SMTPAuthenticationError as e:
-        raise ValueError(f"SMTP Authentication failed. Check your App Password: {e}")
-    except smtplib.SMTPConnectError as e:
-        raise ValueError(f"SMTP Connection failed: {e}")
+    except httpx.HTTPStatusError as e:
+        raise ValueError(f"Email API rejected request: {e.response.text}")
     except Exception as e:
-        raise ValueError(f"SMTP Error: {e}")
+        raise ValueError(f"Email API Connection Error: {e}")
 
 @router.post("/test-email")
 def test_email_endpoint():
     settings = get_settings()
-    target_email = settings.smtp_username or "jeevpai2005@gmail.com"
+    target_email = settings.smtp_from or "jeevpai2005@gmail.com"
     try:
         send_email(
             subject="Test Email from Smart Nyaya", 
-            body="If you are reading this, your SMTP configuration is working perfectly on Port 587 with STARTTLS!", 
+            body="If you are reading this, your Email API configuration is working perfectly over HTTPS!", 
             to_email=target_email
         )
         return {"message": f"Test email sent successfully to {target_email}!"}
@@ -90,7 +89,7 @@ def create_complaint(payload: ComplaintCreate, request: Request, db: Session = D
     
     # 1. Send Authority Email (Blocks API until success)
     settings = get_settings()
-    authority_email = settings.smtp_username or "jeevpai2005@gmail.com"
+    authority_email = settings.smtp_from or "jeevpai2005@gmail.com"
     subject = f"Complaint Registered: {row.complaint_type}"
     body = f"""Hello,
 
