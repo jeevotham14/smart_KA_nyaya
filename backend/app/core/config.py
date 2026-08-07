@@ -34,8 +34,11 @@ class Settings(BaseSettings):
     email_api_key: str | None = None
 
     # SMTP Mail
-    smtp_user: str | None = None
-    smtp_pass: str | None = None
+    smtp_host: str = "smtp.gmail.com"
+    smtp_port: int = 587
+    smtp_username: str | None = None
+    smtp_password: str | None = None
+    smtp_from: str | None = None
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

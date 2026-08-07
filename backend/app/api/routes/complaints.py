@@ -26,24 +26,39 @@ def route_authority(complaint_type: str, district: str) -> str:
 
 from app.core.config import get_settings
 
-def send_complaint_email_task(complaint_id: str, complaint_type: str, description: str, routed_authority: str):
-    from dotenv import load_dotenv
-    import os
-    env_path = os.path.join(os.path.dirname(__file__), "../../..", ".env")
-    load_dotenv(dotenv_path=env_path, override=True)
-    
+def send_email(subject: str, body: str, to_email: str):
     settings = get_settings()
-    sender_email = settings.smtp_user or os.getenv("SMTP_USER", "noreply@smartnyaya.in")
-    sender_pass = settings.smtp_pass or os.getenv("SMTP_PASS", "")
-    target_email = "jeevpai2005@gmail.com"
+    host = settings.smtp_host
+    port = settings.smtp_port
+    username = settings.smtp_username
+    password = settings.smtp_password
+    from_email = settings.smtp_from or username
 
-    if not sender_pass:
-        print(f"[Email Task] SMTP_PASS not set. Skipping email dispatch to {target_email} for complaint {complaint_id}")
-        return
+    if not password or not username:
+        print(f"[SMTP Error] Missing SMTP_USERNAME or SMTP_PASSWORD. Cannot send email to {to_email}.")
+        return False
 
     msg = EmailMessage()
-    msg.set_content(f"""
-Hello,
+    msg.set_content(body)
+    msg['Subject'] = subject
+    msg['From'] = from_email
+    msg['To'] = to_email
+
+    try:
+        with smtplib.SMTP(host, port, timeout=10) as server:
+            server.ehlo()
+            server.starttls()
+            server.login(username, password)
+            server.send_message(msg)
+        print(f"Successfully sent email to {to_email}", flush=True)
+        return True
+    except Exception as e:
+        print(f"[SMTP Error] Failed to send email to {to_email}: {e}", flush=True)
+        return False
+
+def send_complaint_email_task(complaint_id: str, complaint_type: str, description: str, routed_authority: str):
+    subject = f"Complaint Registered: {complaint_type}"
+    body = f"""Hello,
 
 A new complaint has been successfully registered on Smart Karnataka Nyaya.
 
@@ -55,21 +70,24 @@ Description:
 {description}
 
 Thank you,
-Smart Karnataka Nyaya Team
-""")
+Smart Karnataka Nyaya Team"""
+    
+    settings = get_settings()
+    target_email = settings.smtp_username or "jeevpai2005@gmail.com"
+    send_email(subject, body, target_email)
 
-    msg['Subject'] = f"Complaint Registered: {complaint_type}"
-    msg['From'] = sender_email
-    msg['To'] = target_email
-
-    try:
-        # Connect to Gmail SMTP server with explicit 10s timeout
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
-            server.login(sender_email, sender_pass)
-            server.send_message(msg)
-        print(f"Successfully sent complaint email to {target_email}", flush=True)
-    except Exception as e:
-        print(f"Failed to send email to {target_email}: {e}", flush=True)
+@router.post("/test-email")
+def test_email_endpoint():
+    settings = get_settings()
+    target_email = settings.smtp_username or "jeevpai2005@gmail.com"
+    success = send_email(
+        subject="Test Email from Smart Nyaya", 
+        body="If you are reading this, your SMTP configuration is working perfectly on Port 587 with STARTTLS!", 
+        to_email=target_email
+    )
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to send test email. Check server logs for details.")
+    return {"message": f"Test email sent successfully to {target_email}!"}
 
 import threading
 
