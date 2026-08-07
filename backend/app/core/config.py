@@ -31,14 +31,10 @@ class Settings(BaseSettings):
 
     # Legal Aid
     legal_aid_income_limit: int = 300000  # Karnataka DLSA threshold — update periodically
-    email_api_key: str | None = None
 
-    # SMTP Mail
-    smtp_host: str = "smtp.gmail.com"
-    smtp_port: int = 587
-    smtp_username: str | None = None
-    smtp_password: str | None = None
-    smtp_from: str | None = None
+    # Brevo Email API
+    brevo_api_key: str | None = None
+    brevo_sender_email: str | None = None
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

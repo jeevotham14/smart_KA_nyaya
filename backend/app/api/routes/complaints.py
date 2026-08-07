@@ -27,11 +27,11 @@ from app.core.config import get_settings
 
 def send_email(subject: str, body: str, to_email: str):
     settings = get_settings()
-    api_key = settings.email_api_key
-    from_email = settings.smtp_from or "jeevpai2005@gmail.com"
+    api_key = settings.brevo_api_key
+    from_email = settings.brevo_sender_email or "jeevpai2005@gmail.com"
 
     if not api_key:
-        raise ValueError("Missing EMAIL_API_KEY in environment variables.")
+        raise ValueError("Missing BREVO_API_KEY in environment variables.")
 
     url = "https://api.brevo.com/v3/smtp/email"
     clean_key = api_key.strip().strip("'").strip('"')
@@ -60,7 +60,7 @@ def send_email(subject: str, body: str, to_email: str):
 @router.post("/test-email")
 def test_email_endpoint():
     settings = get_settings()
-    target_email = settings.smtp_from or "jeevpai2005@gmail.com"
+    target_email = settings.brevo_sender_email or "jeevpai2005@gmail.com"
     try:
         send_email(
             subject="Test Email from Smart Nyaya", 
@@ -90,7 +90,7 @@ def create_complaint(payload: ComplaintCreate, request: Request, db: Session = D
     
     # 1. Send Authority Email (Blocks API until success)
     settings = get_settings()
-    authority_email = settings.smtp_from or "jeevpai2005@gmail.com"
+    authority_email = settings.brevo_sender_email or "jeevpai2005@gmail.com"
     subject = f"Complaint Registered: {row.complaint_type}"
     body = f"""Hello,
 
