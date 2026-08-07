@@ -34,9 +34,10 @@ def send_email(subject: str, body: str, to_email: str):
         raise ValueError("Missing EMAIL_API_KEY in environment variables.")
 
     url = "https://api.brevo.com/v3/smtp/email"
+    clean_key = api_key.strip().strip("'").strip('"')
     headers = {
         "accept": "application/json",
-        "api-key": api_key.strip(),
+        "api-key": clean_key,
         "content-type": "application/json"
     }
     payload = {
