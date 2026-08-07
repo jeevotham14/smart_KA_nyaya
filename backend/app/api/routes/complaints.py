@@ -35,8 +35,7 @@ def send_email(subject: str, body: str, to_email: str):
     from_email = settings.smtp_from or username
 
     if not password or not username:
-        print(f"[SMTP Error] Missing SMTP_USERNAME or SMTP_PASSWORD. Cannot send email to {to_email}.")
-        return False
+        raise ValueError("Missing SMTP_USERNAME or SMTP_PASSWORD in environment variables.")
 
     msg = EmailMessage()
     msg.set_content(body)
@@ -51,48 +50,30 @@ def send_email(subject: str, body: str, to_email: str):
             server.login(username, password)
             server.send_message(msg)
         print(f"Successfully sent email to {to_email}", flush=True)
-        return True
+    except smtplib.SMTPAuthenticationError as e:
+        raise ValueError(f"SMTP Authentication failed. Check your App Password: {e}")
+    except smtplib.SMTPConnectError as e:
+        raise ValueError(f"SMTP Connection failed: {e}")
     except Exception as e:
-        print(f"[SMTP Error] Failed to send email to {to_email}: {e}", flush=True)
-        return False
-
-def send_complaint_email_task(complaint_id: str, complaint_type: str, description: str, routed_authority: str):
-    subject = f"Complaint Registered: {complaint_type}"
-    body = f"""Hello,
-
-A new complaint has been successfully registered on Smart Karnataka Nyaya.
-
-Complaint ID: {complaint_id}
-Type: {complaint_type}
-Routed To: {routed_authority}
-
-Description:
-{description}
-
-Thank you,
-Smart Karnataka Nyaya Team"""
-    
-    settings = get_settings()
-    target_email = settings.smtp_username or "jeevpai2005@gmail.com"
-    send_email(subject, body, target_email)
+        raise ValueError(f"SMTP Error: {e}")
 
 @router.post("/test-email")
 def test_email_endpoint():
     settings = get_settings()
     target_email = settings.smtp_username or "jeevpai2005@gmail.com"
-    success = send_email(
-        subject="Test Email from Smart Nyaya", 
-        body="If you are reading this, your SMTP configuration is working perfectly on Port 587 with STARTTLS!", 
-        to_email=target_email
-    )
-    if not success:
-        raise HTTPException(status_code=500, detail="Failed to send test email. Check server logs for details.")
-    return {"message": f"Test email sent successfully to {target_email}!"}
-
-import threading
+    try:
+        send_email(
+            subject="Test Email from Smart Nyaya", 
+            body="If you are reading this, your SMTP configuration is working perfectly on Port 587 with STARTTLS!", 
+            to_email=target_email
+        )
+        return {"message": f"Test email sent successfully to {target_email}!"}
+    except ValueError as e:
+        print(f"[Render Log] Test email failed: {e}", flush=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("", response_model=ComplaintRead)
-def create_complaint(payload: ComplaintCreate, request: Request, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+def create_complaint(payload: ComplaintCreate, request: Request, db: Session = Depends(get_db)):
     row = Complaint(
         complaint_type=payload.complaint_type,
         description=payload.description,
@@ -107,22 +88,47 @@ def create_complaint(payload: ComplaintCreate, request: Request, background_task
     db.commit()
     db.refresh(row)
     
-    # Dispatch email in a dedicated background daemon thread for 0ms delay & no Axios timeout
-    try:
-        t = threading.Thread(
-            target=send_complaint_email_task,
-            args=(
-                str(row.complaint_id), 
-                row.complaint_type, 
-                row.description, 
-                row.routed_authority
-            ),
-            daemon=True
-        )
-        t.start()
-    except Exception as err:
-        print(f"Error starting email thread: {err}", flush=True)
+    # 1. Send Authority Email (Blocks API until success)
+    settings = get_settings()
+    authority_email = settings.smtp_username or "jeevpai2005@gmail.com"
+    subject = f"Complaint Registered: {row.complaint_type}"
+    body = f"""Hello,
+
+A new complaint has been successfully registered on Smart Karnataka Nyaya.
+
+Complaint ID: {row.complaint_id}
+Type: {row.complaint_type}
+Routed To: {row.routed_authority}
+
+Description:
+{row.description}
+
+Thank you,
+Smart Karnataka Nyaya Team"""
     
+    try:
+        send_email(subject, body, authority_email)
+    except ValueError as e:
+        print(f"[Render Log] Email dispatch failed: {e}", flush=True)
+        raise HTTPException(status_code=500, detail="Complaint saved, but failed to dispatch email notification.")
+        
+    # 2. Send User Confirmation Email (if valid contact_email is provided)
+    if payload.contact_email and "@" in payload.contact_email:
+        user_subject = "Your Complaint has been received - Smart Karnataka Nyaya"
+        user_body = f"""Hello,
+
+Your complaint (ID: {row.complaint_id}) has been successfully received and routed to {row.routed_authority}.
+
+We will contact you shortly.
+
+Thank you,
+Smart Karnataka Nyaya"""
+        try:
+            send_email(user_subject, user_body, payload.contact_email)
+        except ValueError as e:
+            print(f"[Render Log] User confirmation email failed: {e}", flush=True)
+            # Proceed even if user email fails, as long as authority got it.
+
     return row
 
 

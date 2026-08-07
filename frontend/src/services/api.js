@@ -156,6 +156,7 @@ export const legalApi = {
       district: values.district,
       taluk: values.taluk || null,
       uploaded_documents: [],
+      contact_email: values.contact || null,
     });
     return data;
   },

@@ -150,6 +150,7 @@ class ComplaintCreate(BaseModel):
     district: str
     taluk: str | None = None
     uploaded_documents: list[dict] = []
+    contact_email: str | None = None
 
 
 class ComplaintRead(ORMModel):
