@@ -36,7 +36,7 @@ def send_email(subject: str, body: str, to_email: str):
     url = "https://api.brevo.com/v3/smtp/email"
     headers = {
         "accept": "application/json",
-        "api-key": api_key,
+        "api-key": api_key.strip(),
         "content-type": "application/json"
     }
     payload = {
