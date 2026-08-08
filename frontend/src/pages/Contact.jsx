@@ -89,7 +89,37 @@ export default function Contact() {
         ...values,
         description: `${values.description}\n\nComplainant: ${values.name || '[not provided]'}\nContact: ${values.contact || '[not provided]'}`,
       });
-      setSuccess(`Complaint submitted. ID: ${complaint.complaint_id}. Routed to ${complaint.routed_authority}.`);
+
+      // After successful save, trigger Web3Forms Email
+      const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY;
+      if (accessKey) {
+        const formData = new FormData();
+        formData.append("access_key", accessKey);
+        formData.append("name", values.name || "Complainant");
+        if (values.contact && values.contact.includes("@")) {
+            formData.append("email", values.contact);
+        }
+        formData.append("subject", `New Complaint Registered: ${values.complaint_type}`);
+        formData.append("message", `A new complaint has been successfully registered on Smart Karnataka Nyaya.\n\nComplaint ID: ${complaint.complaint_id}\nType: ${values.complaint_type}\nRouted To: ${complaint.routed_authority}\nDistrict: ${values.district}\nTaluk: ${values.taluk}\n\nDescription:\n${values.description}\n\nThank you,\nSmart Karnataka Nyaya Team`);
+
+        try {
+          const res = await fetch("https://api.web3forms.com/submit", {
+            method: "POST",
+            body: formData
+          });
+          if (res.ok) {
+            setSuccess("Complaint submitted successfully. Confirmation email sent.");
+          } else {
+            setSuccess("Complaint saved, but email notification could not be sent.");
+          }
+        } catch (e) {
+          console.error("Web3Forms error:", e);
+          setSuccess("Complaint saved, but email notification could not be sent.");
+        }
+      } else {
+        setSuccess(`Complaint submitted. ID: ${complaint.complaint_id}. Routed to ${complaint.routed_authority}.`);
+      }
+
       setValues((current) => ({ ...current, description: '' }));
     } catch (apiError) {
       setError(getApiError(apiError));

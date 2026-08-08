@@ -32,10 +32,6 @@ class Settings(BaseSettings):
     # Legal Aid
     legal_aid_income_limit: int = 300000  # Karnataka DLSA threshold — update periodically
 
-    # Web3Forms Email API
-    web3forms_access_key: str | None = None
-    complaint_admin_email: str | None = None
-
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     @field_validator("cors_origins", mode="before")
