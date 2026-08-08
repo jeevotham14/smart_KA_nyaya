@@ -34,6 +34,8 @@ def create_complaint(payload: ComplaintCreate, request: Request, db: Session = D
         description=payload.description,
         district=payload.district,
         taluk=payload.taluk,
+        gender=payload.gender,
+        phone=payload.phone,
         routed_authority=route_authority(payload.complaint_type, payload.district),
         uploaded_documents=payload.uploaded_documents,
     )

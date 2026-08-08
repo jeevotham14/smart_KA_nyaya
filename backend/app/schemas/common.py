@@ -149,6 +149,8 @@ class ComplaintCreate(BaseModel):
     description: str = Field(min_length=5)
     district: str
     taluk: str | None = None
+    gender: str | None = None
+    phone: str | None = None
     uploaded_documents: list[dict] = []
     contact_email: str | None = None
 
@@ -160,6 +162,8 @@ class ComplaintRead(ORMModel):
     description: str
     district: str
     taluk: str | None = None
+    gender: str | None = None
+    phone: str | None = None
     routed_authority: str
     status: str
     uploaded_documents: list[dict] | dict | None = None

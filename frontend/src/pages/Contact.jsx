@@ -61,6 +61,8 @@ export default function Contact() {
     description: '',
     district: '',
     taluk: '',
+    gender: '',
+    phone: '',
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
@@ -100,7 +102,7 @@ export default function Contact() {
             formData.append("email", values.contact);
         }
         formData.append("subject", `New Complaint Registered: ${values.complaint_type}`);
-        formData.append("message", `A new complaint has been successfully registered on Smart Karnataka Nyaya.\n\nComplaint ID: ${complaint.complaint_id}\nType: ${values.complaint_type}\nRouted To: ${complaint.routed_authority}\nDistrict: ${values.district}\nTaluk: ${values.taluk}\n\nDescription:\n${values.description}\n\nThank you,\nSmart Karnataka Nyaya Team`);
+        formData.append("message", `A new complaint has been successfully registered on Smart Karnataka Nyaya.\n\nComplaint ID: ${complaint.complaint_id}\nType: ${values.complaint_type}\nRouted To: ${complaint.routed_authority}\nDistrict: ${values.district}\nTaluk: ${values.taluk}\nGender: ${values.gender || 'Not specified'}\nPhone: ${values.phone || 'Not specified'}\n\nDescription:\n${values.description}\n\nThank you,\nSmart Karnataka Nyaya Team`);
 
         try {
           const res = await fetch("https://api.web3forms.com/submit", {
@@ -241,6 +243,17 @@ export default function Contact() {
               </h3>
               <input className={inputClassName} name="name" onChange={updateValue} placeholder={t('contact.namePlaceholder')} value={values.name} />
               <input className={inputClassName} name="contact" onChange={updateValue} placeholder={t('contact.contactPlaceholder')} value={values.contact} />
+              
+              <div className="grid gap-4 md:grid-cols-2">
+                <input className={inputClassName} type="tel" name="phone" onChange={updateValue} placeholder={isKn ? "ಫೋನ್ ಸಂಖ್ಯೆ" : "Phone Number"} value={values.phone} />
+                <select className={inputClassName} name="gender" onChange={updateValue} value={values.gender}>
+                  <option value="" disabled>{isKn ? "ಲಿಂಗ ಆಯ್ಕೆಮಾಡಿ" : "Select Gender"}</option>
+                  <option value="Male">{isKn ? "ಪುರುಷ" : "Male"}</option>
+                  <option value="Female">{isKn ? "ಮಹಿಳೆ" : "Female"}</option>
+                  <option value="Other">{isKn ? "ಇತರೆ" : "Other"}</option>
+                  <option value="Prefer not to say">{isKn ? "ಹೇಳಲು ಇಷ್ಟವಿಲ್ಲ" : "Prefer not to say"}</option>
+                </select>
+              </div>
               <select className={inputClassName} name="complaint_type" onChange={updateValue} value={values.complaint_type}>
                 {complaintTypes.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}
               </select>

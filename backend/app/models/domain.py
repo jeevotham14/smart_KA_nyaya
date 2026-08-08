@@ -138,6 +138,8 @@ class Complaint(Base, TimestampMixin):
     description: Mapped[str] = mapped_column(Text)
     district: Mapped[str] = mapped_column(String(100), index=True)
     taluk: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    gender: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    phone: Mapped[str | None] = mapped_column(String(20), nullable=True)
     routed_authority: Mapped[str] = mapped_column(String(180))
     status: Mapped[str] = mapped_column(String(40), default=RecordStatus.submitted.value)
     uploaded_documents: Mapped[dict | list | None] = mapped_column(JSONVariant, default=list)
