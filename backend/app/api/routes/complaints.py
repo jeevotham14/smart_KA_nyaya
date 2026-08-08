@@ -25,49 +25,56 @@ def route_authority(complaint_type: str, district: str) -> str:
 
 from app.core.config import get_settings
 
-def send_email(subject: str, body: str, to_email: str):
+def send_email(subject: str, body: str, user_email: str | None = None):
     settings = get_settings()
-    api_key = settings.brevo_api_key
-    from_email = settings.brevo_sender_email or "jeevpai2005@gmail.com"
+    access_key = settings.web3forms_access_key
 
-    if not api_key:
-        raise ValueError("Missing BREVO_API_KEY in environment variables.")
+    if not access_key:
+        raise ValueError("Missing WEB3FORMS_ACCESS_KEY in environment variables.")
 
-    url = "https://api.brevo.com/v3/smtp/email"
-    clean_key = api_key.strip().strip("'").strip('"')
+    url = "https://api.web3forms.com/submit"
+    clean_key = access_key.strip().strip("'").strip('"')
     headers = {
         "accept": "application/json",
-        "api-key": clean_key,
         "content-type": "application/json"
     }
+    
     payload = {
-        "sender": {"name": "Smart Karnataka Nyaya", "email": from_email},
-        "to": [{"email": to_email}],
+        "access_key": clean_key,
         "subject": subject,
-        "textContent": body
+        "from_name": "Smart Karnataka Nyaya",
+        "message": body
     }
+    
+    if user_email and "@" in user_email:
+        payload["email"] = user_email
+        payload["name"] = "Complainant"
 
     try:
         with httpx.Client(timeout=10.0) as client:
             response = client.post(url, headers=headers, json=payload)
             response.raise_for_status()
-        print(f"Successfully sent email to {to_email}", flush=True)
+            
+            data = response.json()
+            if not data.get("success"):
+                raise ValueError(f"Web3Forms API rejected request: {data.get('message', 'Unknown error')}")
+                
+        print("Successfully sent email via Web3Forms", flush=True)
     except httpx.HTTPStatusError as e:
         raise ValueError(f"Email API rejected request: {e.response.text}")
     except Exception as e:
+        if isinstance(e, ValueError) and "Web3Forms API" in str(e):
+            raise e
         raise ValueError(f"Email API Connection Error: {e}")
 
 @router.post("/test-email")
 def test_email_endpoint():
-    settings = get_settings()
-    target_email = settings.brevo_sender_email or "jeevpai2005@gmail.com"
     try:
         send_email(
             subject="Test Email from Smart Nyaya", 
-            body="If you are reading this, your Email API configuration is working perfectly over HTTPS!", 
-            to_email=target_email
+            body="If you are reading this, your Web3Forms Email API configuration is working perfectly over HTTPS!"
         )
-        return {"message": f"Test email sent successfully to {target_email}!"}
+        return {"message": "Test email sent successfully to the Web3Forms access key owner!"}
     except ValueError as e:
         print(f"[Render Log] Test email failed: {e}", flush=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -88,9 +95,7 @@ def create_complaint(payload: ComplaintCreate, request: Request, db: Session = D
     db.commit()
     db.refresh(row)
     
-    # 1. Send Authority Email (Blocks API until success)
-    settings = get_settings()
-    authority_email = settings.brevo_sender_email or "jeevpai2005@gmail.com"
+    # Dispatch Web3Forms Email (Blocks API until success)
     subject = f"Complaint Registered: {row.complaint_type}"
     body = f"""Hello,
 
@@ -107,28 +112,12 @@ Thank you,
 Smart Karnataka Nyaya Team"""
     
     try:
-        send_email(subject, body, authority_email)
+        # We pass payload.contact_email so Web3Forms can use it for autoresponder if enabled
+        send_email(subject, body, payload.contact_email)
     except ValueError as e:
         print(f"[Render Log] Email dispatch failed: {e}", flush=True)
         raise HTTPException(status_code=500, detail="Complaint saved, but failed to dispatch email notification.")
         
-    # 2. Send User Confirmation Email (if valid contact_email is provided)
-    if payload.contact_email and "@" in payload.contact_email:
-        user_subject = "Your Complaint has been received - Smart Karnataka Nyaya"
-        user_body = f"""Hello,
-
-Your complaint (ID: {row.complaint_id}) has been successfully received and routed to {row.routed_authority}.
-
-We will contact you shortly.
-
-Thank you,
-Smart Karnataka Nyaya"""
-        try:
-            send_email(user_subject, user_body, payload.contact_email)
-        except ValueError as e:
-            print(f"[Render Log] User confirmation email failed: {e}", flush=True)
-            # Proceed even if user email fails, as long as authority got it.
-
     return row
 
 
