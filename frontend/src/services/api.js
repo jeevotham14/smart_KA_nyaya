@@ -280,6 +280,10 @@ export const legalApi = {
     const { data } = await api.get('/api/search', { params: { q } });
     return data;
   },
+  getPublicConfig: async () => {
+    const response = await api.get('/api/config/public');
+    return response;
+  },
 };
 
 export const notificationApi = {

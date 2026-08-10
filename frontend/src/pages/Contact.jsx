@@ -70,6 +70,9 @@ export default function Contact() {
 
   const updateValue = (event) => {
     const { name, value } = event.target;
+    // Clear any previous success message when user modifies the form to fix stale success state
+    if (success) setSuccess('');
+    
     setValues((current) => {
       const newValues = { ...current, [name]: value };
       if (name === 'district') newValues.taluk = '';
@@ -95,8 +98,7 @@ export default function Contact() {
       // Fetch the Web3Forms key from the backend at runtime
       let accessKey = null;
       try {
-        const configRes = await fetch("/api/config/public");
-        const configData = await configRes.json();
+        const { data: configData } = await legalApi.getPublicConfig();
         accessKey = configData.web3forms_access_key;
       } catch (err) {
         console.error("Failed to fetch public config", err);
