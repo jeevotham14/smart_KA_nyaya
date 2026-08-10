@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     groq_api_key: str | None = None
     openrouter_api_key: str | None = None
 
+    # Third-party Services
+    web3forms_access_key: str | None = None
+
     # Legacy / other integrations
     openai_api_key: str | None = None
     indian_kanoon_api_key: str | None = None

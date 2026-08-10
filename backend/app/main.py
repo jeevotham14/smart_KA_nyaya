@@ -50,6 +50,10 @@ def create_app() -> FastAPI:
     def health():
         return {"status": "ok", "service": settings.app_name, "version": "1.0.0"}
 
+    @app.get(settings.api_prefix + "/config/public", tags=["System"])
+    def get_public_config():
+        return {"web3forms_access_key": settings.web3forms_access_key}
+
     @app.on_event("startup")
     def on_startup():
         Base.metadata.create_all(bind=engine)

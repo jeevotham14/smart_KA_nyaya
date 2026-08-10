@@ -92,8 +92,16 @@ export default function Contact() {
         description: `${values.description}\n\nComplainant: ${values.name || '[not provided]'}\nContact: ${values.contact || '[not provided]'}`,
       });
 
-      // After successful save, trigger Web3Forms Email
-      const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY;
+      // Fetch the Web3Forms key from the backend at runtime
+      let accessKey = null;
+      try {
+        const configRes = await fetch("/api/config/public");
+        const configData = await configRes.json();
+        accessKey = configData.web3forms_access_key;
+      } catch (err) {
+        console.error("Failed to fetch public config", err);
+      }
+
       if (accessKey) {
         const formData = new FormData();
         formData.append("access_key", accessKey);
