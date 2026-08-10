@@ -230,16 +230,6 @@ export default function AssistantChat() {
                   )}
                   <p className="whitespace-pre-wrap">{message.text}</p>
                   
-                  {message.role === 'assistant' && (
-                    <button
-                      onClick={() => playTTS(message.text)}
-                      className="mt-3 flex items-center gap-1.5 text-xs font-bold text-legalGold hover:text-yellow-500 transition-colors"
-                      title="Listen to Sarvam Voice"
-                    >
-                      <Volume2 className="h-4 w-4" />
-                      <span>{isKn ? 'ಧ್ವನಿಯಲ್ಲಿ ಆಲಿಸಿ (Sarvam Voice)' : 'Listen (Sarvam Voice)'}</span>
-                    </button>
-                  )}
 
                   {message.role === 'assistant' && message.provider && (
                     <p className="mt-2 text-[11px] text-slate-400">Router: {message.provider} ({message.model})</p>
@@ -284,28 +274,6 @@ export default function AssistantChat() {
                 onChange={(event) => setQuery(event.target.value)}
               />
 
-              {/* Sarvam Speech-to-Text Microphone Button */}
-              {isRecording ? (
-                <button
-                  type="button"
-                  onClick={handleStopRecording}
-                  className="flex-shrink-0 flex flex-col items-center justify-center gap-0.5 p-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-[10px] animate-pulse shadow-lg min-w-[60px]"
-                  title="Stop recording"
-                >
-                  <MicOff className="h-5 w-5" />
-                  <span>{recordingSecs}s</span>
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleStartRecording}
-                  disabled={transcribing || loading}
-                  className="p-3 rounded-xl bg-slate-200 dark:bg-navy-800 hover:bg-legalGold hover:text-navy-950 text-slate-700 dark:text-white font-bold text-xs flex items-center justify-center transition-all disabled:opacity-50"
-                  title={isKn ? 'Sarvam AI ಧ್ವನಿ ಇನ್‌ಪುಟ್' : 'Sarvam AI Voice Input'}
-                >
-                  <Mic className="h-5 w-5" />
-                </button>
-              )}
 
               <button className="premium-btn premium-btn-gold text-xs px-5 py-3 flex items-center gap-2 disabled:opacity-60" disabled={loading || transcribing} type="submit">
                 <SendHorizontal className="h-4 w-4" aria-hidden="true" />
