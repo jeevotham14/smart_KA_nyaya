@@ -6,7 +6,6 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import AssistantChat from '../components/AssistantChat.jsx';
 import LegalHealthScore from '../components/LegalHealthScore.jsx';
 import { legalApi } from '../services/api.js';
 import { DOCUMENT_CATALOG } from '../data/documentCatalog.js';
@@ -15,8 +14,6 @@ export default function AILegalGuidance() {
   const { t, i18n } = useTranslation();
   const isKn = i18n.language === 'kn';
 
-  const [activeMode, setActiveMode] = useState('chat'); // 'chat' | 'specific'
-  
   // Specific Legal Guidance state
   const [selectedCategory, setSelectedCategory] = useState('consumer');
   const [caseDescription, setCaseDescription] = useState('');
@@ -94,33 +91,7 @@ export default function AILegalGuidance() {
                 : 'Get tailored LLM analysis, legal health scores, applicable Indian/Karnataka acts, and recommended document drafts for your specific legal case.'}
             </p>
 
-            {/* Mode Switcher Tabs — Voice Assistant first */}
-            <div className="mt-8 flex items-center justify-center gap-3">
-              <button
-                type="button"
-                onClick={() => setActiveMode('chat')}
-                className={`flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-bold transition-all shadow-md ${
-                  activeMode === 'chat'
-                    ? 'bg-legalGold text-navy-950 ring-2 ring-yellow-400'
-                    : 'bg-navy-900/80 text-slate-200 border border-white/20 hover:bg-navy-800'
-                }`}
-              >
-                <Bot className="h-4 w-4" />
-                {isKn ? ' ಕನ್ನಡ AI ಸಹಾಯಕ' : ' AI Chat Assistant'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveMode('specific')}
-                className={`flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-bold transition-all shadow-md ${
-                  activeMode === 'specific'
-                    ? 'bg-legalGold text-navy-950 ring-2 ring-yellow-400'
-                    : 'bg-navy-900/80 text-slate-200 border border-white/20 hover:bg-navy-800'
-                }`}
-              >
-                <Sparkles className="h-4 w-4" />
-                {isKn ? ' ನಿರ್ದಿಷ್ಟ ಪ್ರಕರಣದ AI ವಿಶ್ಲೇಷಣೆ' : ' Specific Case Analysis (LLM)'}
-              </button>
-            </div>
+
           </div>
         </div>
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-slate-50 dark:from-navy-950 to-transparent" />
@@ -146,9 +117,8 @@ export default function AILegalGuidance() {
             })}
           </div>
 
-          {/* MODE 1: SPECIFIC LEGAL GUIDANCE ENGINE */}
-          {activeMode === 'specific' && (
-            <div className="space-y-8 animate-scale-in">
+          {/* SPECIFIC LEGAL GUIDANCE ENGINE */}
+          <div className="space-y-8 animate-scale-in">
               {!analysisResult ? (
                 <div className="rounded-3xl border border-legalGold/30 bg-white dark:bg-navy-900 p-8 shadow-xl glass-panel relative overflow-hidden">
                   <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-navy-800 via-legalGold to-yellow-300" />
@@ -321,15 +291,7 @@ export default function AILegalGuidance() {
                   </div>
                 </div>
               )}
-            </div>
-          )}
-
-          {/* MODE 2: GENERAL ASSISTANT CHAT */}
-          {activeMode === 'chat' && (
-            <div className="animate-scale-in">
-              <AssistantChat />
-            </div>
-          )}
+          </div>
 
         </div>
       </section>
