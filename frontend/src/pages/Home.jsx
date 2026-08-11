@@ -62,68 +62,7 @@ export default function Home() {
   const [classifying, setClassifying] = useState(false);
   const [classifyResult, setClassifyResult] = useState(null);
   const [error, setError] = useState('');
-  const [isListening, setIsListening] = useState(false);
 
-  const startListening = () => {
-    if (isListening) return;
-
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert(isKn ? 'ನಿಮ್ಮ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಧ್ವನಿ ಗುರುತಿಸುವಿಕೆ ಲಭ್ಯವಿಲ್ಲ.' : 'Speech recognition is not supported in this browser.');
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = isKn ? 'kn-IN' : 'en-IN';
-    recognition.interimResults = true;
-    recognition.maxAlternatives = 1;
-
-    recognition.onstart = () => {
-      setIsListening(true);
-      setSituationText('');
-    };
-
-    recognition.onresult = (event) => {
-      let finalTranscript = '';
-      let interimTranscript = '';
-      
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript;
-        } else {
-          interimTranscript += event.results[i][0].transcript;
-        }
-      }
-      
-      const currentText = finalTranscript || interimTranscript;
-      setSituationText(currentText);
-      
-      if (finalTranscript.trim()) {
-         setIsListening(false);
-         recognition.stop();
-         submitClassification(finalTranscript.trim());
-      }
-    };
-
-    recognition.onerror = (event) => {
-      console.error('Speech recognition error', event.error);
-      setIsListening(false);
-      if (event.error === 'not-allowed') {
-        alert(isKn ? 'ದಯವಿಟ್ಟು ಮೈಕ್ರೊಫೋನ್ ಅನುಮತಿಯನ್ನು ನೀಡಿ.' : 'Please allow microphone access to use voice search.');
-      }
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
-    try {
-      recognition.start();
-    } catch (e) {
-      console.error(e);
-      setIsListening(false);
-    }
-  };
 
   const submitClassification = async (text) => {
     if (!text.trim()) return;
@@ -226,14 +165,7 @@ export default function Home() {
                   className="w-full py-4 pl-5 pr-44 text-sm md:text-base text-white placeholder-slate-400 bg-transparent focus:outline-none"
                 />
                 <div className="absolute right-2 top-2 bottom-2 flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={startListening}
-                    className={`p-2.5 rounded-xl transition-colors ${isListening ? 'text-red-500 animate-pulse bg-red-500/10' : 'text-slate-400 hover:text-legalGold hover:bg-legalGold/10'}`}
-                    title={isKn ? 'ಧ್ವನಿ ಮೂಲಕ ಕೇಳಿ' : 'Ask via Voice'}
-                  >
-                    <Mic className="h-5 w-5" />
-                  </button>
+
                   <button
                     type="submit"
                     disabled={classifying || !situationText.trim()}
