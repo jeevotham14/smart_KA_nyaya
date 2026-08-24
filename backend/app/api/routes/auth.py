@@ -24,6 +24,7 @@ def register(payload: UserCreate, request: Request, db: Session = Depends(get_db
         language_pref=payload.language_pref,
         district=payload.district,
         taluk=payload.taluk,
+        role="advocate" if payload.role == "advocate" else "citizen",
     )
     db.add(user)
     db.flush()

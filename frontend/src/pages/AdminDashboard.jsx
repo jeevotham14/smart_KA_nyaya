@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { UserCheck, ShieldAlert, Building2, HeartHandshake, Loader2, AlertTriangle, Scale, Shield } from "lucide-react";
 import DashboardCard from "../components/DashboardCard.jsx";
 import SectionHeader from "../components/SectionHeader.jsx";
-import api from "../services/api.js";
+import api, { adminApi } from "../services/api.js";
 import { Navigate } from "react-router-dom";
 
 export default function AdminDashboard() {
@@ -11,6 +11,11 @@ export default function AdminDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [pendingAdvocates, setPendingAdvocates] = useState([]);
+  
+  const fetchPending = () => {
+    adminApi.getPendingAdvocates().then(setPendingAdvocates).catch(console.error);
+  };
 
   useEffect(() => {
     api.dashboard.getAdmin()

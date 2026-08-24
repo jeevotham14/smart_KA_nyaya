@@ -318,7 +318,11 @@ export const advocateApi = {
     const { data } = await api.get(`/api/advocates/${id}`);
     return data;
   },
-  createProfile: async (profile) => {
+  getMyProfile: async () => {
+    const { data } = await api.get('/api/advocates/me/profile');
+    return data;
+  },
+    createProfile: async (profile) => {
     const { data } = await api.post('/api/advocates/profile', profile);
     return data;
   },
@@ -358,6 +362,18 @@ export const consultationApi = {
   },
   rescheduleAppointment: async (id, payload) => {
     const { data } = await api.patch(`/api/consultations/${id}/reschedule`, payload);
+    return data;
+  }
+};
+
+
+export const adminApi = {
+  getPendingAdvocates: async () => {
+    const { data } = await api.get('/api/admin/advocates/pending');
+    return data;
+  },
+  updateAdvocateStatus: async (id, statusData) => {
+    const { data } = await api.patch(`/api/admin/advocates/${id}/status`, statusData);
     return data;
   }
 };

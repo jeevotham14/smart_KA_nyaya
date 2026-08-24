@@ -3,13 +3,17 @@ import { Link } from "react-router-dom";
 import { MessageSquare, ClipboardList, FileText, Scale, Shield, TrendingUp, AlertTriangle, Loader2, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import AnimatedSection from "../components/AnimatedSection.jsx";
-import api from "../services/api.js";
+import api, { advocateApi } from "../services/api.js";
+import { useNavigate } from "react-router-dom";
 
 export default function UserDashboard() {
   const { t } = useTranslation();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [profile, setProfile] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     api.dashboard.getMe()
@@ -19,7 +23,19 @@ export default function UserDashboard() {
         setError(true);
       })
       .finally(() => setLoading(false));
-  }, []);
+
+    if (role === 'advocate') {
+      setProfileLoading(true);
+      advocateApi.getMyProfile()
+        .then(setProfile)
+        .catch(err => {
+          if (err.response?.status === 404) {
+             navigate('/advocate/onboarding');
+          }
+        })
+        .finally(() => setProfileLoading(false));
+    }
+  }, [role, navigate]);
 
   const quickLinks = [
     { label: "AI Legal Guidance", desc: "Get instant AI-powered legal assistance", path: "/ai-legal-guidance", icon: MessageSquare, color: "text-legalGold" },

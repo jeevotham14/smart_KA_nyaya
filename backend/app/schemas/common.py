@@ -21,6 +21,7 @@ class UserCreate(BaseModel):
     language_pref: str = "English"
     district: str | None = None
     taluk: str | None = None
+    role: str | None = None
 
 
 class UserLogin(BaseModel):
@@ -37,6 +38,7 @@ class UserRead(ORMModel):
     role: str
     district: str | None = None
     taluk: str | None = None
+    role: str | None = None
     dlsa_eligible: bool
     created_at: datetime
 
@@ -149,6 +151,7 @@ class ComplaintCreate(BaseModel):
     description: str = Field(min_length=5)
     district: str
     taluk: str | None = None
+    role: str | None = None
     gender: str | None = None
     phone: str | None = None
     uploaded_documents: list[dict] = []
@@ -162,6 +165,7 @@ class ComplaintRead(ORMModel):
     description: str
     district: str
     taluk: str | None = None
+    role: str | None = None
     gender: str | None = None
     phone: str | None = None
     routed_authority: str
@@ -197,6 +201,7 @@ class DirectoryServiceCreate(BaseModel):
     service_type: str
     district: str
     taluk: str | None = None
+    role: str | None = None
     address: str
     phone: str | None = None
     latitude: float | None = None
@@ -209,6 +214,7 @@ class DirectoryServiceRead(ORMModel):
     service_type: str
     district: str
     taluk: str | None = None
+    role: str | None = None
     address: str
     phone: str | None = None
     latitude: float | None = None

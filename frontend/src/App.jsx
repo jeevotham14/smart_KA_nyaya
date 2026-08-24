@@ -15,6 +15,7 @@ const GuidedIntake = lazy(() => import('./pages/GuidedIntake.jsx'));
 const Home = lazy(() => import('./pages/Home.jsx'));
 const LegalAid = lazy(() => import('./pages/LegalAid.jsx'));
 const LoginRegister = lazy(() => import('./pages/LoginRegister.jsx'));
+const AdvocateOnboarding = lazy(() => import('./pages/AdvocateOnboarding.jsx'));
 const Resources = lazy(() => import('./pages/Resources.jsx'));
 const UserDashboard = lazy(() => import('./pages/UserDashboard.jsx'));
 const WomenProtection = lazy(() => import('./pages/WomenProtection.jsx'));
@@ -61,6 +62,7 @@ export default function App() {
           <Route path="resources" element={<Navigate to="/document-generator" replace />} />
           <Route path="contact" element={<Contact />} />
           <Route path="login" element={<LoginRegister />} />
+          <Route path="advocate/onboarding" element={<AdvocateOnboarding />} />
           <Route path="dashboard" element={<UserDashboard />} />
           <Route path="admin" element={<AdminDashboard />} />
           <Route path="*" element={<Navigate to="/" replace />} />

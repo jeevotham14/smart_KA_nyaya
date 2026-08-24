@@ -27,7 +27,7 @@ def get_advocates(
     pro_bono: Optional[bool] = None,
     db: Session = Depends(get_db),
 ):
-    query = db.query(AdvocateProfile).filter(AdvocateProfile.is_active == True)
+    query = db.query(AdvocateProfile).filter(AdvocateProfile.is_active == True, AdvocateProfile.verification_status == "VERIFIED")
     
     if district:
         query = query.filter(AdvocateProfile.district.ilike(f"%{district}%"))
@@ -54,7 +54,16 @@ def get_advocates(
             
     return filtered
 
+
+@router.get("/me/profile", response_model=AdvocateProfileRead)
+def get_my_profile(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    advocate = db.query(AdvocateProfile).filter(AdvocateProfile.user_id == current_user.user_id).first()
+    if not advocate:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return advocate
+
 @router.get("/{advocate_id}", response_model=AdvocateProfileRead)
+
 def get_advocate(advocate_id: UUID, db: Session = Depends(get_db)):
     advocate = db.query(AdvocateProfile).filter(AdvocateProfile.id == advocate_id).first()
     if not advocate:
@@ -74,10 +83,17 @@ def create_profile(
     existing = db.query(AdvocateProfile).filter(AdvocateProfile.user_id == current_user.user_id).first()
     if existing:
         raise HTTPException(status_code=400, detail="Profile already exists")
+        
+    if db.query(AdvocateProfile).filter(AdvocateProfile.bar_council_number == profile_in.bar_council_number).first():
+        raise HTTPException(status_code=400, detail="Bar council number already registered")
+    
+    profile_data = profile_in.dict()
+    profile_data['verification_status'] = 'PENDING'
+    profile_data['is_active'] = False
     
     advocate = AdvocateProfile(
         user_id=current_user.user_id,
-        **profile_in.dict()
+        **profile_data
     )
     db.add(advocate)
     db.commit()
@@ -100,6 +116,8 @@ def update_profile(
         raise HTTPException(status_code=404, detail="Profile not found")
         
     update_data = profile_in.dict(exclude_unset=True)
+    update_data.pop('verification_status', None)
+    update_data.pop('is_active', None)
     for field, value in update_data.items():
         setattr(advocate, field, value)
         

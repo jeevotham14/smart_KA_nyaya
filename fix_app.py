@@ -1,15 +1,10 @@
-with open("frontend/src/App.jsx", "r", encoding="utf-8") as f:
+import re
+
+with open('frontend/src/App.jsx', 'r', encoding='utf-8') as f:
     c = f.read()
 
-c = c.replace(
-    "const Consultations = lazy(() => import('./pages/Consultations.jsx'));",
-    "const Consultations = lazy(() => import('./pages/Consultations.jsx'));\nconst ConsultationBroadcasts = lazy(() => import('./pages/ConsultationBroadcasts.jsx'));"
-)
+c = c.replace("import LoginRegister from './pages/LoginRegister.jsx';", "import LoginRegister from './pages/LoginRegister.jsx';\nconst AdvocateOnboarding = lazy(() => import('./pages/AdvocateOnboarding.jsx'));")
+c = c.replace('<Route path="login" element={<LoginRegister />} />', '<Route path="login" element={<LoginRegister />} />\n          <Route path="advocate/onboarding" element={<AdvocateOnboarding />} />')
 
-c = c.replace(
-    "<Route path=\"consultations\" element={<Consultations />} />",
-    "<Route path=\"consultations\" element={<Consultations />} />\n          <Route path=\"consultation-broadcasts\" element={<ConsultationBroadcasts />} />"
-)
-
-with open("frontend/src/App.jsx", "w", encoding="utf-8") as f:
+with open('frontend/src/App.jsx', 'w', encoding='utf-8') as f:
     f.write(c)
