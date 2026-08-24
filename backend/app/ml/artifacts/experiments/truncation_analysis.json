@@ -1,0 +1,74 @@
+{
+    "FIRST_100": {
+        "accuracy": 0.5714285714285714,
+        "macro_f1": 0.5123410724156993,
+        "precision": 0.6386054221363311,
+        "recall": 0.5714285714285714,
+        "zero_tfidf_features_percent": 0.0,
+        "avg_vocabulary_coverage": 0.8409255533115102,
+        "avg_probability_distance_from_0_5": 0.1564369356191638
+    },
+    "FIRST_250": {
+        "accuracy": 0.5774647887323944,
+        "macro_f1": 0.554858934169279,
+        "precision": 0.5972118496390342,
+        "recall": 0.5774647887323944,
+        "zero_tfidf_features_percent": 0.0,
+        "avg_vocabulary_coverage": 0.7477468595791558,
+        "avg_probability_distance_from_0_5": 0.12837820637637534
+    },
+    "FIRST_500": {
+        "accuracy": 0.6066398390342053,
+        "macro_f1": 0.5983265587487223,
+        "precision": 0.6162650070621469,
+        "recall": 0.6066398390342053,
+        "zero_tfidf_features_percent": 0.0,
+        "avg_vocabulary_coverage": 0.6458244278993198,
+        "avg_probability_distance_from_0_5": 0.11211185220244588
+    },
+    "FIRST_1000": {
+        "accuracy": 0.5945674044265593,
+        "macro_f1": 0.5898143227382712,
+        "precision": 0.5991636950246222,
+        "recall": 0.5945674044265594,
+        "zero_tfidf_features_percent": 0.0,
+        "avg_vocabulary_coverage": 0.5472895813481358,
+        "avg_probability_distance_from_0_5": 0.10236428322120791
+    },
+    "RANDOM_100": {
+        "accuracy": 0.562374245472837,
+        "macro_f1": 0.5359960165989353,
+        "precision": 0.5807325508279186,
+        "recall": 0.5623742454728371,
+        "zero_tfidf_features_percent": 0.0,
+        "avg_vocabulary_coverage": 0.9406740442561868,
+        "avg_probability_distance_from_0_5": 0.12693668387995619
+    },
+    "RANDOM_250": {
+        "accuracy": 0.5633802816901409,
+        "macro_f1": 0.5523544671578292,
+        "precision": 0.5703071319827729,
+        "recall": 0.5633802816901409,
+        "zero_tfidf_features_percent": 0.0,
+        "avg_vocabulary_coverage": 0.7702217086736332,
+        "avg_probability_distance_from_0_5": 0.10949361943539773
+    },
+    "RANDOM_500": {
+        "accuracy": 0.60261569416499,
+        "macro_f1": 0.5949206978056614,
+        "precision": 0.6110541535226078,
+        "recall": 0.60261569416499,
+        "zero_tfidf_features_percent": 0.0,
+        "avg_vocabulary_coverage": 0.6518546089858269,
+        "avg_probability_distance_from_0_5": 0.10178778430242816
+    },
+    "FULL": {
+        "accuracy": 0.6398390342052314,
+        "macro_f1": 0.6382441444372153,
+        "precision": 0.6423493630822614,
+        "recall": 0.6398390342052314,
+        "zero_tfidf_features_percent": 0.0,
+        "avg_vocabulary_coverage": 0.4046793350779543,
+        "avg_probability_distance_from_0_5": 0.09174637023535018
+    }
+}

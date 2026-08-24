@@ -1,0 +1,57 @@
+{
+    "selected_model": "LogisticRegression",
+    "all_results": [
+        {
+            "name": "LogisticRegression",
+            "train_time": 0.024344205856323242,
+            "infer_time": 0.0002646446228027344,
+            "model_size_bytes": 911,
+            "macro_f1": 1.0,
+            "raw_brier_score": 0.0002657815751695379,
+            "calibrated_brier_score": 4.844554147171737e-05
+        },
+        {
+            "name": "LinearSVC",
+            "train_time": 0.0021893978118896484,
+            "infer_time": 0.0001919269561767578,
+            "model_size_bytes": 779,
+            "macro_f1": 1.0,
+            "raw_brier_score": null,
+            "calibrated_brier_score": 4.778956715949862e-05
+        }
+    ],
+    "final_metrics": {
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "macro_f1": 1.0,
+        "weighted_f1": 1.0,
+        "classification_report": {
+            "0": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 32.0
+            },
+            "1": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 13.0
+            },
+            "accuracy": 1.0,
+            "macro avg": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 45.0
+            },
+            "weighted avg": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 45.0
+            }
+        }
+    }
+}

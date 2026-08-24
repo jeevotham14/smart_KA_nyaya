@@ -1,0 +1,11 @@
+{
+    "total_documents": 33299,
+    "documents_unchanged": 21287,
+    "documents_sentence_masked": 8264,
+    "documents_truncated": 3748,
+    "average_text_removed_percentage": 1.6781136776564498,
+    "median_text_removed_percentage": 0.012543116964565693,
+    "maximum_text_removed_percentage": 50.73170731707317,
+    "documents_lost_more_than_30_pct": 0.6456650349860357,
+    "documents_lost_less_than_5_pct": 91.88864530466381
+}

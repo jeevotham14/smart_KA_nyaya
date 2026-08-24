@@ -6,6 +6,8 @@ const navItems = [
   ['nav.home', '/'],
   ['nav.about', '/about'],
   ['nav.aiGuidance', '/ai-legal-guidance'],
+  ['Case Outcome', '/case-outcome'],
+  ['Consult an Advocate', '/advocates'],
   ['nav.women', '/women-protection'],
   ['nav.aid', '/legal-aid'],
   ['nav.docsResources', '/document-generator'],

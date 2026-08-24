@@ -1,0 +1,71 @@
+{
+    "global_feature_importance": {
+        "top_features_for_class_1_accepted": [
+            [
+                "accepted",
+                5.0290529515060385
+            ],
+            [
+                "allowed",
+                4.947753320975526
+            ],
+            [
+                "petition",
+                -0.6837222275386656
+            ],
+            [
+                "appeal",
+                -0.739989740305408
+            ],
+            [
+                "dismissed",
+                -4.451606075864214
+            ],
+            [
+                "rejected",
+                -4.523298603866958
+            ]
+        ],
+        "top_features_for_class_0_rejected": [
+            [
+                "rejected",
+                -4.523298603866958
+            ],
+            [
+                "dismissed",
+                -4.451606075864214
+            ],
+            [
+                "appeal",
+                -0.739989740305408
+            ],
+            [
+                "petition",
+                -0.6837222275386656
+            ],
+            [
+                "allowed",
+                4.947753320975526
+            ],
+            [
+                "accepted",
+                5.0290529515060385
+            ]
+        ]
+    },
+    "specific_prediction_explanation": {
+        "true_label": 1,
+        "predicted_label": 1,
+        "top_influencing_features": [
+            [
+                "allowed",
+                4.252992191694149
+            ],
+            [
+                "appeal",
+                -0.37813504145453736
+            ]
+        ],
+        "disclaimer": "The model associated these textual features with this prediction. These factors did NOT necessarily cause the court to make this decision."
+    }
+}

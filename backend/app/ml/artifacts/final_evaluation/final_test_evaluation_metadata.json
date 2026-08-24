@@ -1,0 +1,19 @@
+{
+    "evaluation_type": "FINAL_LOCKED_TEST",
+    "model_version": "ildc_clean_v1_final_baseline",
+    "dataset": "REAL_ILDC_MULTI",
+    "test_seen_during_training": false,
+    "test_used_for_model_selection": false,
+    "test_used_for_threshold_selection": false,
+    "calibration": false,
+    "test_row_count": 1517,
+    "label_distribution": {
+        "1": 762,
+        "0": 755
+    },
+    "integrity_checks": {
+        "duplicate_ids_in_test": 0,
+        "leakage_ids_test_vs_train": 0,
+        "leakage_ids_test_vs_dev": 0
+    }
+}

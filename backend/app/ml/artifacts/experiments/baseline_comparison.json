@@ -1,0 +1,491 @@
+{
+    "verification": {
+        "train_size": 32305,
+        "dev_size": 994,
+        "train_dist": {
+            "0": 18920,
+            "1": 13385,
+            "0_pct": 58.566785327348704,
+            "1_pct": 41.43321467265129
+        },
+        "dev_dist": {
+            "0": 497,
+            "1": 497,
+            "0_pct": 50.0,
+            "1_pct": 50.0
+        },
+        "majority_class_baseline_acc": 0.5,
+        "duplicate_ids_between_splits": 0,
+        "mask_tokens_found": 0
+    },
+    "experiments": [
+        {
+            "config": {
+                "model": "LogisticRegression",
+                "class_weight": null,
+                "ngram_range": [
+                    1,
+                    1
+                ],
+                "max_features": 5000
+            },
+            "accuracy": 0.5905432595573441,
+            "macro_f1": 0.5663022841711772,
+            "weighted_f1": 0.5663022841711772,
+            "precision": 0.6166155675134526,
+            "recall": 0.5905432595573441,
+            "classification_report": {
+                "0": {
+                    "precision": 0.5614754098360656,
+                    "recall": 0.8269617706237424,
+                    "f1-score": 0.6688364524003255,
+                    "support": 497.0
+                },
+                "1": {
+                    "precision": 0.6717557251908397,
+                    "recall": 0.35412474849094566,
+                    "f1-score": 0.463768115942029,
+                    "support": 497.0
+                },
+                "accuracy": 0.5905432595573441,
+                "macro avg": {
+                    "precision": 0.6166155675134526,
+                    "recall": 0.5905432595573441,
+                    "f1-score": 0.5663022841711772,
+                    "support": 994.0
+                },
+                "weighted avg": {
+                    "precision": 0.6166155675134526,
+                    "recall": 0.5905432595573441,
+                    "f1-score": 0.5663022841711772,
+                    "support": 994.0
+                }
+            }
+        },
+        {
+            "config": {
+                "model": "LogisticRegression",
+                "class_weight": "balanced",
+                "ngram_range": [
+                    1,
+                    1
+                ],
+                "max_features": 5000
+            },
+            "accuracy": 0.6197183098591549,
+            "macro_f1": 0.6196628781283784,
+            "weighted_f1": 0.6196628781283785,
+            "precision": 0.6197881433171977,
+            "recall": 0.619718309859155,
+            "classification_report": {
+                "0": {
+                    "precision": 0.6168958742632613,
+                    "recall": 0.6317907444668008,
+                    "f1-score": 0.6242544731610338,
+                    "support": 497.0
+                },
+                "1": {
+                    "precision": 0.622680412371134,
+                    "recall": 0.607645875251509,
+                    "f1-score": 0.615071283095723,
+                    "support": 497.0
+                },
+                "accuracy": 0.6197183098591549,
+                "macro avg": {
+                    "precision": 0.6197881433171977,
+                    "recall": 0.619718309859155,
+                    "f1-score": 0.6196628781283784,
+                    "support": 994.0
+                },
+                "weighted avg": {
+                    "precision": 0.6197881433171977,
+                    "recall": 0.6197183098591549,
+                    "f1-score": 0.6196628781283785,
+                    "support": 994.0
+                }
+            }
+        },
+        {
+            "config": {
+                "model": "LogisticRegression",
+                "class_weight": "balanced",
+                "ngram_range": [
+                    1,
+                    2
+                ],
+                "max_features": 10000
+            },
+            "accuracy": 0.6388329979879276,
+            "macro_f1": 0.6359141529310336,
+            "weighted_f1": 0.6359141529310336,
+            "precision": 0.6434325436659305,
+            "recall": 0.6388329979879276,
+            "classification_report": {
+                "0": {
+                    "precision": 0.6177474402730375,
+                    "recall": 0.7283702213279678,
+                    "f1-score": 0.6685133887349953,
+                    "support": 497.0
+                },
+                "1": {
+                    "precision": 0.6691176470588235,
+                    "recall": 0.5492957746478874,
+                    "f1-score": 0.6033149171270719,
+                    "support": 497.0
+                },
+                "accuracy": 0.6388329979879276,
+                "macro avg": {
+                    "precision": 0.6434325436659305,
+                    "recall": 0.6388329979879276,
+                    "f1-score": 0.6359141529310336,
+                    "support": 994.0
+                },
+                "weighted avg": {
+                    "precision": 0.6434325436659304,
+                    "recall": 0.6388329979879276,
+                    "f1-score": 0.6359141529310336,
+                    "support": 994.0
+                }
+            }
+        },
+        {
+            "config": {
+                "model": "LinearSVC",
+                "class_weight": null,
+                "ngram_range": [
+                    1,
+                    1
+                ],
+                "max_features": 5000
+            },
+            "accuracy": 0.5915492957746479,
+            "macro_f1": 0.5827933422929805,
+            "weighted_f1": 0.5827933422929805,
+            "precision": 0.5999390117247749,
+            "recall": 0.5915492957746479,
+            "classification_report": {
+                "0": {
+                    "precision": 0.5709828393135725,
+                    "recall": 0.7364185110663984,
+                    "f1-score": 0.6432337434094904,
+                    "support": 497.0
+                },
+                "1": {
+                    "precision": 0.6288951841359773,
+                    "recall": 0.44668008048289737,
+                    "f1-score": 0.5223529411764706,
+                    "support": 497.0
+                },
+                "accuracy": 0.5915492957746479,
+                "macro avg": {
+                    "precision": 0.5999390117247749,
+                    "recall": 0.5915492957746479,
+                    "f1-score": 0.5827933422929805,
+                    "support": 994.0
+                },
+                "weighted avg": {
+                    "precision": 0.5999390117247749,
+                    "recall": 0.5915492957746479,
+                    "f1-score": 0.5827933422929805,
+                    "support": 994.0
+                }
+            }
+        },
+        {
+            "config": {
+                "model": "LinearSVC",
+                "class_weight": "balanced",
+                "ngram_range": [
+                    1,
+                    1
+                ],
+                "max_features": 5000
+            },
+            "accuracy": 0.6086519114688129,
+            "macro_f1": 0.60844226926999,
+            "weighted_f1": 0.60844226926999,
+            "precision": 0.6088851022395326,
+            "recall": 0.6086519114688129,
+            "classification_report": {
+                "0": {
+                    "precision": 0.6038461538461538,
+                    "recall": 0.6317907444668008,
+                    "f1-score": 0.6175024582104228,
+                    "support": 497.0
+                },
+                "1": {
+                    "precision": 0.6139240506329114,
+                    "recall": 0.5855130784708249,
+                    "f1-score": 0.5993820803295572,
+                    "support": 497.0
+                },
+                "accuracy": 0.6086519114688129,
+                "macro avg": {
+                    "precision": 0.6088851022395326,
+                    "recall": 0.6086519114688129,
+                    "f1-score": 0.60844226926999,
+                    "support": 994.0
+                },
+                "weighted avg": {
+                    "precision": 0.6088851022395326,
+                    "recall": 0.6086519114688129,
+                    "f1-score": 0.60844226926999,
+                    "support": 994.0
+                }
+            }
+        }
+    ],
+    "best_model": {
+        "config": {
+            "model": "LogisticRegression",
+            "class_weight": "balanced",
+            "ngram_range": [
+                1,
+                2
+            ],
+            "max_features": 10000
+        },
+        "accuracy": 0.6388329979879276,
+        "macro_f1": 0.6359141529310336,
+        "weighted_f1": 0.6359141529310336,
+        "precision": 0.6434325436659305,
+        "recall": 0.6388329979879276,
+        "classification_report": {
+            "0": {
+                "precision": 0.6177474402730375,
+                "recall": 0.7283702213279678,
+                "f1-score": 0.6685133887349953,
+                "support": 497.0
+            },
+            "1": {
+                "precision": 0.6691176470588235,
+                "recall": 0.5492957746478874,
+                "f1-score": 0.6033149171270719,
+                "support": 497.0
+            },
+            "accuracy": 0.6388329979879276,
+            "macro avg": {
+                "precision": 0.6434325436659305,
+                "recall": 0.6388329979879276,
+                "f1-score": 0.6359141529310336,
+                "support": 994.0
+            },
+            "weighted avg": {
+                "precision": 0.6434325436659304,
+                "recall": 0.6388329979879276,
+                "f1-score": 0.6359141529310336,
+                "support": 994.0
+            }
+        }
+    },
+    "top_features": {
+        "pushing_to_1_accepted": [
+            [
+                "companynsel respondent",
+                3.48314015655144
+            ],
+            [
+                "error",
+                3.072618753836566
+            ],
+            [
+                "leave granted",
+                2.74873974337781
+            ],
+            [
+                "allow appeal",
+                2.719928342979186
+            ],
+            [
+                "appeal allowed",
+                2.6831694953780847
+            ],
+            [
+                "allowed",
+                2.469117031088683
+            ],
+            [
+                "behalf respondent",
+                2.3698584234338655
+            ],
+            [
+                "allow",
+                2.258162830522761
+            ],
+            [
+                "erred",
+                2.1106443093703287
+            ],
+            [
+                "respondents",
+                2.0400508991248953
+            ],
+            [
+                "respondent",
+                1.9577547101380741
+            ],
+            [
+                "hold",
+                1.9538650751243665
+            ],
+            [
+                "granted appeal",
+                1.9485431000201523
+            ],
+            [
+                "opinion",
+                1.8793080194820855
+            ],
+            [
+                "writ petitioners",
+                1.8424441163240277
+            ],
+            [
+                "companynsel respondents",
+                1.839541736633326
+            ],
+            [
+                "proceeded",
+                1.8225127750871275
+            ],
+            [
+                "counsel respondent",
+                1.7934955918675022
+            ],
+            [
+                "court failed",
+                1.7795449357955586
+            ],
+            [
+                "aside",
+                1.765046995254498
+            ]
+        ],
+        "pushing_to_0_rejected": [
+            [
+                "companytention",
+                -5.430070780907183
+            ],
+            [
+                "rightly",
+                -4.5275385677862685
+            ],
+            [
+                "argument",
+                -3.798850158953851
+            ],
+            [
+                "companynsel appellant",
+                -3.508464725122658
+            ],
+            [
+                "companytended",
+                -3.4144761324351016
+            ],
+            [
+                "urged",
+                -3.3572689455245457
+            ],
+            [
+                "petitioner",
+                -3.0003577866602065
+            ],
+            [
+                "submission",
+                -2.915702218324586
+            ],
+            [
+                "court rightly",
+                -2.8337112511911093
+            ],
+            [
+                "court right",
+                -2.775211333174336
+            ],
+            [
+                "numberforce",
+                -2.6837122791602273
+            ],
+            [
+                "leave petition",
+                -2.6802860075650914
+            ],
+            [
+                "behalf appellant",
+                -2.543389806733303
+            ],
+            [
+                "numbermerit",
+                -2.5185782780251484
+            ],
+            [
+                "interfere",
+                -2.492733366264813
+            ],
+            [
+                "numbersubstance",
+                -2.362857660262229
+            ],
+            [
+                "argued",
+                -2.2611701450195816
+            ],
+            [
+                "mr",
+                -2.18714774521057
+            ],
+            [
+                "companynsel appellants",
+                -2.0298097221094684
+            ],
+            [
+                "direct",
+                -2.0182311851575028
+            ]
+        ]
+    },
+    "error_analysis": {
+        "false_positives": [
+            {
+                "id": "1967_364",
+                "excerpt": "criminal appellate jurisdiction criminal appeal number\n93 of 1965. appeal by special leave from the judgment and order dated\njune 19 1964 of the gujarat high companyrt in criminal appeal\nnumber 759 of 1963. h. dhebar for the appellant. n. keswani for the respondent. the judgment of the companyrt was delivered by\nhegde .j. the state of gujarat has filed this appeal by\nspecial leave against the orde..."
+            },
+            {
+                "id": "1985_276",
+                "excerpt": "civil appellate jurisdiction civil appeal number 91 of\n1972. from the judgment and order dated 12.2.1971 of the\nkerala high companyrt in s.a. number 21 of 1966. s. nambiar for the appellant. t. kunhitkanan for the respondent. the judgment of the companyrt was delivered by\nmadon j. on may 16 1983 the appellant died during\nthe pendency of this appeal by special leave granted by this\ncourt leaving be..."
+            }
+        ],
+        "false_negatives": [
+            {
+                "id": "1973_97",
+                "excerpt": "civil appellate jurisdiction civil appeal number 1068 1069\nof 1970. appeals by special leave from the judgment and order dated\ndecember 2 1968 of the madhya pradesh high companyrt in\nmisc.c.case number 84 of 1968. ram panjwani and i. n. shroff for the appellant. p. agarwala for the respondent. the judgment of the companyrt was delivered by\nhegde j. these appeals by special leave arise from the\ndec..."
+            },
+            {
+                "id": "1982_137",
+                "excerpt": "criminal appellate jurisdiction criminal appeal number\n187 of 1982. appeal by special leave from the judgment and order\ndated 7.10.81 of the punjab and haryana high companyrt in\ncriminal number466-db/81 . r. agarwala amicus curiae for the appellant. ashwani kumar and d.d. sharma for the respondent. the judgment of the companyrt was delivered by\nchandrachud c.j. the appellant prem thakur was\nconvic..."
+            }
+        ],
+        "true_positives": [
+            {
+                "id": "1972_61",
+                "excerpt": "criminal appellate jurisdiction criminal appeal number 165 of\n1971. appeal by special leave from the judgment and order dated\nnumberember 24 1970 of the madras high companyrt in criminal\nappeal number 761 of 1970 and referred trial number 50 of 1970. lakshminarasu for the appellant. v. rangam for the respondent. the judgment of the companyrt was delivered by\nkhanna j. thulia kali  26  was companyv..."
+            }
+        ],
+        "true_negatives": [
+            {
+                "id": "1974_161",
+                "excerpt": "criminal appellate jurisdiction criminal appeal number 192\nof 1972. appeal by special leave from the judgment and order dated\nthe 13th october 1971 of the allahabad high companyrt in crl. number 672 of 1971. p. uniyal and o. p. rana for the appellants\nfrank anthony a. k. garg santokh singh and ramesh sharma\nfor respondent number 1. k. garg and santokh singh for respondent number 2. nurrudin ahmed ..."
+            }
+        ]
+    },
+    "confusion_matrix": [
+        [
+            362,
+            135
+        ],
+        [
+            224,
+            273
+        ]
+    ]
+}

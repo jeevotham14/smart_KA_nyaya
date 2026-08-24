@@ -14,3 +14,6 @@ slowapi==0.1.9
 python-multipart==0.0.20
 reportlab
 python-docx
+langgraph==1.2.5
+joblib
+scikit-learn==1.8.0

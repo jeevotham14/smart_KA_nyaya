@@ -1,146 +1,56 @@
-# Smart Karnataka Nyaya Backend
+# Smart Karnataka Nyaya (Backend)
 
-FastAPI backend for a Karnataka-only AI-powered legal assistance platform. The current AI workflow is mocked, but the code is structured for later LangChain/LlamaIndex, embedding, Indian Kanoon, maps, email, and SMS integrations.
+## 1. Project Overview
+Smart Karnataka Nyaya backend is an API that serves an experimental machine-learning outcome prediction model for legal texts.
 
-## Stack
+## 2. Architecture
+The ML flow strictly operates as a prediction inference engine using a pre-frozen baseline model (`ildc_clean_v1_final_baseline`). User input flows through validation and input diagnostics, gets cleaned via frozen OCR normalizations, vectorized via TF-IDF, and scores a probability using Logistic Regression. A selective prediction policy is implemented which acts as a confidence gate, routing cases for human review based on fixed thresholds or diagnostics flags.
 
-- FastAPI
-- PostgreSQL with pgvector-ready schema
-- SQLAlchemy 2.x
-- Pydantic
-- JWT authentication
-- bcrypt password hashing
-- Alembic migrations
-- Mock multi-agent AI services
+See `docs/FINAL_SYSTEM_ARCHITECTURE.md` for full breakdown.
 
-## Project Layout
-
-```text
-app/api/routes      FastAPI route modules
-app/agents          Mock AI agent orchestration
-app/core            Settings and security
-app/db              Engine, session, seed data, DB types
-app/models          SQLAlchemy models
-app/schemas         Pydantic schemas
-app/services        Reserved for real integrations
-app/utils           Shared utilities
-alembic             Migrations
-tests               API tests
-```
-
-## Setup
-
+## 3. Installation
+Ensure Python 3.9+ is installed.
 ```bash
-cd backend
-python -m venv .venv
-.venv\Scripts\activate
 pip install -r requirements.txt
-copy .env.example .env
 ```
 
-Set `DATABASE_URL` in `.env`. For PostgreSQL:
-
-```text
-DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/smart_karnataka_nyaya
-JWT_SECRET=replace-with-a-long-random-secret
-```
-
-Enable pgvector in the database:
-
-```sql
-CREATE EXTENSION IF NOT EXISTS vector;
-```
-
-Run migrations:
-
+## 4. Running Backend Locally
 ```bash
-alembic upgrade head
+uvicorn app.main:app --reload --port 8000
 ```
 
-Start the API:
+## 5. API Endpoints
+*   `POST /api/v1/predict` - Perform a case outcome prediction.
+*   `GET /health` - Liveness probe.
+*   `GET /api/v1/ready` - Readiness probe.
 
-```bash
-uvicorn app.main:app --reload --port 5000
-```
+See `docs/API.md` for request/response details.
 
-API docs are available at `http://localhost:5000/docs`.
+## 6. Model Information
+*   **Model**: Logistic Regression + TF-IDF
+*   **Version**: `ildc_clean_v1_final_baseline`
+*   **Dataset**: REAL ILDC_multi dataset
 
-## Seed Data
+See `docs/MODEL_CARD.md` for detailed specifications.
 
-On startup the app creates tables for local development and seeds:
+## 7. Final TEST Metrics
+*   **TEST Accuracy**: 60.65%
+*   **TEST Macro F1**: 60.43%
 
-- Admin user: `admin@smartnyaya.local`
-- Admin password: `Admin@12345`
-- Karnataka legal aid directory examples
-- Emergency helplines `112`, `181`
-- Sample legal statutes/categories
+## 8. Human-Review Policy
+Cases are securely and automatically routed to human review when the model probability falls strictly between 0.30 and 0.70 (inclusive bound uncertainties) OR whenever input texts are suspiciously short (less than 100 valid tokens) or missing recognizable TF-IDF features.
 
-For production, prefer Alembic migrations and replace the default admin password immediately.
+## 9. Limitations
+*   ILDC contains Supreme Court appeal judgments.
+*   Model does NOT predict general "win/lose".
+*   Model does NOT predict conviction/acquittal.
+*   Not Karnataka-specific.
+*   Short citizen inputs are a domain shift.
+*   Model is experimental decision support.
+*   Human review is required for uncertain cases.
 
-## Implemented API Areas
-
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `GET /api/auth/me`
-- `POST /api/ai/legal-query`
-- `POST /api/ai/classify-issue`
-- `POST /api/ai/retrieve-precedents`
-- `POST /api/ai/risk-assessment`
-- `POST /api/legal-aid/check-eligibility`
-- `POST /api/legal-aid/apply`
-- `GET /api/legal-aid/applications/{user_id}`
-- `GET /api/women-protection/resources`
-- `POST /api/women-protection/request-help`
-- `GET /api/women-protection/nearby-services`
-- `POST /api/documents/generate`
-- `GET /api/documents/{doc_id}`
-- `GET /api/documents/user/{user_id}`
-- `POST /api/complaints`
-- `GET /api/complaints/{complaint_id}`
-- `GET /api/complaints/user/{user_id}`
-- `PATCH /api/complaints/{complaint_id}/status`
-- `GET /api/directory/search`
-- `GET /api/directory/district/{district}`
-- `GET /api/directory/service-type/{service_type}`
-- `GET /api/tracker/{case_id}`
-- `PATCH /api/tracker/{case_id}/status`
-- `GET /api/notifications/user/{user_id}`
-- `PATCH /api/notifications/{notification_id}/read`
-- Admin APIs under `/api/admin/*`, protected by the `admin` role
-
-
-## AI Integration Layer
-
-AI calls flow through `app/services/ai_service.py`. It exposes:
-
-- `classify_legal_issue`
-- `rag_retrieval_placeholder`
-- `legal_guidance_response`
-- `document_generation_response`
-
-Configure providers with environment variables only:
-
-```text
-AI_PROVIDER=mock
-AI_MODEL=mock-legal-assistant
-EMBEDDING_MODEL=mock-embedding
-OPENAI_API_KEY=
-INDIAN_KANOON_API_KEY=
-```
-
-No API keys are hardcoded or returned in API responses. The current implementation uses deterministic mock agents and is ready for a real provider client later.
-
-## Tests
-
-```bash
-pytest
-```
-
-Tests use SQLite with FastAPI dependency overrides. PostgreSQL/pgvector remains the intended production database.
-
-## AI Safety
-
-Every generated legal guidance response includes the required disclaimer:
-
-> This is legal information only and is not a substitute for advice from a qualified advocate. For official legal action, consult an advocate, DLSA, TLSC, or appropriate authority.
-
+## 10. Future Work
+*   Karnataka precedent retrieval (RAG/FAISS)
+*   SHAP explanation support
+*   Evidence-grounded recommendation engine
+*   Kannada-native prediction models

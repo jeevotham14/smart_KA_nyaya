@@ -1,0 +1,48 @@
+{
+    "model_architecture": "TF-IDF + LogisticRegression",
+    "dataset_splits": {
+        "train": 1000,
+        "dev": 30,
+        "test": 50
+    },
+    "metrics": {
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "macro_f1": 1.0,
+        "weighted_f1": 1.0,
+        "classification_report": {
+            "0": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 22.0
+            },
+            "1": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 8.0
+            },
+            "accuracy": 1.0,
+            "macro avg": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 30.0
+            },
+            "weighted avg": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 30.0
+            }
+        }
+    },
+    "majority_class_baseline_accuracy": 0.7333333333333333,
+    "hyperparameters": {
+        "max_features": 5000,
+        "class_weight": "balanced",
+        "random_state": 42
+    }
+}

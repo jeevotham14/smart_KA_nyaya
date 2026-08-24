@@ -35,6 +35,26 @@ class Settings(BaseSettings):
     # Legal Aid
     legal_aid_income_limit: int = 300000  # Karnataka DLSA threshold — update periodically
 
+    # Operational Configurations
+    ENVIRONMENT: str = "development"
+    LOG_LEVEL: str = "INFO"
+    MAX_REQUEST_TEXT_CHARS: int = 200000
+    ENABLE_AUDIT: bool = True
+    BLOCKCHAIN_MODE: str = "LOCAL_SIMULATION"
+    
+    # Immutable Model Governance Settings
+    @property
+    def MODEL_VERSION(self) -> str:
+        return "ildc_clean_v1_final_baseline"
+        
+    @property
+    def LOWER_THRESHOLD(self) -> float:
+        return 0.30
+        
+    @property
+    def UPPER_THRESHOLD(self) -> float:
+        return 0.70
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     @field_validator("cors_origins", mode="before")

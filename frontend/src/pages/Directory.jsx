@@ -41,8 +41,9 @@ export const DISTRICT_NAMES_KN = {
 
 function formatServiceType(value, isKn) {
   if (!value) return isKn ? 'ಸೇವೆ' : 'Service';
+  const strValue = String(value);
   if (isKn) {
-    switch (value) {
+    switch (strValue) {
       case 'legal_aid': return 'ಉಚಿತ ಕಾನೂನು ನೆರವು';
       case 'dlsa': return 'ಜಿಲ್ಲಾ ಕಾನೂನು ಸೇವೆಗಳ ಪ್ರಾಧಿಕಾರ (DLSA)';
       case 'helpline': return 'ಸಹಾಯವಾಣಿ ಕೇಂದ್ರ';
@@ -51,10 +52,10 @@ function formatServiceType(value, isKn) {
       case 'women_police_station': return 'ಮಹಿಳಾ ಪೊಲೀಸ್ ಠಾಣೆ';
       case 'ngo': return 'ಎನ್‌ಜಿಒ / ಸ್ವಯಂಸೇವಾ ಸಂಸ್ಥೆ';
       case 'one_stop_centre': return 'ಒನ್ ಸ್ಟಾಪ್ ಸೆಂಟರ್ (ಸಖಿ)';
-      default: return value.replaceAll('_', ' ');
+      default: return strValue.replace(/_/g, ' ');
     }
   }
-  return value.replaceAll('_', ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+  return strValue.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 function translateLocationName(name, isKn) {
@@ -135,7 +136,7 @@ export default function Directory() {
       setError('');
       try {
         const data = await legalApi.searchDirectory({ district, taluk, serviceType: type, q: query });
-        if (active) setResults(data);
+        if (active) setResults(Array.isArray(data) ? data : []);
       } catch (apiError) {
         if (active) {
           setError(getApiError(apiError));

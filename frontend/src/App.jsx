@@ -6,6 +6,7 @@ import LoadingSpinner from './components/LoadingSpinner.jsx';
 const About = lazy(() => import('./pages/About.jsx'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard.jsx'));
 const AILegalGuidance = lazy(() => import('./pages/AILegalGuidance.jsx'));
+const CaseOutcome = lazy(() => import('./pages/CaseOutcome.jsx'));
 const CaseTracker = lazy(() => import('./pages/CaseTracker.jsx'));
 const Contact = lazy(() => import('./pages/Contact.jsx'));
 const Directory = lazy(() => import('./pages/Directory.jsx'));
@@ -25,6 +26,9 @@ const LimitationChecker = lazy(() => import('./pages/LimitationChecker.jsx'));
 const RightsExplainer = lazy(() => import('./pages/RightsExplainer.jsx'));
 const EmergencyAssistance = lazy(() => import('./pages/EmergencyAssistance.jsx'));
 const GlobalSearch = lazy(() => import('./pages/GlobalSearch.jsx'));
+const Advocates = lazy(() => import('./pages/Advocates.jsx'));
+const AdvocateProfile = lazy(() => import('./pages/AdvocateProfile.jsx'));
+const Consultations = lazy(() => import('./pages/Consultations.jsx'));
 
 export default function App() {
   return (
@@ -33,7 +37,11 @@ export default function App() {
         <Route element={<MainLayout />}>
           <Route index element={<Home />} />
           <Route path="about" element={<About />} />
+          <Route path="advocates" element={<Advocates />} />
+          <Route path="advocates/:id" element={<AdvocateProfile />} />
+          <Route path="consultations" element={<Consultations />} />
           <Route path="ai-legal-guidance" element={<AILegalGuidance />} />
+          <Route path="case-outcome" element={<CaseOutcome />} />
           <Route path="women-protection" element={<WomenProtection />} />
           <Route path="legal-aid" element={<LegalAid />} />
           <Route path="document-generator" element={<DocumentGenerator />} />

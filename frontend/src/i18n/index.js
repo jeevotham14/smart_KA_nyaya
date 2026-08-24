@@ -23,6 +23,7 @@ const resources = {
         aid: 'Free Legal Aid',
         docs: 'Documents',
         docsResources: 'Documents Page',
+        evidenceVault: 'Evidence Vault',
         locator: 'Directory',
         tracker: 'Case Tracker',
         resources: 'Resources',

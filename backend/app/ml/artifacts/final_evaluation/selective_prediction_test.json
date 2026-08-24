@@ -1,0 +1,81 @@
+{
+    "evaluation_type": "FINAL_TEST_SELECTIVE_PREDICTION",
+    "model_version": "ildc_clean_v1_final_baseline",
+    "thresholds": {
+        "auto_class_0_max": 0.3,
+        "auto_class_1_min": 0.7
+    },
+    "thresholds_selected_using_test": false,
+    "test_model_tuning_performed": false,
+    "overall": {
+        "total_test_cases": 1517,
+        "overall_test_accuracy": 0.6064601186552406
+    },
+    "auto_classification": {
+        "cases": 134,
+        "coverage_percentage": 8.833223467369809,
+        "accuracy": 0.8059701492537313,
+        "macro_f1": 0.7926190476190476,
+        "confusion_matrix": [
+            [
+                71,
+                8
+            ],
+            [
+                18,
+                37
+            ]
+        ],
+        "class_0": {
+            "count": 89,
+            "accuracy": 0.797752808988764,
+            "LOW_SAMPLE_WARNING": false
+        },
+        "class_1": {
+            "count": 45,
+            "accuracy": 0.8222222222222222,
+            "LOW_SAMPLE_WARNING": false
+        }
+    },
+    "human_review": {
+        "cases": 1383,
+        "coverage_percentage": 91.1667765326302,
+        "accuracy": 0.5871294287780188,
+        "macro_f1": 0.5858119537082931
+    },
+    "confidence_regions": {
+        "LOW_CONFIDENCE": {
+            "case_count": 900,
+            "percentage_of_test": 59.327620303230056,
+            "accuracy": 0.5555555555555556,
+            "macro_f1": 0.5545855418466883,
+            "actual_class_distribution": {
+                "0": 435,
+                "1": 465
+            },
+            "LOW_SAMPLE_WARNING": false
+        },
+        "MEDIUM_CONFIDENCE": {
+            "case_count": 483,
+            "percentage_of_test": 31.839156229400135,
+            "accuracy": 0.6459627329192547,
+            "macro_f1": 0.6439849478217015,
+            "actual_class_distribution": {
+                "0": 241,
+                "1": 242
+            },
+            "LOW_SAMPLE_WARNING": false
+        },
+        "HIGH_CONFIDENCE": {
+            "case_count": 134,
+            "percentage_of_test": 8.833223467369809,
+            "accuracy": 0.8059701492537313,
+            "macro_f1": 0.7926190476190476,
+            "actual_class_distribution": {
+                "0": 79,
+                "1": 55
+            },
+            "LOW_SAMPLE_WARNING": false
+        }
+    }
+}

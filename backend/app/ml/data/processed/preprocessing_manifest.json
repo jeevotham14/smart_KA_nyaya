@@ -1,0 +1,25 @@
+{
+    "timestamp": "2026-08-19T15:58:01.249648Z",
+    "cleaner_version": "1.0-conservative",
+    "source_files": [
+        {
+            "filename": "multi_dev-00000-of-00001.parquet",
+            "rows": 994
+        },
+        {
+            "filename": "multi_train-00000-of-00002.parquet",
+            "rows": 24920
+        },
+        {
+            "filename": "multi_train-00001-of-00002.parquet",
+            "rows": 7385
+        }
+    ],
+    "metrics": {
+        "total_documents_processed": 33299,
+        "documents_unchanged": 18729,
+        "documents_truncated": 8469,
+        "documents_sentence_masked": 6101,
+        "average_text_removed_percentage": 2.8280175417418434
+    }
+}

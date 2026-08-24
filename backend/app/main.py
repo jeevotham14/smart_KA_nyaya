@@ -33,6 +33,46 @@ def create_app() -> FastAPI:
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
     app.add_middleware(SlowAPIMiddleware)
 
+    # Error handlers
+    from app.core.exceptions import ModelArtifactError, InputValidationError, ModelIntegrityError
+    from fastapi.responses import JSONResponse
+    from fastapi import Request
+
+    @app.exception_handler(ModelArtifactError)
+    async def model_artifact_exception_handler(request: Request, exc: ModelArtifactError):
+        return JSONResponse(
+            status_code=503,
+            content={"detail": exc.detail, "error_code": exc.error_code}
+        )
+
+    @app.exception_handler(InputValidationError)
+    async def input_validation_exception_handler(request: Request, exc: InputValidationError):
+        return JSONResponse(
+            status_code=413, # Payload Too Large
+            content={"detail": exc.detail, "error_code": exc.error_code}
+        )
+
+    @app.exception_handler(ModelIntegrityError)
+    async def model_integrity_exception_handler(request: Request, exc: ModelIntegrityError):
+        return JSONResponse(
+            status_code=503,
+            content={"detail": exc.detail, "error_code": exc.error_code}
+        )
+
+    # Middleware for X-Request-ID
+    import uuid
+    from starlette.middleware.base import BaseHTTPMiddleware
+    
+    class RequestIDMiddleware(BaseHTTPMiddleware):
+        async def dispatch(self, request, call_next):
+            request_id = str(uuid.uuid4())
+            request.state.request_id = request_id
+            response = await call_next(request)
+            response.headers["X-Request-ID"] = request_id
+            return response
+
+    app.add_middleware(RequestIDMiddleware)
+
     # CORS
     app.add_middleware(
         CORSMiddleware,

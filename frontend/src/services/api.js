@@ -196,6 +196,10 @@ export const legalApi = {
     });
     return data;
   },
+  predictCaseOutcome: async (caseText) => {
+    const { data } = await api.post('/api/predict', { case_text: caseText });
+    return data;
+  },
   getCaseStatus: async (trackingId, district) => {
     const { data } = await api.get(`/api/tracker/${encodeURIComponent(trackingId)}`, {
       params: { district: district || undefined }
@@ -304,3 +308,56 @@ export const notificationApi = {
 };
 
 export default api;
+
+export const advocateApi = {
+  getAdvocates: async (params) => {
+    const { data } = await api.get('/api/advocates', { params });
+    return data;
+  },
+  getAdvocate: async (id) => {
+    const { data } = await api.get(`/api/advocates/${id}`);
+    return data;
+  },
+  createProfile: async (profile) => {
+    const { data } = await api.post('/api/advocates/profile', profile);
+    return data;
+  },
+  updateProfile: async (profile) => {
+    const { data } = await api.put('/api/advocates/profile', profile);
+    return data;
+  },
+  getAvailability: async (advocateId) => {
+    const { data } = await api.get(`/api/advocates/${advocateId}/availability`);
+    return data;
+  },
+  createAvailability: async (avail) => {
+    const { data } = await api.post('/api/advocates/availability', avail);
+    return data;
+  },
+  deleteAvailability: async (slotId) => {
+    await api.delete(`/api/advocates/availability/${slotId}`);
+  },
+};
+
+export const consultationApi = {
+  bookConsultation: async (appointment) => {
+    const { data } = await api.post('/api/consultations', appointment);
+    return data;
+  },
+  getMyConsultations: async () => {
+    const { data } = await api.get('/api/consultations/my');
+    return data;
+  },
+  getAppointment: async (id) => {
+    const { data } = await api.get(`/api/consultations/${id}`);
+    return data;
+  },
+  updateStatus: async (id, action) => {
+    const { data } = await api.patch(`/api/consultations/${id}/${action}`);
+    return data;
+  },
+  rescheduleAppointment: async (id, payload) => {
+    const { data } = await api.patch(`/api/consultations/${id}/reschedule`, payload);
+    return data;
+  }
+};

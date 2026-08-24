@@ -1,0 +1,73 @@
+{
+    "ocr_frequencies": {
+        "detected_artifacts_in_corpus": 27024
+    },
+    "performance_comparison": {
+        "ORIGINAL": {
+            "accuracy": 0.6398390342052314,
+            "macro_f1": 0.6382441444372153
+        },
+        "NORMALIZED": {
+            "accuracy": 0.641851106639839,
+            "macro_f1": 0.6404522694758746
+        },
+        "DIFFERENCE": {
+            "accuracy": 0.002012072434607659,
+            "macro_f1": 0.002208125038659303
+        }
+    },
+    "top_features": {
+        "ORIGINAL": {
+            "class_0": [
+                "companytention",
+                "rightly",
+                "we",
+                "argument",
+                "urged",
+                "leave petition",
+                "the petitioner",
+                "companytended",
+                "we do",
+                "mr"
+            ],
+            "class_1": [
+                "leave granted",
+                "error",
+                "respondent",
+                "error in",
+                "heard learned",
+                "respondents",
+                "the respondents",
+                "allowed",
+                "aside",
+                "in error"
+            ]
+        },
+        "NORMALIZED": {
+            "class_0": [
+                "contention",
+                "rightly",
+                "we",
+                "argument",
+                "urged",
+                "leave petition",
+                "counsel",
+                "the petitioner",
+                "contended",
+                "merit"
+            ],
+            "class_1": [
+                "leave granted",
+                "error",
+                "respondents",
+                "the respondents",
+                "error in",
+                "respondent",
+                "allowed",
+                "heard learned",
+                "in error",
+                "granted this"
+            ]
+        }
+    }
+}

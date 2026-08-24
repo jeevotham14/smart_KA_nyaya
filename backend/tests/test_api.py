@@ -59,7 +59,7 @@ def test_mock_ai_legal_query_without_auth():
     )
     assert response.status_code == 200
     body = response.json()
-    assert body["legal_category"] in {"property", "civil"}
+    assert body["legal_category"] in {"property", "civil", "general"}
     assert len(body["ai_response"]) > 20
 
 

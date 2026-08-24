@@ -1,0 +1,52 @@
+{
+    "0.0-0.1": {
+        "count": 1,
+        "average_predicted_probability": 0.0359688681076395,
+        "actual_fraction_class_1": 0.0
+    },
+    "0.1-0.2": {
+        "count": 7,
+        "average_predicted_probability": 0.1743384360038691,
+        "actual_fraction_class_1": 0.2857142857142857
+    },
+    "0.2-0.3": {
+        "count": 81,
+        "average_predicted_probability": 0.26205609396888235,
+        "actual_fraction_class_1": 0.19753086419753085
+    },
+    "0.3-0.4": {
+        "count": 278,
+        "average_predicted_probability": 0.3580842564379077,
+        "actual_fraction_class_1": 0.37410071942446044
+    },
+    "0.4-0.5": {
+        "count": 507,
+        "average_predicted_probability": 0.45307017408084266,
+        "actual_fraction_class_1": 0.46548323471400394
+    },
+    "0.5-0.6": {
+        "count": 393,
+        "average_predicted_probability": 0.5465840349190709,
+        "actual_fraction_class_1": 0.5826972010178118
+    },
+    "0.6-0.7": {
+        "count": 205,
+        "average_predicted_probability": 0.6409332229245198,
+        "actual_fraction_class_1": 0.6731707317073171
+    },
+    "0.7-0.8": {
+        "count": 37,
+        "average_predicted_probability": 0.7306061605897424,
+        "actual_fraction_class_1": 0.8108108108108109
+    },
+    "0.8-0.9": {
+        "count": 8,
+        "average_predicted_probability": 0.8293001284321455,
+        "actual_fraction_class_1": 0.875
+    },
+    "0.9-1.0": {
+        "count": 0,
+        "average_predicted_probability": 0.0,
+        "actual_fraction_class_1": 0.0
+    }
+}

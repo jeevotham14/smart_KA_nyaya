@@ -1,4 +1,7 @@
 from app.models.domain import (
+    AdvocateProfile,
+    AdvocateAvailability,
+    ConsultationAppointment,
     AuditLog,
     CaseNote,
     CaseObject,
@@ -17,6 +20,9 @@ from app.models.domain import (
 )
 
 __all__ = [
+    "AdvocateProfile",
+    "AdvocateAvailability",
+    "ConsultationAppointment",
     "AuditLog",
     "CaseNote",
     "CaseObject",
