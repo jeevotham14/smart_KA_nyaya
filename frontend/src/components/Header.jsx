@@ -2,22 +2,41 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { Languages, Menu, Scale, Search, Sparkles, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-const navItems = [
-  ['nav.home', '/'],
-  ['nav.about', '/about'],
-  ['nav.aiGuidance', '/ai-legal-guidance'],
-  ['Case Outcome', '/case-outcome'],
-  ['Consult an Advocate', '/advocates'],
-  ['nav.women', '/women-protection'],
-  ['nav.aid', '/legal-aid'],
-  ['nav.docsResources', '/document-generator'],
-  ['nav.locator', '/directory'],
-  ['nav.tracker', '/case-tracker'],
-  ['Emergency', '/emergency'],
-  ['nav.contact', '/contact'],
-];
+
 
 export default function Header() {
+
+  const role = localStorage.getItem('role');
+  
+  let navItems = [
+    ['nav.home', '/'],
+    ['nav.about', '/about'],
+    ['nav.aiGuidance', '/ai-legal-guidance'],
+    ['Case Outcome', '/case-outcome'],
+  ];
+  
+  if (!role) {
+      navItems.push(['Consult an Advocate', '/advocates']);
+  } else if (role === 'citizen') {
+      navItems.push(['Consult an Advocate', '/advocates']);
+      navItems.push(['My Broadcast Requests', '/consultation-broadcasts']);
+      navItems.push(['My Consultations', '/consultations']);
+  } else if (role === 'advocate') {
+      navItems.push(['Advocate Dashboard', '/dashboard']);
+      navItems.push(['Broadcast Requests', '/consultation-broadcasts']);
+      navItems.push(['Direct Requests', '/consultations']);
+      navItems.push(['My Consultations', '/consultations']);
+  }
+  
+  navItems.push(
+    ['nav.women', '/women-protection'],
+    ['nav.aid', '/legal-aid'],
+    ['nav.docsResources', '/document-generator'],
+    ['nav.locator', '/directory'],
+    ['nav.tracker', '/case-tracker'],
+    ['Emergency', '/emergency'],
+    ['nav.contact', '/contact']
+  );
   const [open, setOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');

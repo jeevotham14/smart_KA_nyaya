@@ -29,6 +29,7 @@ const GlobalSearch = lazy(() => import('./pages/GlobalSearch.jsx'));
 const Advocates = lazy(() => import('./pages/Advocates.jsx'));
 const AdvocateProfile = lazy(() => import('./pages/AdvocateProfile.jsx'));
 const Consultations = lazy(() => import('./pages/Consultations.jsx'));
+const ConsultationBroadcasts = lazy(() => import('./pages/ConsultationBroadcasts.jsx'));
 
 export default function App() {
   return (
@@ -40,6 +41,7 @@ export default function App() {
           <Route path="advocates" element={<Advocates />} />
           <Route path="advocates/:id" element={<AdvocateProfile />} />
           <Route path="consultations" element={<Consultations />} />
+          <Route path="consultation-broadcasts" element={<ConsultationBroadcasts />} />
           <Route path="ai-legal-guidance" element={<AILegalGuidance />} />
           <Route path="case-outcome" element={<CaseOutcome />} />
           <Route path="women-protection" element={<WomenProtection />} />
