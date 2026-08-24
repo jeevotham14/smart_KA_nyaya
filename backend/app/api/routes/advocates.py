@@ -18,7 +18,7 @@ from app.api.deps import get_current_user
 
 router = APIRouter(prefix="/advocates", tags=["advocates"])
 
-@router.get("/", response_model=List[AdvocateProfileRead])
+@router.get("", response_model=List[AdvocateProfileRead])
 def get_advocates(
     specialization: Optional[str] = None,
     district: Optional[str] = None,

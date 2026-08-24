@@ -33,7 +33,7 @@ export default function Advocates() {
       const data = await advocateApi.getAdvocates(params);
       setAdvocates(data || []);
     } catch (err) {
-      setError(getApiError(err));
+      setError("Unable to connect to the advocate service.");
     } finally {
       setLoading(false);
     }
@@ -142,7 +142,7 @@ export default function Advocates() {
               <div className="flex items-center justify-center py-20">
                 <Loader2 className="h-8 w-8 animate-spin text-legalGold" />
               </div>
-            ) : advocates.length === 0 ? (
+            ) : (!error && advocates.length === 0) ? (
               <div className="text-center py-20 bg-white dark:bg-navy-900 rounded-xl border border-slate-200 dark:border-slate-800">
                 <p className="text-slate-500 dark:text-slate-400">No advocates found matching your filters.</p>
               </div>
