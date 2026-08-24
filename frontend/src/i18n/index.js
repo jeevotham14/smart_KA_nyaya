@@ -388,7 +388,7 @@ const resources = {
       adminDash: {
         eyebrow: 'Admin Dashboard',
         title: 'Manage Smart Karnataka Nyaya content and requests',
-        desc: 'Mock admin controls for users, content, directory services, complaints, analytics, and reports.',
+        desc: 'Manage users, legal services, advocates, consultations, and platform activity.',
         manage: 'Manage',
         users: 'Users',
         legalContent: 'Legal content',

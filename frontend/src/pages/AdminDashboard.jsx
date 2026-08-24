@@ -1,55 +1,106 @@
-import { useTranslation } from 'react-i18next';
-import DashboardCard from '../components/DashboardCard.jsx';
-import SectionHeader from '../components/SectionHeader.jsx';
-import { adminStats } from '../data/mockData.js';
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { UserCheck, ShieldAlert, Building2, HeartHandshake, Loader2, AlertTriangle, Scale, Shield } from "lucide-react";
+import DashboardCard from "../components/DashboardCard.jsx";
+import SectionHeader from "../components/SectionHeader.jsx";
+import api from "../services/api.js";
+import { Navigate } from "react-router-dom";
 
 export default function AdminDashboard() {
   const { t } = useTranslation();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  const translatedStats = [
-    { ...adminStats[0], label: t('adminCards.registeredUsers') },
-    { ...adminStats[1], label: t('adminCards.openComplaints') },
-    { ...adminStats[2], label: t('adminCards.directoryEntries') },
-    { ...adminStats[3], label: t('adminCards.legalAidCases') },
+  useEffect(() => {
+    api.dashboard.getAdmin()
+      .then(setData)
+      .catch((err) => {
+        console.error("Admin Dashboard error:", err);
+        setError(true);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const role = localStorage.getItem("role");
+  if (role !== "admin") {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <Loader2 className="animate-spin text-legalGold h-12 w-12" />
+        <span className="ml-3 text-slate-500 font-semibold">Loading dashboard...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <AlertTriangle className="mx-auto h-12 w-12 text-red-500" />
+          <p className="mt-4 text-lg font-bold text-navy-900 dark:text-white">Unable to load dashboard.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const translatedCards = [
+    { label: "Registered Users", value: data.registered_users || 0, icon: UserCheck, tone: "navy" },
+    { label: "Advocates", value: data.advocates || 0, icon: Scale, tone: "navy" },
+    { label: "Consultations", value: data.consultations || 0, icon: HeartHandshake, tone: "navy" },
+    { label: "Open Broadcasts", value: data.open_broadcasts || 0, icon: Shield, tone: "gold" },
+    { label: "Open Complaints", value: data.complaints || 0, icon: ShieldAlert, tone: "red" },
+    { label: "Legal Aid Cases", value: data.legal_aid_applications || 0, icon: HeartHandshake, tone: "green" },
   ];
 
   return (
-    <section className="py-12 md:py-16">
+    <div className="min-h-screen bg-slate-50 pb-20 pt-28 dark:bg-navy-950">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <SectionHeader eyebrow={t('adminDash.eyebrow')} title={t('adminDash.title')}>
-          {t('adminDash.desc')}
-        </SectionHeader>
-        <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-          {translatedStats.map((card) => <DashboardCard key={card.label} {...card} />)}
+        <div className="mb-8">
+          <SectionHeader
+            title="Admin Dashboard"
+            subtitle="Manage users, legal services, advocates, consultations, and platform activity."
+            centered={false}
+          />
         </div>
-        <div className="mt-8 grid gap-6 lg:grid-cols-[0.75fr_1.25fr]">
-          <aside className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-6 sm:p-8 shadow-sm glass-panel">
-            <h3 className="font-serif text-2xl font-bold text-navy-900 dark:text-white">{t('adminDash.manage')}</h3>
-            <div className="mt-5 grid gap-3">
-              {[t('adminDash.users'), t('adminDash.legalContent'), t('adminDash.directoryServices'), t('adminDash.complaints'), t('adminDash.analyticsReports')].map((item) => (
-                <button className="rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-3 text-left text-sm font-bold text-slate-700 dark:text-slate-300 hover:border-legalGold dark:hover:border-legalGold transition-all duration-300 hover:-translate-y-1 hover:shadow-md bg-white dark:bg-navy-800" key={item} type="button">{item}</button>
-              ))}
-            </div>
-          </aside>
-          <section className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-6 sm:p-8 shadow-sm glass-panel">
-            <h3 className="font-serif text-2xl font-bold text-navy-900 dark:text-white">{t('adminDash.reportsTable')}</h3>
-            <div className="mt-5 overflow-x-auto">
-              <table className="w-full min-w-[640px] text-left text-sm">
-                <thead className="bg-slate-50 dark:bg-navy-800 text-navy-900 dark:text-white border-b border-slate-200 dark:border-slate-700">
-                  <tr><th className="p-3">{t('adminDash.thReport')}</th><th className="p-3">{t('adminDash.thDistrict')}</th><th className="p-3">{t('adminDash.thOwner')}</th><th className="p-3">{t('adminDash.thStatus')}</th></tr>
+
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {translatedCards.map((card, idx) => (
+            <DashboardCard key={idx} {...card} />
+          ))}
+        </div>
+
+        <div className="mt-12 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-navy-900">
+          <h3 className="mb-6 font-display text-xl font-bold text-navy-900 dark:text-white">Recent Activity</h3>
+          {!data.recent_activity || data.recent_activity.length === 0 ? (
+            <p className="text-slate-500">No recent activity yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 dark:border-slate-800">
+                    <th className="pb-3 font-semibold text-slate-500">Subject</th>
+                    <th className="pb-3 font-semibold text-slate-500">Type</th>
+                    <th className="pb-3 font-semibold text-slate-500">Date</th>
+                  </tr>
                 </thead>
                 <tbody>
-                  {[t('adminDash.report1'), t('adminDash.report2'), t('adminDash.report3'), t('adminDash.report4')].map((report) => (
-                    <tr className="border-b border-slate-100 dark:border-slate-800/50" key={report}>
-                      <td className="p-3 font-semibold text-navy-900 dark:text-slate-200">{report}</td><td className="p-3 text-slate-600 dark:text-slate-400">{t('adminDash.statewide')}</td><td className="p-3 text-slate-600 dark:text-slate-400">{t('adminDash.adminDesk')}</td><td className="p-3 text-slate-600 dark:text-slate-400">{t('adminDash.open')}</td>
+                  {data.recent_activity.map((item, idx) => (
+                    <tr key={idx} className="border-b border-slate-100 dark:border-slate-800/50 last:border-0">
+                      <td className="py-3 font-medium text-navy-900 dark:text-white">{item.subject}</td>
+                      <td className="py-3 text-slate-600 dark:text-slate-400">{item.type}</td>
+                      <td className="py-3 text-slate-500 dark:text-slate-400">{item.date}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          </section>
+          )}
         </div>
       </div>
-    </section>
+    </div>
   );
 }

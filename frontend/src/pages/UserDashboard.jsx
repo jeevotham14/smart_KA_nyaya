@@ -1,30 +1,61 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import {
-  ArrowRight, Bell, BookOpen, Calendar, ChevronRight, ClipboardList,
-  FileText, Loader2, MessageSquare, Scale, Shield, TrendingUp,
-} from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import AnimatedSection from '../components/AnimatedSection.jsx';
-import DashboardCard from '../components/DashboardCard.jsx';
-import SectionHeader from '../components/SectionHeader.jsx';
-import { dashboardCards } from '../data/mockData.js';
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { MessageSquare, ClipboardList, FileText, Scale, Shield, TrendingUp, AlertTriangle, Loader2, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import AnimatedSection from "../components/AnimatedSection.jsx";
+import api from "../services/api.js";
 
 export default function UserDashboard() {
   const { t } = useTranslation();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  const translatedCards = [
-    { ...dashboardCards[0], label: t('dashCards.recentQueries'), icon: MessageSquare },
-    { ...dashboardCards[1], label: t('dashCards.complaints'), icon: ClipboardList },
-    { ...dashboardCards[2], label: t('dashCards.generatedDocs'), icon: FileText },
-    { ...dashboardCards[3], label: t('dashCards.legalAidApps'), icon: Shield },
-  ];
+  useEffect(() => {
+    api.dashboard.getMe()
+      .then(setData)
+      .catch((err) => {
+        console.error("Dashboard error:", err);
+        setError(true);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   const quickLinks = [
-    { label: 'AI Legal Guidance', desc: 'Get instant AI-powered legal assistance', path: '/ai-legal-guidance', icon: MessageSquare, color: 'text-legalGold' },
-    { label: 'Guided Intake', desc: 'Step-by-step issue assessment', path: '/guided-intake', icon: ClipboardList, color: 'text-aidGreen' },
-    { label: 'Generate Documents', desc: 'Create legal documents', path: '/document-generator', icon: FileText, color: 'text-navy-700' },
-    { label: 'Track Case', desc: 'Monitor your case status', path: '/case-tracker', icon: Scale, color: 'text-legalGold' },
+    { label: "AI Legal Guidance", desc: "Get instant AI-powered legal assistance", path: "/ai-legal-guidance", icon: MessageSquare, color: "text-legalGold" },
+    { label: "Guided Intake", desc: "Step-by-step issue assessment", path: "/guided-intake", icon: ClipboardList, color: "text-aidGreen" },
+    { label: "Generate Documents", desc: "Create legal documents", path: "/document-generator", icon: FileText, color: "text-navy-700" },
+    { label: "Track Case", desc: "Monitor your case status", path: "/case-tracker", icon: Scale, color: "text-legalGold" },
+  ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-surface">
+        <Loader2 className="animate-spin text-legalGold h-12 w-12" />
+        <span className="ml-3 text-slate-500 font-semibold">Loading dashboard...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-surface">
+        <div className="text-center">
+          <AlertTriangle className="mx-auto h-12 w-12 text-red-500" />
+          <p className="mt-4 text-lg font-bold text-navy-900 dark:text-white">Unable to load dashboard.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const role = localStorage.getItem("role") || "citizen";
+  const name = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).full_name : "User";
+
+  const cards = [
+    { label: "Recent Queries", value: data?.legal_queries || 0, icon: MessageSquare },
+    { label: "Complaints", value: data?.complaints || 0, icon: ClipboardList },
+    { label: "Consultations", value: data?.consultations || 0, icon: Scale },
+    { label: "Broadcasts", value: data?.broadcast_requests || 0, icon: Shield },
   ];
 
   return (
@@ -32,20 +63,19 @@ export default function UserDashboard() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <AnimatedSection>
           <div className="mb-8">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-legalGold">Citizen Dashboard</p>
-            <h1 className="mt-2 font-display text-3xl font-extrabold text-navy-900 dark:text-white">{t('userDash.title')}</h1>
-            <p className="mt-2 text-slate-500 dark:text-slate-400">{t('userDash.desc')}</p>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-legalGold">{role === "advocate" ? "Advocate Dashboard" : "Citizen Dashboard"}</p>
+            <h1 className="mt-2 font-display text-3xl font-extrabold text-navy-900 dark:text-white">Welcome, {name}</h1>
+            <p className="mt-2 text-slate-500 dark:text-slate-400">{t("userDash.desc")}</p>
           </div>
         </AnimatedSection>
 
-        {/* Metrics Cards */}
         <AnimatedSection delay={50}>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {translatedCards.map((card) => (
+            {cards.map((card) => (
               <div key={card.label} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-6 sm:p-8 shadow-sm glass-panel transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
                 <div className="flex items-center justify-between">
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-navy-50 dark:bg-navy-800">
-                    {card.icon ? <card.icon className="h-5 w-5 text-legalGold" /> : <TrendingUp className="h-5 w-5 text-legalGold" />}
+                    <card.icon className="h-5 w-5 text-legalGold" />
                   </div>
                   <span className="text-2xl font-extrabold text-navy-900 dark:text-white">{card.value}</span>
                 </div>
@@ -55,7 +85,6 @@ export default function UserDashboard() {
           </div>
         </AnimatedSection>
 
-        {/* Quick Links */}
         <AnimatedSection delay={100}>
           <div className="mt-8">
             <h2 className="font-display text-lg font-bold text-navy-900 dark:text-white mb-4">Quick Actions</h2>
@@ -80,36 +109,33 @@ export default function UserDashboard() {
           </div>
         </AnimatedSection>
 
-        {/* Recent Activity */}
         <AnimatedSection delay={150}>
           <div className="mt-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-6 sm:p-8 shadow-sm glass-panel">
-            <h3 className="font-display text-lg font-bold text-navy-900 dark:text-white mb-4">{t('userDash.recentActivity')}</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[640px] text-left text-sm">
-                <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-800">
-                    <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{t('userDash.thType')}</th>
-                    <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{t('userDash.thSubject')}</th>
-                    <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{t('userDash.thStatus')}</th>
-                    <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{t('userDash.thDate')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[t('userDash.legalQuery'), t('userDash.complaintRequest'), t('userDash.documentDraft'), t('userDash.legalAidApp')].map((type, index) => (
-                    <tr className="border-b border-slate-100 dark:border-slate-800/50 last:border-0" key={type}>
-                      <td className="py-3 font-semibold text-navy-900 dark:text-white">{type}</td>
-                      <td className="py-3 text-slate-600 dark:text-slate-400">{t('userDash.subject')}</td>
-                      <td className="py-3">
-                        <span className="rounded-full bg-legalGold/10 px-2.5 py-0.5 text-xs font-semibold text-legalGold">
-                          {t('userDash.statusInProgress')}
-                        </span>
-                      </td>
-                      <td className="py-3 text-slate-500 dark:text-slate-400">Jun {20 + index}, 2026</td>
+            <h3 className="font-display text-lg font-bold text-navy-900 dark:text-white mb-4">{t("userDash.recentActivity")}</h3>
+            {!data.recent_activity || data.recent_activity.length === 0 ? (
+              <p className="text-slate-500">No recent activity yet.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[640px] text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200 dark:border-slate-800">
+                      <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Type</th>
+                      <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Subject</th>
+                      <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Date</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {data.recent_activity.map((act, i) => (
+                      <tr key={i} className="border-b border-slate-100 dark:border-slate-800/50 last:border-0">
+                        <td className="py-3 font-semibold text-navy-900 dark:text-white">{act.type}</td>
+                        <td className="py-3 text-slate-600 dark:text-slate-400">{act.subject}</td>
+                        <td className="py-3 text-slate-500 dark:text-slate-400">{act.date}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </AnimatedSection>
       </div>

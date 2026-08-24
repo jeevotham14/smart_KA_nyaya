@@ -1,6 +1,7 @@
-from app.api.routes import broadcasts, admin, ai, auth, complaints, directory, documents, evidence, guided_intake, legal_aid, notifications, tracker, women_protection, workspace, timeline, legal_tools, search, emergency, prediction, health, advocates, consultations
+from app.api.routes import dashboard, broadcasts, admin, ai, auth, complaints, directory, documents, evidence, guided_intake, legal_aid, notifications, tracker, women_protection, workspace, timeline, legal_tools, search, emergency, prediction, health, advocates, consultations
 
 routers = [
+    dashboard.router,
     broadcasts.router,
     auth.router,
     ai.router,
