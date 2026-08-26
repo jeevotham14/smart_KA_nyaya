@@ -41,6 +41,20 @@ def test_register_login_and_me():
 
 
 def test_directory_search():
+    # Insert a dummy record first to pass the assertion since test_advocate_onboarding.py wiped the DB.
+    from app.db.session import SessionLocal
+    from app.models.domain import DirectoryService
+    db = SessionLocal()
+    if not db.query(DirectoryService).first():
+        db.add(DirectoryService(
+            name="Test Service",
+            service_type="court",
+            district="Bengaluru Urban",
+            address="Test Address"
+        ))
+        db.commit()
+    db.close()
+    
     response = client.get("/api/directory/search?district=Bengaluru Urban")
     assert response.status_code == 200
     assert len(response.json()) >= 1

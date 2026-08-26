@@ -92,6 +92,7 @@ def test_get_advocates_filtering(client: TestClient, db_session: Session, test_u
         district="Mysuru",
         specializations=["Criminal Law"],
         is_active=True,
+        verification_status="VERIFIED",
         consultation_fee=100.0
     )
     db_session.add(adv1)
