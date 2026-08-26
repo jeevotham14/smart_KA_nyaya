@@ -84,21 +84,12 @@ def test_create_advocate_profile(client, auth_headers):
     assert response.json()["full_name"] == "John Doe"
 
 def test_get_advocates_filtering(client: TestClient, db_session: Session, test_user):
-    from app.models.domain import User
     import uuid
-    new_user = User(
-        user_id=uuid.uuid4(),
-        name="Test",
-        email=f"test{uuid.uuid4().hex}@test.com",
-        password_hash="hash",
-        role="advocate"
-    )
-    db_session.add(new_user)
+    db_session.query(AdvocateProfile).filter_by(user_id=test_user.user_id).delete()
     db_session.commit()
-    
     adv1 = AdvocateProfile(
         id=uuid.uuid4(),
-        user_id=new_user.user_id,
+        user_id=test_user.user_id,
         full_name="Alice",
         bar_council_number=f"KAR/456{uuid.uuid4().hex}",
         district="Mysuru",
