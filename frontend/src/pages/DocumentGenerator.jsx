@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { DOCUMENT_CATALOG, CATEGORIES } from '../data/documentCatalog.js';
-import { karnatakaDistricts } from '../data/mockData.js';
+import { karnatakaDistricts } from '../data/karnatakaDistricts.js';
 import { getApiError, legalApi } from '../services/api.js';
 import DownloadButtons from '../components/DownloadButtons.jsx';
 import DocumentPreview from '../components/DocumentPreview.jsx';

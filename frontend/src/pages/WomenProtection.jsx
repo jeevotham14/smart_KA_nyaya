@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FileWarning, MapPin, Phone, ShieldAlert, Shield, Navigation, Compass, ExternalLink } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { karnatakaDistricts } from '../data/mockData.js';
+import { karnatakaDistricts } from '../data/karnatakaDistricts.js';
 import { legalApi } from '../services/api.js';
 import { detectDistrict, haversineKm } from '../utils/geolocation.js';
 

@@ -77,8 +77,7 @@ def create_profile(
     current_user: User = Depends(get_current_user),
 ):
     if current_user.role != "advocate":
-        # allow role change if they create profile? Or enforce it?
-        pass # Let's assume they want to become an advocate
+        raise HTTPException(status_code=403, detail="Only advocates can create an advocate profile")
 
     existing = db.query(AdvocateProfile).filter(AdvocateProfile.user_id == current_user.user_id).first()
     if existing:
@@ -99,9 +98,7 @@ def create_profile(
     db.commit()
     db.refresh(advocate)
     
-    if current_user.role != "advocate":
-        current_user.role = "advocate"
-        db.commit()
+
         
     return advocate
 

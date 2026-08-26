@@ -49,39 +49,7 @@ export const services = [
   },
 ];
 
-export const karnatakaDistricts = {
-  'Bagalkote': ['Badami', 'Bagalkote', 'Bilagi', 'Hunagunda', 'Ilkal', 'Jamakhandi', 'Mudhol', 'Rabkavi Banhatti', 'Guledgudda'],
-  'Ballari': ['Ballari', 'Kurugodu', 'Kampli', 'Sandur', 'Siruguppa'],
-  'Belagavi': ['Athani', 'Bailhongal', 'Belagavi', 'Chikkodi', 'Gokak', 'Hukkeri', 'Kagawad', 'Khanapur', 'Kittur', 'Mudalagi', 'Nippani', 'Raybag', 'Savadatti', 'Yaragatti'],
-  'Bengaluru Rural': ['Devanahalli', 'Doddaballapura', 'Hoskote', 'Nelamangala'],
-  'Bengaluru Urban': ['Anekal', 'Bengaluru East', 'Bengaluru North', 'Bengaluru South', 'Yelahanka'],
-  'Bidar': ['Aurad', 'Basavakalyan', 'Bhalki', 'Bidar', 'Chitgoppa', 'Humnabad', 'Kamalnagar', 'Hulasur'],
-  'Chamarajanagara': ['Chamarajanagara', 'Gundlupete', 'Hanur', 'Kollegala', 'Yelandur'],
-  'Chikkaballapura': ['Bagepalli', 'Chikkaballapura', 'Chintamani', 'Gauribidanur', 'Gudibanda', 'Sidlaghatta', 'Chelur'],
-  'Chikkamagaluru': ['Ajjamapura', 'Chikkamagaluru', 'Kadur', 'Koppa', 'Mudigere', 'Narasimharajapura', 'Sringeri', 'Tarikere', 'Kalas'],
-  'Chitradurga': ['Challakere', 'Chitradurga', 'Hiriyur', 'Holalkere', 'Hosadurga', 'Molakalmuru'],
-  'Dakshina Kannada': ['Bantwal', 'Belthangady', 'Kadaba', 'Mangaluru', 'Moodabidri', 'Puttur', 'Sullia', 'Mulki', 'Ullal'],
-  'Davangere': ['Channagiri', 'Davangere', 'Harihara', 'Honnali', 'Jagalur', 'Nyamathi'],
-  'Dharwad': ['Alnavar', 'Annigeri', 'Dharwad', 'Hubballi', 'Hubballi City', 'Kalghatgi', 'Kundgol', 'Navalgund'],
-  'Gadag': ['Gadag', 'Gajendragad', 'Lakshmeshwar', 'Mundargi', 'Nargund', 'Ron', 'Shirhatti'],
-  'Hassan': ['Alur', 'Arkalgud', 'Arsikere', 'Belur', 'Channarayapatna', 'Hassan', 'Holenarasipura', 'Sakleshpur'],
-  'Haveri': ['Byadgi', 'Hangal', 'Haveri', 'Hirekerur', 'Ranebennur', 'Rattihalli', 'Savanur', 'Shiggaon'],
-  'Kalaburagi': ['Afzalpur', 'Aland', 'Chincholi', 'Chitapur', 'Kalaburagi', 'Kamalapura', 'Sedam', 'Shahabad', 'Jewargi', 'Yadrami', 'Kalagi'],
-  'Kodagu': ['Madikeri', 'Somwarpet', 'Virajpet', 'Ponnampet', 'Kushalnagar'],
-  'Kolar': ['Bangarapet', 'KGF', 'Kolar', 'Malur', 'Mulbagal', 'Srinivaspur'],
-  'Koppal': ['Gangawati', 'Kanakagiri', 'Karatagi', 'Koppal', 'Kushtagi', 'Yelburga'],
-  'Mandya': ['Krishnarajpet', 'Maddur', 'Malavalli', 'Mandya', 'Nagamangala', 'Pandavapura', 'Shrirangapattana'],
-  'Mysuru': ['Heggadadevankote', 'Hunsur', 'Krishnarajanagara', 'Mysuru', 'Nanjangud', 'Piriyapatna', 'Saligrama', 'T. Narasipura'],
-  'Raichur': ['Devadurga', 'Lingsugur', 'Manvi', 'Maski', 'Raichur', 'Sindhanur', 'Sirwar'],
-  'Ramanagara': ['Channapatna', 'Kanakapura', 'Magadi', 'Ramanagara', 'Harohalli'],
-  'Shivamogga': ['Bhadravati', 'Hosanagara', 'Sagara', 'Shikaripura', 'Shivamogga', 'Soraba', 'Thirthahalli'],
-  'Tumakuru': ['Chikkanayakanahalli', 'Gubbi', 'Koratagere', 'Kunigal', 'Madhugiri', 'Pavagada', 'Sira', 'Tiptur', 'Tumakuru', 'Turuvekere'],
-  'Udupi': ['Brahmavara', 'Byndoor', 'Hebri', 'Karkala', 'Kaup', 'Kundapura', 'Udupi'],
-  'Uttara Kannada': ['Ankola', 'Bhatkal', 'Dandeli', 'Haliyal', 'Honnavar', 'Joida', 'Karwar', 'Kumta', 'Mundgod', 'Siddapur', 'Sirsi', 'Yellapur'],
-  'Vijayapura': ['Basavana Bagevadi', 'Bijapur', 'Indi', 'Muddebihal', 'Sindagi', 'Chadchan', 'Tikota', 'Bableshwar', 'Kolhar', 'Nidagundi', 'Devara Hippargi', 'Talikota'],
-  'Yadgir': ['Gurmitkal', 'Hunasagi', 'Shahapur', 'Shorapur', 'Vadagera', 'Yadgir'],
-  'Vijayanagara': ['Harapanahalli', 'Hoovina Hadagali', 'Hagaribommanahalli', 'Kotturu', 'Kudligi', 'Hosapete']
-};
+
 
 export const legalCategories = [
   {

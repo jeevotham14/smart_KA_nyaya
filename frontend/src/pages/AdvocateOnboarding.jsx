@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { advocateApi, getApiError } from '../services/api';
 import { Scale, Loader2, AlertTriangle, CheckCircle } from 'lucide-react';
-import { karnatakaDistricts } from '../data/mockData.js';
+import { karnatakaDistricts } from '../data/karnatakaDistricts.js';
 
 const SPECIALIZATIONS = [
   'Civil Law', 'Criminal Law', 'Family Law', 'Property Law',

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Mail, MapPin, Phone, MessageSquare, UserCheck, Scale, ExternalLink, Shield } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { karnatakaDistricts } from '../data/mockData.js';
+import { karnatakaDistricts } from '../data/karnatakaDistricts.js';
 import { getApiError, legalApi } from '../services/api.js';
 
 const DISTRICT_NAMES = Object.keys(karnatakaDistricts).sort();

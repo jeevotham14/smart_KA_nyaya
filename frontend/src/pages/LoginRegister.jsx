@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { karnatakaDistricts } from '../data/mockData.js';
+import { karnatakaDistricts } from '../data/karnatakaDistricts.js';
 import { Shield } from 'lucide-react';
 const DISTRICT_NAMES = Object.keys(karnatakaDistricts).sort();
 import { authApi, getApiError } from '../services/api.js';

@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getApiError, legalApi, notificationApi } from '../services/api.js';
-import { karnatakaDistricts } from '../data/mockData.js';
+import { karnatakaDistricts } from '../data/karnatakaDistricts.js';
 import { DISTRICT_NAMES_KN } from './Directory.jsx';
 import { ErrorBoundary } from '../components/ErrorBoundary.jsx';
 import CaseTimeline from '../components/CaseTimeline.jsx';
