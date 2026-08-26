@@ -101,7 +101,7 @@ def test_get_advocates_filtering(client: TestClient, db_session: Session, test_u
     db_session.add(adv1)
     db_session.commit()
     
-    res = client.get("/api/advocates/?district=Mysuru")
+    res = client.get("/api/advocates?district=Mysuru")
     assert res.status_code == 200
     assert len(res.json()) >= 1
     assert res.json()[0]["district"] == "Mysuru"
