@@ -87,7 +87,7 @@ def test_get_advocates_filtering(client: TestClient, db_session: Session, test_u
     from app.models.domain import User
     import uuid
     new_user = User(
-        user_id=uuid.uuid4().hex,
+        user_id=uuid.uuid4(),
         name="Test",
         email=f"test{uuid.uuid4().hex}@test.com",
         password_hash="hash",
