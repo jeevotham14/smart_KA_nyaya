@@ -3,6 +3,97 @@ import { Bot, Languages, Scale, SendHorizontal, UserRound, Mic, MicOff, Volume2,
 import { useTranslation } from 'react-i18next';
 import { getApiError, legalApi } from '../services/api.js';
 
+function formatInlineStyles(text) {
+  if (!text) return '';
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+      return (
+        <strong key={index} className="font-semibold text-navy-950 dark:text-white">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+    return part;
+  });
+}
+
+function RenderFormattedMessage({ text }) {
+  if (!text) return null;
+
+  const cleaned = text
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/?(?:b|strong|i|em|p|div|span|ul|ol|li|small)>/gi, '')
+    .trim();
+
+  const lines = cleaned.split('\n');
+
+  return (
+    <div className="space-y-2.5">
+      {lines.map((rawLine, idx) => {
+        const line = rawLine.trim();
+        if (!line) {
+          return <div key={idx} className="h-0.5" />;
+        }
+
+        if (line === '---' || line === '___' || line === '***') {
+          return <hr key={idx} className="my-3 border-slate-200 dark:border-slate-700" />;
+        }
+
+        if (line.startsWith('|') && line.endsWith('|')) {
+          const cells = line
+            .split('|')
+            .map((c) => c.trim())
+            .filter((c) => c.length > 0 && !c.match(/^[\-:]+$/));
+          if (cells.length === 0) return null;
+          if (cells.length === 1) {
+            return (
+              <div key={idx} className="flex items-start gap-2 pl-2">
+                <span className="text-legalGold font-bold">•</span>
+                <span className="flex-1">{formatInlineStyles(cells[0])}</span>
+              </div>
+            );
+          }
+          return (
+            <div key={idx} className="flex items-start gap-2 pl-2">
+              <span className="text-legalGold font-bold">•</span>
+              <span className="flex-1">
+                <strong className="font-semibold text-navy-950 dark:text-white">{cells[0]}</strong>: {formatInlineStyles(cells.slice(1).join(' — '))}
+              </span>
+            </div>
+          );
+        }
+
+        if (line.startsWith('•') || line.startsWith('- ') || line.startsWith('* ')) {
+          const content = line.replace(/^[•\-\*]\s*/, '');
+          return (
+            <div key={idx} className="flex items-start gap-2 pl-2">
+              <span className="text-legalGold font-bold select-none">•</span>
+              <span className="flex-1">{formatInlineStyles(content)}</span>
+            </div>
+          );
+        }
+
+        const numberMatch = line.match(/^(\d+[\.\)]|\b(?:Step|Section|Point)\s+\d+[:\.]?)\s*(.*)$/i);
+        if (numberMatch) {
+          return (
+            <div key={idx} className="mt-2 flex items-start gap-2 font-medium">
+              <span className="font-bold text-legalGold select-none">{numberMatch[1]}</span>
+              <span className="flex-1">{formatInlineStyles(numberMatch[2])}</span>
+            </div>
+          );
+        }
+
+        return (
+          <p key={idx} className="leading-relaxed">
+            {formatInlineStyles(line)}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function AssistantChat() {
   const { t, i18n } = useTranslation();
   const isKn = i18n.language === 'kn';
@@ -228,7 +319,7 @@ export default function AssistantChat() {
                       <Phone className="h-3.5 w-3.5 animate-bounce" /> Emergency Support — Call 112
                     </a>
                   )}
-                  <p className="whitespace-pre-wrap">{message.text}</p>
+                  <RenderFormattedMessage text={message.text} />
                   
 
                   {message.role === 'assistant' && message.provider && (

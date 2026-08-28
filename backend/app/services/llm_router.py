@@ -11,6 +11,7 @@ All responses are injected with a Karnataka-specific legal disclaimer.
 from __future__ import annotations
 
 import logging
+import re
 from enum import StrEnum
 from typing import Any
 
@@ -44,7 +45,13 @@ Relevant authorities you may reference:
 - Karnataka High Court
 - National Legal Services Authority (NALSA)
 - Karnataka Police (112)
-- Women Helpline (181), Childline (1098)"""
+- Women Helpline (181), Childline (1098)
+
+Formatting rules:
+- Format your response with clean paragraphs, numbered steps, and bullet points.
+- Do NOT output HTML tags (never use <br>, <b>, <div>, etc.).
+- Do NOT output markdown pipe tables (do NOT use | column |). Use clean bullet lists instead.
+- Leave empty lines between numbered sections for easy reading."""
 
 DOCUMENT_DRAFT_SYSTEM_PROMPT = """You are a legal document drafting assistant for the Karnataka State Legal Services Authority.
 
@@ -216,6 +223,32 @@ class LLMRouter:
         result.extend(messages)
         return result
 
+    @staticmethod
+    def _clean_response_text(text: str) -> str:
+        if not text:
+            return ""
+        # Convert HTML line breaks to real newlines
+        text = re.sub(r"<br\s*/?>", "\n", text, flags=re.IGNORECASE)
+        # Remove leftover HTML tags
+        text = re.sub(r"</?(?:b|strong|i|em|p|div|span|ul|ol|li|small)>", "", text, flags=re.IGNORECASE)
+        # Clean up stray table pipes into clean bullet lists
+        cleaned_lines = []
+        for line in text.split("\n"):
+            stripped = line.strip()
+            # If line is markdown table divider |---|---|
+            if re.match(r"^\|?[\s\-:|]+\|?$", stripped) and "-" in stripped:
+                continue
+            # If line is a markdown table row | col1 | col2 |
+            if stripped.startswith("|") and stripped.endswith("|") and stripped.count("|") >= 2:
+                cells = [c.strip() for c in stripped.strip("|").split("|") if c.strip()]
+                if len(cells) == 1:
+                    cleaned_lines.append(f"• {cells[0]}")
+                elif len(cells) >= 2:
+                    cleaned_lines.append(f"• **{cells[0]}:** {' — '.join(cells[1:])}")
+                continue
+            cleaned_lines.append(line)
+        return "\n".join(cleaned_lines).strip()
+
     # ── Convenience methods ──────────────────────────────────────────────────
 
     def legal_chat(self, user_message: str, language: str = "English", history: list[dict] | None = None) -> dict[str, Any]:
@@ -223,7 +256,7 @@ class LLMRouter:
         messages = list(history or [])
         messages.append({"role": "user", "content": user_message})
         result = self.route(TaskType.CHAT, messages, KARNATAKA_LEGAL_SYSTEM_PROMPT)
-        result["text"] += LEGAL_DISCLAIMER
+        result["text"] = self._clean_response_text(result.get("text", "")) + LEGAL_DISCLAIMER
         return result
 
     def generate_document(self, doc_type: str, facts: dict, language: str = "English") -> dict[str, Any]:
