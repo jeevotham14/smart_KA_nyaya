@@ -1,4 +1,5 @@
 from functools import lru_cache
+from pathlib import Path
 from typing import Any
 
 from pydantic import field_validator
@@ -55,7 +56,11 @@ class Settings(BaseSettings):
     def UPPER_THRESHOLD(self) -> float:
         return 0.70
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=(".env", "backend/.env", str(Path(__file__).resolve().parent.parent.parent / ".env")),
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     @field_validator("cors_origins", mode="before")
     @classmethod

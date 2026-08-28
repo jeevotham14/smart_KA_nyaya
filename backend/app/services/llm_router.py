@@ -76,8 +76,8 @@ class LLMRouter:
     GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
     OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
-    GROQ_MODEL = "llama-3.3-70b-versatile"
-    GEMINI_MODEL = "gemini-2.0-flash-lite"
+    GROQ_MODEL = "openai/gpt-oss-120b"
+    GEMINI_MODEL = "gemini-3.6-flash"
     OPENROUTER_FALLBACK_MODEL = "meta-llama/llama-3.1-8b-instruct:free"
 
     def __init__(
