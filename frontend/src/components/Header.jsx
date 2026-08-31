@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Languages, Menu, Scale, Search, Sparkles, X, LogOut, User } from 'lucide-react';
+import { Languages, Menu, Scale, Search, Sparkles, X, LogOut, User, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import NotificationBell from './NotificationBell.jsx';
 import ErrorBoundary from './ErrorBoundary.jsx';
@@ -13,6 +13,7 @@ export default function Header() {
   const nextLang = i18n.language === 'en' ? 'kn' : 'en';
 
   const [open, setOpen] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [scrolled, setScrolled] = useState(false);
@@ -32,49 +33,52 @@ export default function Header() {
     displayName = 'User';
   }
 
-  // ── Role-specific Navigation Items (TASK 23) ──
-  let navItems = [];
+  // ── Navigation Items with All Platform Features ──
+  let navItems = [
+    ['nav.home', '/'],
+    ['nav.aiGuidance', '/ai-legal-guidance'],
+    ['Case Outcome', '/case-outcome'],
+    ['Consult an Advocate', '/advocates'],
+  ];
 
-  if (!token || !['citizen', 'advocate', 'admin'].includes(role)) {
-    // Unauthenticated or unknown role fallback
-    navItems = [
-      ['nav.home', '/'],
-      ['nav.aiGuidance', '/ai-legal-guidance'],
-      ['Consult an Advocate', '/advocates'],
-      ['nav.aid', '/legal-aid'],
-      ['nav.tracker', '/case-tracker'],
-      ['nav.about', '/about'],
-      ['nav.contact', '/contact'],
-    ];
-  } else if (role === 'citizen') {
-    // Citizen Navigation
-    navItems = [
-      ['nav.home', '/'],
-      ['nav.aiGuidance', '/ai-legal-guidance'],
-      ['Consult an Advocate', '/advocates'],
+  if (role === 'citizen') {
+    navItems.push(
       ['My Consultations', '/consultations'],
       ['My Broadcast Requests', '/consultation-broadcasts'],
-      ['Dashboard', '/dashboard'],
-      ['nav.aid', '/legal-aid'],
-      ['nav.tracker', '/case-tracker'],
-    ];
+      ['Dashboard', '/dashboard']
+    );
   } else if (role === 'advocate') {
-    // Advocate Navigation
-    navItems = [
+    navItems.push(
       ['Advocate Dashboard', '/advocate/dashboard'],
       ['Direct Requests', '/consultations'],
       ['Broadcast Requests', '/consultation-broadcasts'],
-      ['My Consultations', '/consultations'],
-      ['nav.tracker', '/case-tracker'],
-    ];
+      ['My Consultations', '/consultations']
+    );
   } else if (role === 'admin') {
-    // Admin Navigation
-    navItems = [
-      ['Admin Dashboard', '/admin'],
-      ['Legal Directory', '/directory'],
-      ['nav.tracker', '/case-tracker'],
-    ];
+    navItems.push(
+      ['Admin Dashboard', '/admin']
+    );
   }
+
+  // Legal Services & Public Protection
+  navItems.push(
+    ['nav.women', '/women-protection'],
+    ['nav.aid', '/legal-aid'],
+    ['nav.docsResources', '/document-generator'],
+    ['nav.locator', '/directory'],
+    ['nav.tracker', '/case-tracker'],
+    ['Emergency', '/emergency'],
+    ['nav.about', '/about'],
+    ['nav.contact', '/contact']
+  );
+
+  const MORE_TOOLS = [
+    { name: isKn ? 'ಮಾರ್ಗದರ್ಶಿತ ದೂರು (Guided Intake)' : 'Guided Intake Assessment', path: '/guided-intake' },
+    { name: isKn ? 'ನ್ಯಾಯಾಲಯ ಶುಲ್ಕ ಕ್ಯಾಲ್ಕುಲೇಟರ್' : 'Court Fee Calculator', path: '/court-fee-calculator' },
+    { name: isKn ? 'ಕಾಲಮಿತಿ ಪರೀಕ್ಷಕ (Limitation)' : 'Limitation Period Checker', path: '/limitation-checker' },
+    { name: isKn ? 'ಕಾನೂನು ಹಕ್ಕುಗಳ ವಿವರಣೆ' : 'Legal Rights Explainer', path: '/rights-explainer' },
+    { name: isKn ? 'ವಕಾಲತ್‌ನಾಮ ಜನರೇಟರ್' : 'Vakalatnama Generator', path: '/vakalatnama' },
+  ];
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -209,12 +213,61 @@ export default function Header() {
         {/* Navigation Bar */}
         <nav className={`${open ? 'block' : 'hidden'} border-b border-white/10 bg-navy-800/95 backdrop-blur-md lg:block`}>
           <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-            <div className="grid gap-3 md:grid-cols-2 lg:flex lg:flex-wrap lg:gap-x-5 lg:gap-y-2">
+            <div className="grid gap-3 md:grid-cols-2 lg:flex lg:flex-wrap lg:gap-x-5 lg:gap-y-2 items-center">
               {navItems.map(([label, path]) => (
                 <NavLink key={path} to={path} className={navLinkClass} onClick={() => setOpen(false)}>
                   {t(label) || label}
                 </NavLink>
               ))}
+
+              {/* More Legal Tools Dropdown */}
+              <div className="relative inline-block text-left">
+                <button
+                  type="button"
+                  onClick={() => setToolsOpen(!toolsOpen)}
+                  className="inline-flex items-center gap-1 text-sm font-semibold transition-colors duration-200 hover:text-legalGold text-slate-100 py-1"
+                >
+                  <span>{isKn ? 'ಇನ್ನಷ್ಟು ಪರಿಕರಗಳು' : 'More Tools'}</span>
+                  <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${toolsOpen ? 'rotate-180 text-legalGold' : ''}`} />
+                </button>
+
+                {toolsOpen && (
+                  <div
+                    onMouseLeave={() => setToolsOpen(false)}
+                    className="absolute left-0 mt-2 w-64 rounded-2xl border border-slate-700 bg-navy-900/95 backdrop-blur-md shadow-2xl z-50 py-2 text-xs"
+                  >
+                    {MORE_TOOLS.map((tool) => (
+                      <Link
+                        key={tool.path}
+                        to={tool.path}
+                        onClick={() => { setToolsOpen(false); setOpen(false); }}
+                        className="block px-4 py-2.5 text-slate-200 hover:bg-legalGold/10 hover:text-legalGold transition-colors font-medium"
+                      >
+                        {tool.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Mobile More Tools Section */}
+            <div className="pt-2 border-t border-white/10 lg:hidden">
+              <p className="text-xs uppercase font-extrabold tracking-wider text-legalGold mb-2">
+                {isKn ? 'ಹೆಚ್ಚುವರಿ ಕಾನೂನು ಪರಿಕರಗಳು' : 'More Legal Tools'}
+              </p>
+              <div className="grid grid-cols-1 gap-2 pl-2">
+                {MORE_TOOLS.map((tool) => (
+                  <Link
+                    key={tool.path}
+                    to={tool.path}
+                    onClick={() => setOpen(false)}
+                    className="text-xs text-slate-300 hover:text-legalGold transition-colors"
+                  >
+                    • {tool.name}
+                  </Link>
+                ))}
+              </div>
             </div>
 
             {/* Mobile Actions in Drawer */}
