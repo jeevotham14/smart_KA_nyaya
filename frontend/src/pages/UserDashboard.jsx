@@ -1,36 +1,62 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { MessageSquare, ClipboardList, FileText, Scale, Shield, TrendingUp, AlertTriangle, Loader2, ChevronRight } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { MessageSquare, ClipboardList, FileText, Scale, Shield, AlertTriangle, Loader2, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import AnimatedSection from "../components/AnimatedSection.jsx";
-import api, { advocateApi } from "../services/api.js";
-import { useNavigate } from "react-router-dom";
+import { dashboardApi, advocateApi } from "../services/api.js";
 
 export default function UserDashboard() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [profile, setProfile] = useState(null);
   const [profileLoading, setProfileLoading] = useState(false);
-  const navigate = useNavigate();
+
+  const role = localStorage.getItem("role") || "citizen";
+  let name = "User";
+  try {
+    const rawUser = localStorage.getItem("user");
+    if (rawUser) {
+      const parsed = JSON.parse(rawUser);
+      name = parsed.name || parsed.full_name || "User";
+    }
+  } catch {
+    name = "User";
+  }
 
   useEffect(() => {
-    api.dashboard.getMe()
-      .then(setData)
+    const token = localStorage.getItem("smartNyayaToken");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    dashboardApi.getMe()
+      .then((res) => {
+        setData(res);
+        setError(false);
+      })
       .catch((err) => {
+        if (err.response?.status === 401) {
+          navigate("/login");
+          return;
+        }
         console.error("Dashboard error:", err);
         setError(true);
       })
       .finally(() => setLoading(false));
 
+
     if (role === 'advocate') {
       setProfileLoading(true);
       advocateApi.getMyProfile()
         .then(setProfile)
-        .catch(err => {
+        .catch((err) => {
           if (err.response?.status === 404) {
-             navigate('/advocate/onboarding');
+            navigate('/advocate/onboarding');
           }
         })
         .finally(() => setProfileLoading(false));
@@ -59,13 +85,23 @@ export default function UserDashboard() {
         <div className="text-center">
           <AlertTriangle className="mx-auto h-12 w-12 text-red-500" />
           <p className="mt-4 text-lg font-bold text-navy-900 dark:text-white">Unable to load dashboard.</p>
+          <button
+            onClick={() => {
+              setLoading(true);
+              setError(false);
+              dashboardApi.getMe()
+                .then(setData)
+                .catch(() => setError(true))
+                .finally(() => setLoading(false));
+            }}
+            className="mt-4 rounded-xl bg-legalGold px-4 py-2 text-sm font-bold text-navy-950 hover:bg-yellow-500 transition-colors"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
   }
-
-  const role = localStorage.getItem("role") || "citizen";
-  const name = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).full_name : "User";
 
   const cards = [
     { label: "Recent Queries", value: data?.legal_queries || 0, icon: MessageSquare },
@@ -79,8 +115,12 @@ export default function UserDashboard() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <AnimatedSection>
           <div className="mb-8">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-legalGold">{role === "advocate" ? "Advocate Dashboard" : "Citizen Dashboard"}</p>
-            <h1 className="mt-2 font-display text-3xl font-extrabold text-navy-900 dark:text-white">Welcome, {name}</h1>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-legalGold">
+              {role === "advocate" ? "Advocate Dashboard" : "Citizen Dashboard"}
+            </p>
+            <h1 className="mt-2 font-display text-3xl font-extrabold text-navy-900 dark:text-white">
+              Welcome, {name}
+            </h1>
             <p className="mt-2 text-slate-500 dark:text-slate-400">{t("userDash.desc")}</p>
           </div>
         </AnimatedSection>
@@ -127,8 +167,10 @@ export default function UserDashboard() {
 
         <AnimatedSection delay={150}>
           <div className="mt-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-6 sm:p-8 shadow-sm glass-panel">
-            <h3 className="font-display text-lg font-bold text-navy-900 dark:text-white mb-4">{t("userDash.recentActivity")}</h3>
-            {!data.recent_activity || data.recent_activity.length === 0 ? (
+            <h3 className="font-display text-lg font-bold text-navy-900 dark:text-white mb-4">
+              {t("userDash.recentActivity")}
+            </h3>
+            {!data?.recent_activity || data.recent_activity.length === 0 ? (
               <p className="text-slate-500">No recent activity yet.</p>
             ) : (
               <div className="overflow-x-auto">

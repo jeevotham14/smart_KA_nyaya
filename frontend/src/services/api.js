@@ -69,14 +69,35 @@ export const authApi = {
       password: values.password,
     });
     window.localStorage.setItem('smartNyayaToken', data.access_token);
+    try {
+      const { data: me } = await api.get('/api/auth/me');
+      window.localStorage.setItem('user', JSON.stringify(me));
+      window.localStorage.setItem('role', me.role || 'citizen');
+    } catch {
+      // ignore
+    }
     return data;
   },
   me: async () => {
     const { data } = await api.get('/api/auth/me');
+    window.localStorage.setItem('user', JSON.stringify(data));
+    window.localStorage.setItem('role', data.role || 'citizen');
     return data;
   },
-  logout: () => window.localStorage.removeItem('smartNyayaToken'),
+  logout: () => {
+    window.localStorage.removeItem('smartNyayaToken');
+    window.localStorage.removeItem('user');
+    window.localStorage.removeItem('role');
+  },
 };
+
+export const dashboardApi = {
+  getMe: async () => {
+    const { data } = await api.get('/api/dashboard/me');
+    return data;
+  },
+};
+
 
 export const legalApi = {
   askAssistant: async ({ query, language, history = [] }) => {
@@ -307,8 +328,6 @@ export const notificationApi = {
   },
 };
 
-export default api;
-
 export const advocateApi = {
   getAdvocates: async (params) => {
     const { data } = await api.get('/api/advocates', { params });
@@ -429,3 +448,7 @@ export const adminApi = {
     return data;
   }
 };
+
+api.dashboard = dashboardApi;
+
+export default api;
