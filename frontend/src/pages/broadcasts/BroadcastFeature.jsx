@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { consultationApi, getApiError } from '../../services/api.js';
 import { isAdvocate as checkIsAdvocate } from '../../utils/roleUtils.js';
 import {
@@ -33,6 +34,9 @@ const PrivacyWarning = () => (
 
 // ── Request Advocate Matches (Citizen) ────────────────────────────────────────
 export const RequestAdvocateMatches = ({ onSuccess }) => {
+  const { i18n } = useTranslation();
+  const isKn = i18n.language === 'kn';
+
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -75,7 +79,7 @@ export const RequestAdvocateMatches = ({ onSuccess }) => {
     return (
       <div className="flex flex-col items-center gap-3 py-8 text-center">
         <CheckCircle2 className="h-12 w-12 text-emerald-500" />
-        <h3 className="text-lg font-bold text-slate-800">Request Sent!</h3>
+        <h3 className="text-lg font-bold text-slate-800">{isKn ? 'ವಿನಂತಿ ಕಳುಹಿಸಲಾಗಿದೆ!' : 'Request Sent!'}</h3>
         <p className="text-sm text-slate-500">
           Matching advocates have been notified. You will receive a notification when an advocate responds.
         </p>
@@ -91,7 +95,7 @@ export const RequestAdvocateMatches = ({ onSuccess }) => {
 
   return (
     <div>
-      <h2 className="text-lg font-bold text-slate-800 mb-1">Request Advocate Matches</h2>
+      <h2 className="text-lg font-bold text-slate-800 mb-1">{isKn ? 'ವಕೀಲರ ಹೊಂದಾಣಿಕೆಗೆ ವಿನಂತಿಸಿ' : 'Request Advocate Matches'}</h2>
       <p className="text-sm text-slate-500 mb-4">
         Describe your issue and matching advocates in your district will be notified.
       </p>
@@ -107,7 +111,7 @@ export const RequestAdvocateMatches = ({ onSuccess }) => {
       <form onSubmit={submit} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Legal Category *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{isKn ? 'ಕಾನೂನು ವರ್ಗ *' : 'Legal Category *'}</label>
             <select
               className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white"
               value={formData.legal_category} onChange={set('legal_category')} required
@@ -117,7 +121,7 @@ export const RequestAdvocateMatches = ({ onSuccess }) => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">District *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{isKn ? 'ಜಿಲ್ಲೆ *' : 'District *'}</label>
             <select
               className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white"
               value={formData.district} onChange={set('district')} required
@@ -130,13 +134,13 @@ export const RequestAdvocateMatches = ({ onSuccess }) => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Preferred Language</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{isKn ? 'ಆದ್ಯತೆಯ ಭಾಷೆ' : 'Preferred Language'}</label>
             <select className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white" value={formData.preferred_language} onChange={set('preferred_language')}>
               {LANGUAGES.map(l => <option key={l}>{l}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Consultation Mode</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{isKn ? 'ಸಮಾಲೋಚನೆ ವಿಧಾನ' : 'Consultation Mode'}</label>
             <select className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white" value={formData.consultation_mode} onChange={set('consultation_mode')}>
               <option value="ONLINE">Online</option>
               <option value="OFFLINE">In-Person</option>
@@ -146,17 +150,17 @@ export const RequestAdvocateMatches = ({ onSuccess }) => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Preferred Date</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{isKn ? 'ಆದ್ಯತೆಯ ದಿನಾಂಕ' : 'Preferred Date'}</label>
             <input type="date" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" value={formData.preferred_date} onChange={set('preferred_date')} min={new Date().toISOString().split('T')[0]} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Preferred Time</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{isKn ? 'ಆದ್ಯತೆಯ ಸಮಯ' : 'Preferred Time'}</label>
             <input type="time" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" value={formData.preferred_time} onChange={set('preferred_time')} />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Short Case Summary *</label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">{isKn ? 'ಪ್ರಕರಣದ ಸಾರಾಂಶ *' : 'Short Case Summary *'}</label>
           <textarea
             className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm min-h-[100px] resize-none"
             placeholder="Briefly describe your legal issue. Do not include sensitive personal identifiers."
@@ -184,6 +188,9 @@ export const RequestAdvocateMatches = ({ onSuccess }) => {
 
 // ── My Broadcast Requests (Citizen) ──────────────────────────────────────────
 export const MyBroadcastRequests = ({ refreshTrigger }) => {
+  const { i18n } = useTranslation();
+  const isKn = i18n.language === 'kn';
+
   const [broadcasts, setBroadcasts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -232,7 +239,7 @@ export const MyBroadcastRequests = ({ refreshTrigger }) => {
 
   if (loading) return <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-legalGold" /></div>;
   if (error) return <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg">{error}</div>;
-  if (broadcasts.length === 0) return <p className="text-sm text-slate-500 py-4 text-center">No broadcast requests yet.</p>;
+  if (broadcasts.length === 0) return <p className="text-sm text-slate-500 py-4 text-center">{isKn ? 'ಯಾವುದೇ ವಿನಂತಿಗಳಿಲ್ಲ.' : 'No broadcast requests yet.'}</p>;
 
   const statusColor = (s) => ({
     OPEN: 'bg-emerald-100 text-emerald-700',
@@ -251,7 +258,7 @@ export const MyBroadcastRequests = ({ refreshTrigger }) => {
               <span className="ml-2 text-sm font-medium text-slate-800">{b.legal_category}</span>
             </div>
             {b.status === 'OPEN' && (
-              <button onClick={() => handleCancel(b.id)} className="text-xs text-red-500 hover:underline flex items-center gap-1"><X className="h-3 w-3" />Cancel</button>
+              <button onClick={() => handleCancel(b.id)} className="text-xs text-red-500 hover:underline flex items-center gap-1"><X className="h-3 w-3" />{isKn ? 'ರದ್ದುಮಾಡಿ' : 'Cancel'}</button>
             )}
           </div>
           <p className="text-xs text-slate-500 mb-2 line-clamp-2">{b.short_summary}</p>
@@ -271,7 +278,7 @@ export const MyBroadcastRequests = ({ refreshTrigger }) => {
           {expandedId === b.id && responses[b.id] !== undefined && (
             <div className="mt-3 space-y-2">
               {responses[b.id].length === 0 ? (
-                <p className="text-xs text-slate-400">No advocates have responded yet.</p>
+                <p className="text-xs text-slate-400">{isKn ? 'ಇನ್ನೂ ಯಾವುದೇ ವಕೀಲರು ಪ್ರತಿಕ್ರಿಯಿಸಿಲ್ಲ.' : 'No advocates have responded yet.'}</p>
               ) : responses[b.id].map(r => (
                 <div key={r.id} className="flex items-center justify-between gap-3 bg-slate-50 rounded-lg p-3">
                   <div>
@@ -297,6 +304,9 @@ export const MyBroadcastRequests = ({ refreshTrigger }) => {
 
 // ── Advocate Broadcast Inbox ──────────────────────────────────────────────────
 export const AdvocateBroadcastInbox = () => {
+  const { i18n } = useTranslation();
+  const isKn = i18n.language === 'kn';
+
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -341,11 +351,11 @@ export const AdvocateBroadcastInbox = () => {
 
   return (
     <div>
-      <h2 className="text-xl font-bold text-slate-800 mb-4">Broadcast Requests</h2>
+      <h2 className="text-xl font-bold text-slate-800 mb-4">{isKn ? 'ವಿನಂತಿಗಳು' : 'Broadcast Requests'}</h2>
       {requests.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-xl border border-slate-200">
           <Scale className="h-10 w-10 text-slate-300 mx-auto mb-3" />
-          <p className="text-slate-500">No matching broadcast requests at this time.</p>
+          <p className="text-slate-500">{isKn ? 'ಈ ಸಮಯದಲ್ಲಿ ಯಾವುದೇ ವಿನಂತಿಗಳಿಲ್ಲ.' : 'No matching broadcast requests at this time.'}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -362,7 +372,7 @@ export const AdvocateBroadcastInbox = () => {
                 <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{req.district}</span>
                 <span className="flex items-center gap-1"><Globe className="h-3 w-3" />{req.preferred_language}</span>
                 <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{req.consultation_mode}</span>
-                {req.pro_bono_requested && <span className="text-emerald-600 font-medium">Pro-Bono Requested</span>}
+                {req.pro_bono_requested && <span className="text-emerald-600 font-medium">{isKn ? 'ಉಚಿತ ಸಹಾಯ ಕೋರಲಾಗಿದೆ' : 'Pro-Bono Requested'}</span>}
               </div>
               <div className="flex gap-3">
                 <button
@@ -394,7 +404,7 @@ export const AdvocateBroadcastInbox = () => {
 export const RoleAwareNavigation = ({ role }) => {
   const isAdv = checkIsAdvocate(role);
   if (isAdv) {
-    return <nav><span>Advocate Dashboard</span><span>Broadcast Requests</span><span>Direct Requests</span><span>My Consultations</span></nav>;
+    return <nav><span>Advocate Dashboard</span><span>{isKn ? 'ವಿನಂತಿಗಳು' : 'Broadcast Requests'}</span><span>Direct Requests</span><span>My Consultations</span></nav>;
   }
-  return <nav><span>Consult an Advocate</span><span>Request Advocate Matches</span><span>My Broadcast Requests</span><span>My Consultations</span></nav>;
+  return <nav><span>Consult an Advocate</span><span>{isKn ? 'ವಕೀಲರ ಹೊಂದಾಣಿಕೆಗೆ ವಿನಂತಿಸಿ' : 'Request Advocate Matches'}</span><span>My Broadcast Requests</span><span>My Consultations</span></nav>;
 };
