@@ -1,8 +1,10 @@
 import React from 'react';
 import { RequestAdvocateMatches, MyBroadcastRequests, AdvocateBroadcastInbox } from './broadcasts/BroadcastFeature.jsx';
+import { isAdvocate as checkIsAdvocate } from '../utils/roleUtils.js';
 
 export default function ConsultationBroadcasts() {
     const role = localStorage.getItem('role');
+    const isAdvocate = checkIsAdvocate(role);
 
     if (role === 'citizen') {
         return (
@@ -19,7 +21,7 @@ export default function ConsultationBroadcasts() {
                 </div>
             </div>
         );
-    } else if (role === 'advocate') {
+    } else if (isAdvocate) {
         return (
             <div className="container mx-auto p-4 pt-32">
                 <AdvocateBroadcastInbox />

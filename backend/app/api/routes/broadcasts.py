@@ -21,6 +21,56 @@ def _lazy_expire(db: Session, broadcast: ConsultationBroadcast):
         broadcast.status = "EXPIRED"
         db.commit()
 
+# ── IMPORTANT: /my and /matched MUST come before /{broadcast_id} ──
+
+@router.get("/my", response_model=List[ConsultationBroadcastRead])
+def my_broadcasts(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    broadcasts = db.query(ConsultationBroadcast).filter(
+        ConsultationBroadcast.citizen_id == current_user.user_id
+    ).all()
+    for b in broadcasts:
+        _lazy_expire(db, b)
+    return broadcasts
+
+@router.get("/matched", response_model=List[ConsultationBroadcastRead])
+def get_matched_broadcasts(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.role not in ("advocate", "lawyer_advisor"):
+        raise HTTPException(status_code=403, detail="Only advocates")
+        
+    advocate = db.query(AdvocateProfile).filter(AdvocateProfile.user_id == current_user.user_id).first()
+    if not advocate:
+        return []
+        
+    recipients = db.query(ConsultationBroadcastRecipient).filter(
+        ConsultationBroadcastRecipient.advocate_id == advocate.id
+    ).all()
+    
+    broadcast_ids = [r.broadcast_id for r in recipients]
+    
+    broadcasts = db.query(ConsultationBroadcast).filter(
+        ConsultationBroadcast.id.in_(broadcast_ids)
+    ).all()
+    
+    valid_broadcasts = []
+    for b in broadcasts:
+        _lazy_expire(db, b)
+        if b.status == "OPEN":
+            # Check if this advocate already responded
+            resp = db.query(ConsultationBroadcastResponse).filter(
+                ConsultationBroadcastResponse.broadcast_id == b.id,
+                ConsultationBroadcastResponse.advocate_id == advocate.id
+            ).first()
+            if not resp:
+                valid_broadcasts.append(b)
+            
+    return valid_broadcasts
+
 @router.post("/", response_model=ConsultationBroadcastRead)
 def create_broadcast(
     broadcast_in: ConsultationBroadcastCreate,
@@ -75,42 +125,6 @@ def create_broadcast(
     db.commit()
     db.refresh(broadcast)
     return broadcast
-
-@router.get("/matched", response_model=List[ConsultationBroadcastRead])
-def get_matched_broadcasts(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    if current_user.role not in ("advocate", "lawyer_advisor"):
-        raise HTTPException(status_code=403, detail="Only advocates")
-        
-    advocate = db.query(AdvocateProfile).filter(AdvocateProfile.user_id == current_user.user_id).first()
-    if not advocate:
-        return []
-        
-    recipients = db.query(ConsultationBroadcastRecipient).filter(
-        ConsultationBroadcastRecipient.advocate_id == advocate.id
-    ).all()
-    
-    broadcast_ids = [r.broadcast_id for r in recipients]
-    
-    broadcasts = db.query(ConsultationBroadcast).filter(
-        ConsultationBroadcast.id.in_(broadcast_ids)
-    ).all()
-    
-    valid_broadcasts = []
-    for b in broadcasts:
-        _lazy_expire(db, b)
-        if b.status == "OPEN":
-            # Check if this advocate already responded
-            resp = db.query(ConsultationBroadcastResponse).filter(
-                ConsultationBroadcastResponse.broadcast_id == b.id,
-                ConsultationBroadcastResponse.advocate_id == advocate.id
-            ).first()
-            if not resp:
-                valid_broadcasts.append(b)
-            
-    return valid_broadcasts
 
 @router.post("/{broadcast_id}/interest")
 def express_interest(
@@ -300,7 +314,7 @@ def select_advocate(
         _create_notification(db, adv.user_id, "You were selected", "You have been selected for a consultation request.")
     
     db.commit()
-    return {"status": "success", "appointment_id": appt.id}
+    return {"status": "success", "appointment_id": str(appt.id)}
 
 @router.patch("/{broadcast_id}/cancel")
 def cancel_broadcast(
@@ -321,15 +335,3 @@ def cancel_broadcast(
     broadcast.status = "CANCELLED"
     db.commit()
     return {"status": "success"}
-
-@router.get("/my", response_model=List[ConsultationBroadcastRead])
-def my_broadcasts(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    broadcasts = db.query(ConsultationBroadcast).filter(
-        ConsultationBroadcast.citizen_id == current_user.user_id
-    ).all()
-    for b in broadcasts:
-        _lazy_expire(db, b)
-    return broadcasts

@@ -104,7 +104,7 @@ export default function ConsultAdvocate() {
     try {
       const payload = {
         ...requestForm,
-        advocate_id: selectedAdvocate.user_id,
+        advocate_id: selectedAdvocate.id,
       };
       const res = await consultationApi.createAppointment(payload);
       setSuccessMsg(isKn ? 'ಸಮಾಲೋಚನೆ ವಿನಂತಿಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಕಳುಹಿಸಲಾಗಿದೆ!' : 'Consultation request sent successfully!');
@@ -267,13 +267,13 @@ export default function ConsultAdvocate() {
                     <div>
                       <div className="flex items-start justify-between">
                         <div className="h-12 w-12 rounded-full bg-navy-100 dark:bg-navy-800 flex items-center justify-center text-legalGold font-bold text-lg">
-                          {adv.name.charAt(0)}
+                          {adv.full_name?.charAt(0) || 'A'}
                         </div>
                         <span className="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2.5 py-0.5 text-xs font-semibold text-green-600 dark:text-green-400 border border-green-500/20">
                           <CheckCircle className="h-3 w-3" /> Verified
                         </span>
                       </div>
-                      <h3 className="mt-4 text-lg font-bold text-navy-900 dark:text-white">{adv.name}</h3>
+                      <h3 className="mt-4 text-lg font-bold text-navy-900 dark:text-white">{adv.full_name}</h3>
                       <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                         {adv.district || 'Karnataka'} {adv.taluk ? `• ${adv.taluk}` : ''}
                       </p>
@@ -525,7 +525,7 @@ export default function ConsultAdvocate() {
                     {isKn ? 'ಸಮಾಲೋಚನೆ ವಿನಂತಿ ಸಲ್ಲಿಸಿ' : 'Request Consultation'}
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Advocate: <span className="font-semibold text-legalGold">{selectedAdvocate.name}</span>
+                    Advocate: <span className="font-semibold text-legalGold">{selectedAdvocate.full_name}</span>
                   </p>
                 </div>
                 <button onClick={handleCloseRequestModal} className="text-slate-400 hover:text-white">

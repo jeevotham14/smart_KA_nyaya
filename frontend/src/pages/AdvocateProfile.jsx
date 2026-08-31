@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { advocateApi, consultationApi, getApiError } from '../services/api.js';
-import { MapPin, Scale, CheckCircle2, Loader2, Calendar, Clock, Video, Building2 } from 'lucide-react';
+import { MapPin, Scale, CheckCircle2, Loader2, Calendar, Clock, Video, Building2, AlertTriangle, ShieldAlert } from 'lucide-react';
 
 export default function AdvocateProfile() {
   const { id } = useParams();
@@ -32,10 +32,18 @@ export default function AdvocateProfile() {
     fetchProfile();
   }, [id]);
 
+  const location = useLocation();
+
   const handleBook = async (e) => {
     e.preventDefault();
     if (!selectedSlot || !caseSummary.trim()) return;
     
+    // Auth Guard
+    if (!localStorage.getItem('token')) {
+      navigate(`/citizen/login?next=/advocates/${id}`);
+      return;
+    }
+
     setBookingLoading(true);
     try {
       await consultationApi.bookConsultation({
@@ -95,6 +103,13 @@ export default function AdvocateProfile() {
           <div className="bg-white dark:bg-navy-900 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 sticky top-24">
             <h2 className="text-xl font-bold text-navy-900 dark:text-white mb-4">Book Consultation</h2>
             
+            <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 flex gap-2">
+              <ShieldAlert className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+              <p className="text-xs text-amber-800">
+                <strong>Privacy Notice:</strong> Do not include sensitive information like Aadhaar or bank details here.
+              </p>
+            </div>
+
             <form onSubmit={handleBook} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">Available Slots</label>

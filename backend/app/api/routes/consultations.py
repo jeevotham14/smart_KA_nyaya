@@ -37,6 +37,19 @@ def _mask_meeting_details(appointment: ConsultationAppointment):
         appointment.meeting_details = None
     return appointment
 
+def _enrich_appointment(appointment: ConsultationAppointment, db: Session) -> dict:
+    """Convert appointment to dict and populate advocate_name / citizen_name from DB."""
+    # Collect field values
+    data = {}
+    for col in appointment.__table__.columns:
+        data[col.name] = getattr(appointment, col.name)
+    # Enrich names
+    advocate = db.query(AdvocateProfile).filter(AdvocateProfile.id == appointment.advocate_id).first()
+    citizen = db.query(User).filter(User.user_id == appointment.citizen_id).first()
+    data['advocate_name'] = advocate.full_name if advocate else None
+    data['citizen_name'] = citizen.name if citizen else None
+    return appointment
+
 @router.post("/", response_model=ConsultationAppointmentRead)
 def book_consultation(
     appointment_in: ConsultationAppointmentCreate,
@@ -90,8 +103,17 @@ def my_consultations(
         appointments = db.query(ConsultationAppointment).filter(ConsultationAppointment.advocate_id == advocate.id).all()
     else:
         appointments = db.query(ConsultationAppointment).filter(ConsultationAppointment.citizen_id == current_user.user_id).all()
-        
-    return [_mask_meeting_details(app) for app in appointments]
+    
+    result = []
+    for app in appointments:
+        _mask_meeting_details(app)
+        # Attach names for display
+        adv = db.query(AdvocateProfile).filter(AdvocateProfile.id == app.advocate_id).first()
+        citizen = db.query(User).filter(User.user_id == app.citizen_id).first()
+        app.advocate_name = adv.full_name if adv else None
+        app.citizen_name = citizen.name if citizen else None
+        result.append(app)
+    return result
 
 @router.get("/{appointment_id}", response_model=ConsultationAppointmentRead)
 def get_appointment(
@@ -107,6 +129,11 @@ def get_appointment(
     
     if appointment.citizen_id != current_user.user_id and (not advocate or appointment.advocate_id != advocate.id):
         raise HTTPException(status_code=403, detail="Not authorized")
+    
+    adv = db.query(AdvocateProfile).filter(AdvocateProfile.id == appointment.advocate_id).first()
+    citizen = db.query(User).filter(User.user_id == appointment.citizen_id).first()
+    appointment.advocate_name = adv.full_name if adv else None
+    appointment.citizen_name = citizen.name if citizen else None
         
     return _mask_meeting_details(appointment)
 

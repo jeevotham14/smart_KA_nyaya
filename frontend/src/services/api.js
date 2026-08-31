@@ -455,6 +455,40 @@ export const consultationApi = {
     const { data } = await api.delete(`/api/consultations/${appointmentId}/documents/${documentId}`);
     return data;
   },
+  // ── Reschedule citizen responses ──
+  acceptReschedule: async (appointmentId) => {
+    const { data } = await api.patch(`/api/consultations/${appointmentId}/reschedule/accept`);
+    return data;
+  },
+  declineReschedule: async (appointmentId) => {
+    const { data } = await api.patch(`/api/consultations/${appointmentId}/reschedule/decline`);
+    return data;
+  },
+  // ── Broadcast methods ──
+  getMatchedBroadcasts: async () => {
+    const { data } = await api.get('/api/consultation-broadcasts/matched');
+    return data;
+  },
+  getBroadcastResponses: async (broadcastId) => {
+    const { data } = await api.get(`/api/consultation-broadcasts/${broadcastId}/responses`);
+    return data;
+  },
+  selectBroadcastAdvocate: async (broadcastId, advocateId) => {
+    const { data } = await api.post(`/api/consultation-broadcasts/${broadcastId}/select/${advocateId}`);
+    return data;
+  },
+  expressInterest: async (broadcastId, payload) => {
+    const { data } = await api.post(`/api/consultation-broadcasts/${broadcastId}/interest`, payload);
+    return data;
+  },
+  declineBroadcast: async (broadcastId) => {
+    const { data } = await api.post(`/api/consultation-broadcasts/${broadcastId}/decline`);
+    return data;
+  },
+  cancelBroadcast: async (broadcastId) => {
+    const { data } = await api.patch(`/api/consultation-broadcasts/${broadcastId}/cancel`);
+    return data;
+  },
 };
 
 

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { consultationApi, authApi, getApiError } from '../services/api.js';
-import { Calendar, Clock, Video, Building2, AlertTriangle, Loader2 } from 'lucide-react';
+import { isAdvocate as checkIsAdvocate } from '../utils/roleUtils.js';
+import { Calendar, Clock, Video, Building2, AlertTriangle, Loader2, ExternalLink } from 'lucide-react';
 
 export default function Consultations() {
   const [appointments, setAppointments] = useState([]);
@@ -12,6 +14,7 @@ export default function Consultations() {
   const fetchData = async () => {
     try {
       setLoading(true);
+      setError('');
       const [userData, apptData] = await Promise.all([
         authApi.me(),
         consultationApi.getMyConsultations()
@@ -42,7 +45,7 @@ export default function Consultations() {
   const handleAdvocateReschedule = async (id) => {
     const data = rescheduleData[id];
     if (!data?.new_date || !data?.new_start_time || !data?.new_end_time) {
-      alert("Please fill date, start time, and end time");
+      alert('Please fill date, start time, and end time');
       return;
     }
     try {
@@ -53,17 +56,28 @@ export default function Consultations() {
     }
   };
 
-  const handleCitizenRescheduleAction = async (id, action) => {
-    if (!window.confirm(`Are you sure you want to ${action} the new time?`)) return;
+  const handleAcceptReschedule = async (id) => {
+    if (!window.confirm('Accept the new proposed time?')) return;
     try {
-      await consultationApi.updateStatus(id, `reschedule/${action}`);
+      await consultationApi.acceptReschedule(id);
       fetchData();
     } catch (err) {
       alert(getApiError(err));
     }
   };
 
-  const isAdvocate = user?.role === 'advocate';
+  const handleDeclineReschedule = async (id) => {
+    if (!window.confirm('Decline the new time and cancel the appointment?')) return;
+    try {
+      await consultationApi.declineReschedule(id);
+      fetchData();
+    } catch (err) {
+      alert(getApiError(err));
+    }
+  };
+
+  // Use roleUtils to correctly handle both 'advocate' and 'lawyer_advisor'
+  const isAdvocate = checkIsAdvocate(user?.role);
 
   if (loading) return <div className="flex justify-center py-20"><Loader2 className="animate-spin h-8 w-8 text-legalGold" /></div>;
 
@@ -71,26 +85,31 @@ export default function Consultations() {
     <div className="bg-slate-50 dark:bg-navy-950 min-h-screen py-12">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
         <h1 className="text-3xl font-display font-bold text-navy-900 dark:text-white mb-8">
-          {isAdvocate ? 'Advocate Dashboard' : 'My Consultations'}
+          My Consultations
         </h1>
-        
+
         {error && (
-          <div className="mb-6 rounded-lg bg-red-50 p-4 flex gap-3 text-sm text-alertRed border border-red-200">
+          <div className="mb-6 rounded-lg bg-red-50 p-4 flex gap-3 text-sm text-red-700 border border-red-200">
             <AlertTriangle className="h-5 w-5 shrink-0" />
-            <p>{error}</p>
+            <p>Unable to load consultations. {error}</p>
           </div>
         )}
 
-        {appointments.length === 0 ? (
+        {!error && appointments.length === 0 && (
           <div className="text-center py-20 bg-white dark:bg-navy-900 rounded-xl border border-slate-200 dark:border-slate-800">
-            <p className="text-slate-500 dark:text-slate-400">No consultation appointments found.</p>
+            <p className="text-slate-500 dark:text-slate-400">No consultation appointments yet.</p>
+            {!isAdvocate && (
+              <Link to="/advocates" className="mt-4 inline-block text-sm text-legalGold hover:underline">Browse Advocates →</Link>
+            )}
           </div>
-        ) : (
+        )}
+
+        {!error && appointments.length > 0 && (
           <div className="space-y-4">
             {appointments.map(app => (
               <div key={app.id} className="bg-white dark:bg-navy-900 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row gap-6 justify-between">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
+                  <div className="flex items-center gap-3 mb-2 flex-wrap">
                     <span className={`text-xs px-2 py-1 rounded-full font-semibold ${
                       app.status === 'PENDING' ? 'bg-amber-100 text-amber-700' :
                       app.status === 'CONFIRMED' ? 'bg-emerald-100 text-emerald-700' :
@@ -101,22 +120,28 @@ export default function Consultations() {
                       {app.status}
                     </span>
                     <span className="text-sm font-medium text-slate-500">{app.legal_category}</span>
+                    {isAdvocate && app.citizen_name && (
+                      <span className="text-xs text-slate-400">Citizen: <strong>{app.citizen_name}</strong></span>
+                    )}
+                    {!isAdvocate && app.advocate_name && (
+                      <span className="text-xs text-slate-400">Advocate: <strong>{app.advocate_name}</strong></span>
+                    )}
                   </div>
-                  
+
                   <div className="space-y-1 text-sm text-slate-700 dark:text-slate-300 mb-4">
                     <p className="flex items-center gap-2"><Calendar className="h-4 w-4" /> {app.appointment_date}</p>
                     <p className="flex items-center gap-2"><Clock className="h-4 w-4" /> {app.start_time} - {app.end_time}</p>
                     <p className="flex items-center gap-2">
-                      {app.consultation_mode === 'ONLINE' ? <Video className="h-4 w-4" /> : <Building2 className="h-4 w-4" />} 
+                      {app.consultation_mode === 'ONLINE' ? <Video className="h-4 w-4" /> : <Building2 className="h-4 w-4" />}
                       {app.consultation_mode}
                     </p>
                   </div>
-                  
+
                   <div className="bg-slate-50 dark:bg-navy-950 p-3 rounded-lg border border-slate-100 dark:border-slate-800 text-sm text-slate-600 dark:text-slate-400">
                     <p className="font-semibold text-slate-700 dark:text-slate-300 mb-1">Case Summary</p>
                     {app.case_summary}
                   </div>
-                  
+
                   {app.status === 'CONFIRMED' && app.meeting_details && (
                     <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-sm border border-blue-100 dark:border-blue-900/50">
                       <p className="font-semibold text-blue-800 dark:text-blue-300 mb-1">Meeting Details</p>
@@ -124,7 +149,7 @@ export default function Consultations() {
                     </div>
                   )}
 
-                  {/* Reschedule UI */}
+                  {/* Reschedule proposal UI */}
                   {app.status === 'RESCHEDULE_REQUESTED' && (
                     <div className="mt-4 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
                       <p className="font-semibold text-purple-800 dark:text-purple-300 mb-2">Advocate proposed a new consultation time:</p>
@@ -135,19 +160,19 @@ export default function Consultations() {
                       {app.advocate_message && (
                         <p className="text-sm italic text-purple-600 dark:text-purple-500 mb-3">"{app.advocate_message}"</p>
                       )}
-                      
                       {!isAdvocate && (
                         <div className="flex gap-3">
-                          <button onClick={() => handleCitizenRescheduleAction(app.id, 'accept')} className="px-3 py-1.5 bg-purple-600 text-white rounded text-sm hover:bg-purple-700">Accept New Time</button>
-                          <button onClick={() => handleCitizenRescheduleAction(app.id, 'decline')} className="px-3 py-1.5 border border-purple-300 text-purple-700 rounded text-sm hover:bg-purple-100">Decline</button>
+                          <button onClick={() => handleAcceptReschedule(app.id)} className="px-3 py-1.5 bg-purple-600 text-white rounded text-sm hover:bg-purple-700">Accept New Time</button>
+                          <button onClick={() => handleDeclineReschedule(app.id)} className="px-3 py-1.5 border border-purple-300 text-purple-700 rounded text-sm hover:bg-purple-100">Cancel Request</button>
                         </div>
                       )}
                     </div>
                   )}
 
+                  {/* Advocate reschedule proposal form */}
                   {isAdvocate && app.status === 'CONFIRMED' && (
                     <div className="mt-4 p-4 bg-slate-50 border rounded-lg">
-                      <p className="font-semibold mb-2 text-sm">Request Reschedule</p>
+                      <p className="font-semibold mb-2 text-sm">Propose New Time</p>
                       <div className="flex gap-2 mb-2">
                         <input type="date" className="border rounded px-2 py-1 text-sm" onChange={e => setRescheduleData({...rescheduleData, [app.id]: {...rescheduleData[app.id], new_date: e.target.value}})} />
                         <input type="time" className="border rounded px-2 py-1 text-sm" onChange={e => setRescheduleData({...rescheduleData, [app.id]: {...rescheduleData[app.id], new_start_time: e.target.value}})} />
@@ -158,10 +183,21 @@ export default function Consultations() {
                     </div>
                   )}
                 </div>
-                
-                <div className="flex flex-col gap-2 min-w-[140px] shrink-0 justify-start items-end">
+
+                <div className="flex flex-col gap-2 min-w-[150px] shrink-0 justify-start items-end">
                   <div className="font-bold text-lg mb-2">₹{app.consultation_fee}</div>
-                  
+
+                  {/* Open Consultation link for CONFIRMED/COMPLETED */}
+                  {(app.status === 'CONFIRMED' || app.status === 'COMPLETED') && (
+                    <Link
+                      to={`/consultations/${app.id}`}
+                      className="w-full px-4 py-2 bg-navy-900 text-white hover:bg-navy-800 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Open Consultation
+                    </Link>
+                  )}
+
                   {isAdvocate ? (
                     <>
                       {app.status === 'PENDING' && (
