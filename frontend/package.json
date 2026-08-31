@@ -7,7 +7,8 @@
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "lint": "eslint .", "test": "vitest run"
+    "lint": "eslint .",
+    "test": "node test_runner.js"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^5.0.0",

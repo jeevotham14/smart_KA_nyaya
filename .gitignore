@@ -34,3 +34,9 @@ build/
 # Large Datasets and ML Models
 backend/app/ml/data/processed/*.parquet
 backend/app/ml/artifacts/models/*.pkl
+
+# Private document uploads (Task 3)
+private_uploads/
+backend/private_uploads/*
+!backend/private_uploads/.gitkeep
+*.lnk

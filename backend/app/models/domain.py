@@ -7,7 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import timezone
 from app.db.base import Base
 from app.db.types import JSONVariant, TextArray, Vector
-from app.models.enums import RecordStatus, UserRole
+from app.models.enums import RecordStatus, UserRole, ConsultationDocumentType
 
 
 def uuid_pk() -> Mapped[uuid.UUID]:
@@ -293,6 +293,8 @@ class ConsultationAppointment(Base, TimestampMixin):
     citizen = relationship("User", backref="appointments")
     advocate = relationship("AdvocateProfile", foreign_keys=[advocate_id], back_populates="appointments")
     availability = relationship("AdvocateAvailability", back_populates="appointments")
+    documents = relationship("ConsultationDocument", back_populates="appointment", cascade="all, delete-orphan")
+
 
 import sqlalchemy as sa
 
@@ -346,5 +348,22 @@ class ConsultationBroadcastResponse(Base, TimestampMixin):
 
     __table_args__ = (
         sa.UniqueConstraint("broadcast_id", "advocate_id", name="uq_broadcast_advocate_response"),
-    
-)
+    )
+
+
+class ConsultationDocument(Base, TimestampMixin):
+    __tablename__ = "consultation_documents"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    appointment_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("consultation_appointments.id"), nullable=False, index=True)
+    uploaded_by_user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.user_id"), nullable=False, index=True)
+    original_filename: Mapped[str] = mapped_column(String(255))
+    storage_key: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    mime_type: Mapped[str] = mapped_column(String(100))
+    file_size: Mapped[int] = mapped_column(Integer)
+    document_type: Mapped[str] = mapped_column(String(60), default=ConsultationDocumentType.OTHER.value)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    appointment = relationship("ConsultationAppointment", back_populates="documents")
+    uploader = relationship("User", foreign_keys=[uploaded_by_user_id])

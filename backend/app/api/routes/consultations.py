@@ -1,13 +1,19 @@
+import os
 from typing import List, Optional
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile, status
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
+from sqlalchemy import select, func
 from pydantic import BaseModel
 
 from app.db.session import get_db
-from app.models.domain import User, AdvocateProfile, AdvocateAvailability, ConsultationAppointment, Notification
+from app.models.domain import User, AdvocateProfile, AdvocateAvailability, ConsultationAppointment, Notification, ConsultationDocument
+from app.models.enums import ConsultationDocumentType
 from app.schemas.advocates import ConsultationAppointmentCreate, ConsultationAppointmentRead, ConsultationAppointmentUpdate
-from app.api.deps import get_current_user
+from app.schemas.consultation import ConsultationDocumentRead
+from app.api.deps import get_current_user, audit
+from app.services.document_storage import get_document_storage
 
 router = APIRouter(prefix="/consultations", tags=["consultations"])
 
@@ -73,6 +79,7 @@ def book_consultation(
     db.refresh(appointment)
     return _mask_meeting_details(appointment)
 
+@router.get("", response_model=List[ConsultationAppointmentRead])
 @router.get("/my", response_model=List[ConsultationAppointmentRead])
 def my_consultations(
     db: Session = Depends(get_db),
@@ -256,3 +263,241 @@ def cancel_appointment(
     current_user: User = Depends(get_current_user),
 ):
     return _update_status(appointment_id, "CANCELLED", db, current_user, is_advocate=False)
+
+
+class StatusUpdateRequest(BaseModel):
+    status: str
+    scheduled_date_time: Optional[str] = None
+    reschedule_reason: Optional[str] = None
+    meeting_link: Optional[str] = None
+    contact_details: Optional[str] = None
+
+
+@router.patch("/{appointment_id}/status", response_model=ConsultationAppointmentRead)
+def update_status_generic(
+    appointment_id: UUID,
+    payload: StatusUpdateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    advocate = db.query(AdvocateProfile).filter(AdvocateProfile.user_id == current_user.user_id).first()
+    is_advocate = advocate is not None
+    extra = {}
+    if payload.meeting_link or payload.contact_details:
+        extra["meeting_details"] = payload.meeting_link or payload.contact_details
+    if payload.reschedule_reason:
+        extra["advocate_message"] = payload.reschedule_reason
+    return _update_status(appointment_id, payload.status.upper(), db, current_user, is_advocate=is_advocate, extra_data=extra)
+
+
+# ── Secure Document Sharing Endpoints (Tasks 7, 8, 9, 10, 18) ─────────────
+
+@router.post("/{appointment_id}/documents", response_model=ConsultationDocumentRead, status_code=status.HTTP_201_CREATED)
+async def upload_document(
+    appointment_id: UUID,
+    file: UploadFile = File(...),
+    document_type: str = Form(ConsultationDocumentType.OTHER.value),
+    description: Optional[str] = Form(None),
+    request: Request = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Secure document upload for CONFIRMED/COMPLETED consultations only.
+    Allowed uploader: citizen who owns appointment.
+    Sanitizes filename against path traversal.
+    """
+    appointment = db.query(ConsultationAppointment).filter(ConsultationAppointment.id == appointment_id).first()
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Consultation appointment not found")
+
+    is_owner = appointment.citizen_id == current_user.user_id
+    if not is_owner:
+        raise HTTPException(status_code=403, detail="Only the citizen who owns this appointment can upload documents")
+
+    allowed_statuses = {"CONFIRMED", "COMPLETED"}
+    if appointment.status not in allowed_statuses:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Document upload not permitted for appointment status '{appointment.status}'. "
+                "Documents can only be shared once the consultation is CONFIRMED."
+            ),
+        )
+
+    file_bytes = await file.read()
+    raw_filename = file.filename or "document.pdf"
+    filename = os.path.basename(raw_filename.replace("\\", "/"))
+    if not filename or filename == ".":
+        filename = "document.pdf"
+
+    storage_service = get_document_storage()
+    is_valid, detected_mime, error_msg = storage_service.validate_file(
+        file_bytes=file_bytes,
+        original_filename=filename,
+        content_type=file.content_type,
+    )
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error_msg)
+
+    storage_key = storage_service.save_file(
+        file_bytes=file_bytes,
+        original_filename=filename,
+        appointment_id=str(appointment_id),
+    )
+
+    doc_type_clean = document_type.upper() if document_type else ConsultationDocumentType.OTHER.value
+    valid_types = [t.value for t in ConsultationDocumentType]
+    if doc_type_clean not in valid_types:
+        doc_type_clean = ConsultationDocumentType.OTHER.value
+
+    doc = ConsultationDocument(
+        appointment_id=appointment_id,
+        uploaded_by_user_id=current_user.user_id,
+        original_filename=filename,
+        storage_key=storage_key,
+        mime_type=detected_mime,
+        file_size=len(file_bytes),
+        document_type=doc_type_clean,
+        description=description,
+    )
+    db.add(doc)
+    audit(db, request, "consultations.upload_document", current_user.user_id)
+    db.commit()
+    db.refresh(doc)
+
+    return ConsultationDocumentRead(
+        id=doc.id,
+        appointment_id=doc.appointment_id,
+        filename=doc.original_filename,
+        mime_type=doc.mime_type,
+        size=doc.file_size,
+        document_type=doc.document_type,
+        description=doc.description,
+        uploaded_at=doc.created_at,
+    )
+
+
+@router.get("/{appointment_id}/documents", response_model=List[ConsultationDocumentRead])
+def list_documents(
+    appointment_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """List document metadata for authorized citizen or assigned advocate."""
+    appointment = db.query(ConsultationAppointment).filter(ConsultationAppointment.id == appointment_id).first()
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Consultation appointment not found")
+
+    advocate = db.query(AdvocateProfile).filter(AdvocateProfile.user_id == current_user.user_id).first()
+    is_citizen = appointment.citizen_id == current_user.user_id
+    is_assigned_advocate = (advocate is not None and appointment.advocate_id == advocate.id)
+
+    if not (is_citizen or is_assigned_advocate):
+        raise HTTPException(status_code=403, detail="Unauthorized to view documents for this appointment")
+
+    if appointment.status not in {"CONFIRMED", "COMPLETED"}:
+        raise HTTPException(
+            status_code=400,
+            detail="Document sharing is inactive until the consultation is CONFIRMED",
+        )
+
+    documents = db.query(ConsultationDocument).filter(
+        ConsultationDocument.appointment_id == appointment_id,
+        ConsultationDocument.deleted_at.is_(None),
+    ).order_by(ConsultationDocument.created_at.desc()).all()
+
+    return [
+        ConsultationDocumentRead(
+            id=d.id,
+            appointment_id=d.appointment_id,
+            filename=d.original_filename,
+            mime_type=d.mime_type,
+            size=d.file_size,
+            document_type=d.document_type,
+            description=d.description,
+            uploaded_at=d.created_at,
+        )
+        for d in documents
+    ]
+
+
+@router.get("/{appointment_id}/documents/{document_id}/download")
+def download_document(
+    appointment_id: UUID,
+    document_id: UUID,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Secure document download."""
+    appointment = db.query(ConsultationAppointment).filter(ConsultationAppointment.id == appointment_id).first()
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Consultation appointment not found")
+
+    advocate = db.query(AdvocateProfile).filter(AdvocateProfile.user_id == current_user.user_id).first()
+    is_citizen = appointment.citizen_id == current_user.user_id
+    is_assigned_advocate = (advocate is not None and appointment.advocate_id == advocate.id)
+
+    if not (is_citizen or is_assigned_advocate):
+        raise HTTPException(status_code=403, detail="Unauthorized to download this document")
+
+    if appointment.status not in {"CONFIRMED", "COMPLETED"}:
+        raise HTTPException(status_code=403, detail="Documents cannot be downloaded until consultation is confirmed")
+
+    doc = db.query(ConsultationDocument).filter(ConsultationDocument.id == document_id).first()
+    if not doc or doc.appointment_id != appointment_id:
+        raise HTTPException(status_code=404, detail="Document not found for this consultation")
+
+    if doc.deleted_at is not None:
+        raise HTTPException(status_code=404, detail="Document has been deleted")
+
+    storage_service = get_document_storage()
+    file_bytes = storage_service.get_file(doc.storage_key)
+    if not file_bytes:
+        raise HTTPException(status_code=404, detail="Document file not found in storage")
+
+    audit(db, request, f"consultations.download_document.{doc.id}", current_user.user_id)
+
+    safe_filename = doc.original_filename.replace('"', '\\"')
+
+    return Response(
+        content=file_bytes,
+        media_type=doc.mime_type,
+        headers={
+            "Content-Disposition": f'attachment; filename="{safe_filename}"',
+            "X-Content-Type-Options": "nosniff",
+            "Cache-Control": "private, no-cache, no-store, must-revalidate",
+        },
+    )
+
+
+@router.delete("/{appointment_id}/documents/{document_id}")
+def delete_document(
+    appointment_id: UUID,
+    document_id: UUID,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Citizen deletes their uploaded document. Soft deletes metadata."""
+    appointment = db.query(ConsultationAppointment).filter(ConsultationAppointment.id == appointment_id).first()
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Consultation appointment not found")
+
+    doc = db.query(ConsultationDocument).filter(ConsultationDocument.id == document_id).first()
+    if not doc or doc.appointment_id != appointment_id:
+        raise HTTPException(status_code=404, detail="Document not found for this consultation")
+
+    if doc.deleted_at is not None:
+        raise HTTPException(status_code=404, detail="Document has already been deleted")
+
+    if doc.uploaded_by_user_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="Only the uploader can delete this document")
+
+    doc.deleted_at = func.now()
+    audit(db, request, f"consultations.delete_document.{doc.id}", current_user.user_id)
+    db.commit()
+
+    return {"detail": "Document deleted successfully", "id": str(document_id)}
+

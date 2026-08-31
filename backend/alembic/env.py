@@ -7,6 +7,17 @@ from app.core.config import get_settings
 from app.db.base import Base
 from app.models import *  # noqa: F401,F403
 
+from sqlalchemy.ext.compiler import compiles
+from sqlalchemy.dialects.postgresql import JSONB, ARRAY
+
+@compiles(JSONB, "sqlite")
+def _compile_jsonb_sqlite(type_, compiler, **kw):
+    return "JSON"
+
+@compiles(ARRAY, "sqlite")
+def _compile_array_sqlite(type_, compiler, **kw):
+    return "TEXT"
+
 config = context.config
 config.set_main_option("sqlalchemy.url", get_settings().database_url)
 

@@ -36,6 +36,11 @@ class Settings(BaseSettings):
     # Legal Aid
     legal_aid_income_limit: int = 300000  # Karnataka DLSA threshold — update periodically
 
+    # Document Storage (Phase P)
+    document_storage_backend: str = "local"
+    document_storage_path: str = "private_uploads"
+    max_document_size_mb: int = 10
+
     # Operational Configurations
     ENVIRONMENT: str = "development"
     LOG_LEVEL: str = "INFO"

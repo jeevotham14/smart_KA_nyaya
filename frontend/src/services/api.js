@@ -344,8 +344,20 @@ export const advocateApi = {
 };
 
 export const consultationApi = {
+  listAdvocates: async (params) => {
+    const { data } = await api.get('/api/advocates', { params });
+    return data;
+  },
+  createAppointment: async (payload) => {
+    const { data } = await api.post('/api/consultations', payload);
+    return data;
+  },
   bookConsultation: async (appointment) => {
     const { data } = await api.post('/api/consultations', appointment);
+    return data;
+  },
+  listAppointments: async () => {
+    const { data } = await api.get('/api/consultations/my');
     return data;
   },
   getMyConsultations: async () => {
@@ -356,6 +368,10 @@ export const consultationApi = {
     const { data } = await api.get(`/api/consultations/${id}`);
     return data;
   },
+  updateAppointmentStatus: async (appointmentId, payload) => {
+    const { data } = await api.patch(`/api/consultations/${appointmentId}/status`, payload);
+    return data;
+  },
   updateStatus: async (id, action) => {
     const { data } = await api.patch(`/api/consultations/${id}/${action}`);
     return data;
@@ -363,7 +379,43 @@ export const consultationApi = {
   rescheduleAppointment: async (id, payload) => {
     const { data } = await api.patch(`/api/consultations/${id}/reschedule`, payload);
     return data;
-  }
+  },
+  createBroadcast: async (payload) => {
+    const { data } = await api.post('/api/consultation-broadcasts', payload);
+    return data;
+  },
+  listBroadcasts: async () => {
+    const { data } = await api.get('/api/consultation-broadcasts/my');
+    return data;
+  },
+  uploadDocument: async (appointmentId, formData) => {
+    const { data } = await api.post(`/api/consultations/${appointmentId}/documents`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return data;
+  },
+  listDocuments: async (appointmentId) => {
+    const { data } = await api.get(`/api/consultations/${appointmentId}/documents`);
+    return data;
+  },
+  downloadDocument: async (appointmentId, documentId, filename = 'document.pdf') => {
+    const response = await api.get(`/api/consultations/${appointmentId}/documents/${documentId}/download`, {
+      responseType: 'blob',
+    });
+    const blobUrl = window.URL.createObjectURL(new Blob([response.data], { type: response.headers['content-type'] }));
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(blobUrl);
+    return true;
+  },
+  deleteDocument: async (appointmentId, documentId) => {
+    const { data } = await api.delete(`/api/consultations/${appointmentId}/documents/${documentId}`);
+    return data;
+  },
 };
 
 
