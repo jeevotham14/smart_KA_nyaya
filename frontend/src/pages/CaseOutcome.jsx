@@ -5,6 +5,8 @@ import { legalApi, getApiError } from '../services/api.js';
 
 export default function CaseOutcome() {
   const { t } = useTranslation();
+  const { i18n } = useTranslation();
+  const isKn = i18n.language === 'kn';
   const [caseText, setCaseText] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -92,20 +94,20 @@ export default function CaseOutcome() {
                     <p>
                       For better results, provide a detailed case description with relevant facts, timeline, parties, evidence, and procedural history.
                       <br/>
-                      <span className="font-semibold">Recommended: 250+ words</span>
+                      <span className="font-semibold">{isKn ? 'ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ: 250+ ಪದಗಳು' : 'Recommended: 250+ words'}</span>
                     </p>
                   </div>
                 </div>
                 <textarea
                   className="w-full min-h-[250px] rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-navy-950 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:border-legalGold focus:ring-1 focus:ring-legalGold transition-colors resize-y"
-                  placeholder="Describe the facts of your case, what happened, relevant dates, parties involved, evidence available, previous court orders if any, and the current legal issue..."
+                  placeholder={isKn ? 'ನಿಮ್ಮ ಪ್ರಕರಣದ ಸಂಗತಿಗಳು, ಏನಾಯಿತು, ಸಂಬಂಧಿತ ದಿನಾಂಕಗಳು, ಒಳಗೊಂಡಿರುವ ಪಕ್ಷಗಳು, ಲಭ್ಯವಿರುವ ಸಾಕ್ಷ್ಯ, ಹಿಂದಿನ ನ್ಯಾಯಾಲಯದ ಆದೇಶಗಳು ಮತ್ತು ಪ್ರಸ್ತುತ ಕಾನೂನು ಸಮಸ್ಯೆಯನ್ನು ವಿವರಿಸಿ...' : 'Describe the facts of your case, what happened, relevant dates, parties involved, evidence available, previous court orders if any, and the current legal issue...'}
                   value={caseText}
                   onChange={(e) => setCaseText(e.target.value)}
                 />
                 <div className="mt-2 flex justify-between text-xs text-slate-500">
-                  <span>Input quality helper text</span>
+                  <span>{isKn ? 'ಇನ್ಪುಟ್ ಗುಣಮಟ್ಟ ಸಹಾಯಕ ಪಠ್ಯ' : 'Input quality helper text'}</span>
                   <span className={wordCount < 250 ? 'text-amber-500' : 'text-emerald-500'}>
-                    {wordCount} words
+                    {wordCount} {isKn ? 'ಪದಗಳು' : 'words'}
                   </span>
                 </div>
               </div>
@@ -125,7 +127,7 @@ export default function CaseOutcome() {
                 {loading ? (
                   <>
                     <Loader2 className="h-5 w-5 animate-spin" />
-                    Analyzing case description...
+                    {isKn ? 'ಪ್ರಕರಣದ ವಿವರಣೆಯನ್ನು ವಿಶ್ಲೇಷಿಸಲಾಗುತ್ತಿದೆ...' : 'Analyzing case description...'}
                   </>
                 ) : (
                   <>
@@ -145,25 +147,25 @@ export default function CaseOutcome() {
               
               <div className="grid gap-6 md:grid-cols-2 mb-8">
                 <div className="p-5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-navy-800/50">
-                  <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Historical Pattern</p>
+                  <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">{isKn ? 'ಐತಿಹಾಸಿಕ ಮಾದರಿ' : 'Historical Pattern'}</p>
                   <p className="text-xl font-bold text-navy-900 dark:text-white flex items-center gap-2">
-                    {result.prediction.label === 'REJECTED' ? 'Rejected Outcome' : 'Accepted Outcome'}
+                    {result.prediction.label === 'REJECTED' ? (isKn ? 'ತಿರಸ್ಕರಿಸಲಾದ ಫಲಿತಾಂಶ' : 'Rejected Outcome') : (isKn ? 'ಸ್ವೀಕರಿಸಲಾದ ಫಲಿತಾಂಶ' : 'Accepted Outcome')}
                   </p>
                 </div>
                 
                 <div className="p-5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-navy-800/50">
-                  <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Model Probability (Accepted)</p>
+                  <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">{isKn ? 'ಮಾದರಿ ಸಂಭವನೀಯತೆ (ಸ್ವೀಕರಿಸಲಾಗಿದೆ)' : 'Model Probability (Accepted)'}</p>
                   <p className="text-xl font-bold text-navy-900 dark:text-white">
                     {(result.prediction.probability_class_1 * 100).toFixed(2)}%
                   </p>
                   <p className="text-xs text-slate-500 mt-1">
-                    Rejected pattern: {(result.prediction.probability_class_0 * 100).toFixed(2)}%
+                    {isKn ? 'ತಿರಸ್ಕರಿಸಲಾದ ಮಾದರಿ:' : 'Rejected pattern:'} {(result.prediction.probability_class_0 * 100).toFixed(2)}%
                   </p>
                 </div>
               </div>
 
               <div className="mb-8 p-5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-navy-900 shadow-sm">
-                <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">Confidence State</p>
+                <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">{isKn ? 'ವಿಶ್ವಾಸಾರ್ಹತೆ ಸ್ಥಿತಿ' : 'Confidence State'}</p>
                 <p className="text-lg font-medium text-navy-900 dark:text-white flex items-center gap-2">
                   <ShieldAlert className="h-5 w-5 text-legalGold" />
                   {mapConfidenceBand(result.confidence.band)}
@@ -181,18 +183,18 @@ export default function CaseOutcome() {
               </div>
 
               <div className="mb-8">
-                <h3 className="text-lg font-bold text-navy-900 dark:text-white mb-4">Input Diagnostics</h3>
+                <h3 className="text-lg font-bold text-navy-900 dark:text-white mb-4">{isKn ? 'ಇನ್ಪುಟ್ ರೋಗನಿರ್ಣಯ' : 'Input Diagnostics'}</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 rounded-lg border border-slate-100 dark:border-slate-800">
-                    <p className="text-xs text-slate-500 mb-1">Input Quality</p>
+                    <p className="text-xs text-slate-500 mb-1">{isKn ? 'ಇನ್ಪುಟ್ ಗುಣಮಟ್ಟ' : 'Input Quality'}</p>
                     <p className="font-medium text-navy-900 dark:text-white">{mapInputQuality(result.input_diagnostics.input_quality)}</p>
                   </div>
                   <div className="p-4 rounded-lg border border-slate-100 dark:border-slate-800">
-                    <p className="text-xs text-slate-500 mb-1">Token/Word Count</p>
+                    <p className="text-xs text-slate-500 mb-1">{isKn ? 'ಟೋಕನ್/ಪದಗಳ ಎಣಿಕೆ' : 'Token/Word Count'}</p>
                     <p className="font-medium text-navy-900 dark:text-white">{result.input_diagnostics.token_count}</p>
                   </div>
                   <div className="p-4 rounded-lg border border-slate-100 dark:border-slate-800">
-                    <p className="text-xs text-slate-500 mb-1">Vocabulary Coverage</p>
+                    <p className="text-xs text-slate-500 mb-1">{isKn ? 'ಶಬ್ದಕೋಶದ ವ್ಯಾಪ್ತಿ' : 'Vocabulary Coverage'}</p>
                     <p className="font-medium text-navy-900 dark:text-white">{(result.input_diagnostics.vocabulary_coverage * 100).toFixed(1)}%</p>
                   </div>
                 </div>
@@ -205,7 +207,7 @@ export default function CaseOutcome() {
 
               <div className="mt-8 p-4 rounded-xl bg-slate-50 dark:bg-navy-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-500 dark:text-slate-400 space-y-2">
                 <p className="font-bold flex items-center gap-1"><AlertTriangle className="h-3.5 w-3.5"/> Disclaimer</p>
-                <p>This system is an experimental decision-support tool trained on historical Indian Supreme Court appeal data. It does not predict guaranteed court outcomes and does not provide legal advice.</p>
+                <p>{isKn ? 'ಈ ವ್ಯವಸ್ಥೆಯು ಐತಿಹಾಸಿಕ ಭಾರತೀಯ ಸುಪ್ರೀಂ ಕೋರ್ಟ್ ಮೇಲ್ಮನವಿ ಡೇಟಾದ ಮೇಲೆ ತರಬೇತಿ ಪಡೆದ ಪ್ರಾಯೋಗಿಕ ನಿರ್ಧಾರ-ಬೆಂಬಲ ಸಾಧನವಾಗಿದೆ. ಇದು ಖಾತರಿಯ ನ್ಯಾಯಾಲಯದ ಫಲಿತಾಂಶಗಳನ್ನು ಊಹಿಸುವುದಿಲ್ಲ ಮತ್ತು ಕಾನೂನು ಸಲಹೆಯನ್ನು ನೀಡುವುದಿಲ್ಲ.' : 'This system is an experimental decision-support tool trained on historical Indian Supreme Court appeal data. It does not predict guaranteed court outcomes and does not provide legal advice.'}</p>
                 {result.disclaimer && <p>{result.disclaimer}</p>}
                 <p className="mt-2 text-[10px] opacity-70">Model Version: {result.model_version} | Request ID: {result.request_id}</p>
               </div>

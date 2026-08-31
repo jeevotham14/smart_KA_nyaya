@@ -525,7 +525,7 @@ export default function ConsultAdvocate() {
                     {isKn ? 'ಸಮಾಲೋಚನೆ ವಿನಂತಿ ಸಲ್ಲಿಸಿ' : 'Request Consultation'}
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Advocate: <span className="font-semibold text-legalGold">{selectedAdvocate.full_name}</span>
+                    {isKn ? 'ವಕೀಲರು:' : 'Advocate:'} <span className="font-semibold text-legalGold">{selectedAdvocate.full_name}</span>
                   </p>
                 </div>
                 <button onClick={handleCloseRequestModal} className="text-slate-400 hover:text-white">
