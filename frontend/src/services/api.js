@@ -24,6 +24,23 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Automatically handle 401 Unauthorized errors
+const responseErrorInterceptor = (error) => {
+  if (error.response && error.response.status === 401) {
+    window.localStorage.removeItem('smartNyayaToken');
+    window.localStorage.removeItem('user');
+    window.localStorage.removeItem('role');
+    
+    // Redirect to login if not already there
+    if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
+      window.location.href = '/citizen/login';
+    }
+  }
+  return Promise.reject(error);
+};
+api.interceptors.response.use((response) => response, responseErrorInterceptor);
+aiApi.interceptors.response.use((response) => response, responseErrorInterceptor);
+
 export function getApiError(error) {
   return error?.response?.data?.detail || error?.message || 'Something went wrong. Please try again.';
 }
