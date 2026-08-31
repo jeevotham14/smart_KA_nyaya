@@ -1,6 +1,8 @@
 import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout.jsx';
+import AdvocateLayout from './layouts/AdvocateLayout.jsx';
+import AdminLayout from './layouts/AdminLayout.jsx';
 import LoadingSpinner from './components/LoadingSpinner.jsx';
 import { CitizenRoute, AdvocateRoute, AdminRoute } from './components/RouteGuards.jsx';
 
@@ -46,6 +48,57 @@ export default function App() {
   return (
     <Suspense fallback={<LoadingSpinner />}>
       <Routes>
+        {/* ── Advocate Workspace (Lawyers Portal) ── */}
+        <Route path="advocate" element={<AdvocateLayout />}>
+          <Route path="login" element={<AdvocateLogin />} />
+          <Route path="register" element={<AdvocateRegister />} />
+          <Route
+            path="dashboard"
+            element={
+              <AdvocateRoute>
+                <AdvocateDashboard />
+              </AdvocateRoute>
+            }
+          />
+          <Route
+            path="onboarding"
+            element={
+              <AdvocateRoute>
+                <AdvocateOnboarding />
+              </AdvocateRoute>
+            }
+          />
+          <Route
+            path="availability"
+            element={
+              <AdvocateRoute>
+                <AdvocateAvailability />
+              </AdvocateRoute>
+            }
+          />
+          <Route
+            path="profile"
+            element={
+              <AdvocateRoute>
+                <AdvocateProfilePage />
+              </AdvocateRoute>
+            }
+          />
+        </Route>
+
+        {/* ── Admin Workspace ── */}
+        <Route path="admin" element={<AdminLayout />}>
+          <Route
+            index
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+        </Route>
+
+        {/* ── Citizen & Public Website Experience (Original Navigation & Headers) ── */}
         <Route element={<MainLayout />}>
           <Route index element={<Home />} />
           <Route path="about" element={<About />} />
@@ -74,60 +127,18 @@ export default function App() {
           <Route path="resources" element={<Navigate to="/document-generator" replace />} />
           <Route path="contact" element={<Contact />} />
 
-          {/* ── Phase Q: Portal & Auth Routes ── */}
+          {/* Citizen Auth & Portals */}
           <Route path="login" element={<PortalSelection />} />
           <Route path="citizen/login" element={<CitizenLogin />} />
           <Route path="citizen/register" element={<CitizenRegister />} />
-          <Route path="advocate/login" element={<AdvocateLogin />} />
-          <Route path="advocate/register" element={<AdvocateRegister />} />
 
-          {/* ── Protected Portals ── */}
+          {/* Citizen Protected Portal */}
           <Route
             path="dashboard"
             element={
               <CitizenRoute>
                 <UserDashboard />
               </CitizenRoute>
-            }
-          />
-          <Route
-            path="advocate/dashboard"
-            element={
-              <AdvocateRoute>
-                <AdvocateDashboard />
-              </AdvocateRoute>
-            }
-          />
-          <Route
-            path="advocate/onboarding"
-            element={
-              <AdvocateRoute>
-                <AdvocateOnboarding />
-              </AdvocateRoute>
-            }
-          />
-          <Route
-            path="advocate/availability"
-            element={
-              <AdvocateRoute>
-                <AdvocateAvailability />
-              </AdvocateRoute>
-            }
-          />
-          <Route
-            path="advocate/profile"
-            element={
-              <AdvocateRoute>
-                <AdvocateProfilePage />
-              </AdvocateRoute>
-            }
-          />
-          <Route
-            path="admin"
-            element={
-              <AdminRoute>
-                <AdminDashboard />
-              </AdminRoute>
             }
           />
 
