@@ -50,7 +50,7 @@ def _enrich_appointment(appointment: ConsultationAppointment, db: Session) -> di
     data['citizen_name'] = citizen.name if citizen else None
     return appointment
 
-@router.post("/", response_model=ConsultationAppointmentRead)
+@router.post("", response_model=ConsultationAppointmentRead)
 def book_consultation(
     appointment_in: ConsultationAppointmentCreate,
     db: Session = Depends(get_db),

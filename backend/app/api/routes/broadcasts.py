@@ -71,7 +71,7 @@ def get_matched_broadcasts(
             
     return valid_broadcasts
 
-@router.post("/", response_model=ConsultationBroadcastRead)
+@router.post("", response_model=ConsultationBroadcastRead)
 def create_broadcast(
     broadcast_in: ConsultationBroadcastCreate,
     db: Session = Depends(get_db),
