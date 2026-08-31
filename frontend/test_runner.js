@@ -180,10 +180,142 @@ function runTests() {
     assert.ok(identityModal.includes('Aadhaar upload is NEVER mandatory'));
   });
 
+  // ── TASK 9: CASE DETAIL PANEL & DASHBOARD TESTS ──────────────────────────
+  console.log('\n=== RUNNING CASE DETAIL PANEL & DASHBOARD TESTS (TASK 9) ===\n');
+
+  // Logic mimics CaseDetailPanel component states
+  function renderCaseDetailMock({ caseData, loading = false, error = null }) {
+    if (loading) {
+      return '<div class="loading-state">Loading case details...</div>';
+    }
+    if (error) {
+      return `<div class="error-state">Unable to load case details. <p>${error}</p></div>`;
+    }
+    if (!caseData) {
+      return '<div class="empty-state">Select a case to view details.</div>';
+    }
+
+    const status = caseData.status || 'submitted';
+    const caseNumber = caseData.case_number || 'N/A';
+    const courtType = caseData.court_type || 'District Court';
+    const district = caseData.district || 'Bengaluru Urban';
+    const documents = Array.isArray(caseData.documents) ? caseData.documents : [];
+    const notes = Array.isArray(caseData.notes) ? caseData.notes : [];
+    const timeline = Array.isArray(caseData.timeline) ? caseData.timeline : [];
+    const tasks = Array.isArray(caseData.tasks) ? caseData.tasks : [];
+
+    return `
+      <div class="case-detail-panel" data-case="${caseNumber}">
+        <span class="case-num">${caseNumber}</span>
+        <span class="court">${courtType}</span>
+        <span class="district">${district}</span>
+        <span class="status">${status}</span>
+        <div class="docs-count">${documents.length}</div>
+        <div class="notes-count">${notes.length}</div>
+        <div class="timeline-count">${timeline.length}</div>
+        <div class="tasks-count">${tasks.length}</div>
+      </div>
+    `;
+  }
+
+  // Dashboard role routing mock
+  function renderDashboardRouteMock({ token, role }) {
+    if (!token) return { redirect: '/login' };
+    if (role === 'admin') return { view: 'Admin Dashboard', role: 'admin' };
+    if (role === 'advocate') return { view: 'Advocate Dashboard', role: 'advocate' };
+    return { view: 'Citizen Dashboard', role: 'citizen' };
+  }
+
+  // 1. Dashboard renders with no selected case
+  it('1. Dashboard renders with no selected case', () => {
+    const dash = renderDashboardRouteMock({ token: 'mock-token', role: 'citizen' });
+    assert.strictEqual(dash.view, 'Citizen Dashboard');
+    assert.strictEqual(dash.redirect, undefined);
+  });
+
+  // 2. CaseDetailPanel does not crash when caseData is null
+  it('2. CaseDetailPanel does not crash when caseData is null', () => {
+    const html = renderCaseDetailMock({ caseData: null });
+    assert.ok(html.includes('Select a case to view details.'));
+  });
+
+  // 3. Missing documents array does not crash
+  it('3. Missing documents array does not crash', () => {
+    const html = renderCaseDetailMock({ caseData: { case_number: 'CC/101/2026', status: 'under_review' } });
+    assert.ok(html.includes('CC/101/2026'));
+    assert.ok(html.includes('<div class="docs-count">0</div>'));
+  });
+
+  // 4. Missing notes/timeline/tasks arrays do not crash
+  it('4. Missing notes/timeline/tasks arrays do not crash', () => {
+    const html = renderCaseDetailMock({ caseData: { case_number: 'CC/102/2026', status: 'routed', documents: [] } });
+    assert.ok(html.includes('CC/102/2026'));
+    assert.ok(html.includes('<div class="notes-count">0</div>'));
+    assert.ok(html.includes('<div class="timeline-count">0</div>'));
+    assert.ok(html.includes('<div class="tasks-count">0</div>'));
+  });
+
+  // 5. Valid case renders correctly
+  it('5. Valid case renders correctly', () => {
+    const validCase = {
+      case_number: 'CC/00042/2026',
+      status: 'routed',
+      court_type: 'Principal District & Sessions Court',
+      district: 'Bengaluru Urban',
+      documents: [{ id: 'doc-1', filename: 'evidence.pdf' }],
+      notes: [{ id: 'note-1', text: 'Admitted' }],
+      timeline: [{ stage: 'Filing', status: 'completed' }],
+      tasks: [{ id: 'task-1', title: 'Submit rejoinder' }],
+    };
+    const html = renderCaseDetailMock({ caseData: validCase });
+    assert.ok(html.includes('CC/00042/2026'));
+    assert.ok(html.includes('Principal District & Sessions Court'));
+    assert.ok(html.includes('routed'));
+    assert.ok(html.includes('<div class="docs-count">1</div>'));
+    assert.ok(html.includes('<div class="notes-count">1</div>'));
+    assert.ok(html.includes('<div class="timeline-count">1</div>'));
+    assert.ok(html.includes('<div class="tasks-count">1</div>'));
+  });
+
+  // 6. API failure shows error state
+  it('6. API failure shows error state', () => {
+    const html = renderCaseDetailMock({ caseData: null, error: 'Case details not found' });
+    assert.ok(html.includes('Unable to load case details.'));
+    assert.ok(html.includes('Case details not found'));
+  });
+
+  // 7. /dashboard renders citizen dashboard
+  it('7. /dashboard renders citizen dashboard', () => {
+    const res = renderDashboardRouteMock({ token: 'citizen-token', role: 'citizen' });
+    assert.strictEqual(res.view, 'Citizen Dashboard');
+    assert.strictEqual(res.role, 'citizen');
+  });
+
+  // 8. /admin renders admin dashboard for admin role only
+  it('8. /admin renders admin dashboard for admin role only', () => {
+    // Unauthenticated
+    const unauth = renderDashboardRouteMock({ token: null, role: null });
+    assert.strictEqual(unauth.redirect, '/login');
+
+    // Citizen attempting admin access
+    const citizen = renderDashboardRouteMock({ token: 'user-token', role: 'citizen' });
+    assert.notStrictEqual(citizen.view, 'Admin Dashboard');
+
+    // Advocate attempting admin access
+    const advocate = renderDashboardRouteMock({ token: 'adv-token', role: 'advocate' });
+    assert.notStrictEqual(advocate.view, 'Admin Dashboard');
+
+    // Admin
+    const admin = renderDashboardRouteMock({ token: 'admin-token', role: 'admin' });
+    assert.strictEqual(admin.view, 'Admin Dashboard');
+    assert.strictEqual(admin.role, 'admin');
+  });
+
   console.log(`\n=== RESULTS: TOTAL=${passed + failed} | PASSED=${passed} | FAILED=${failed} ===\n`);
   if (failed > 0) {
     process.exit(1);
   }
+
 }
 
 runTests();

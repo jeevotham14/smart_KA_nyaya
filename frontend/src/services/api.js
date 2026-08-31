@@ -96,6 +96,10 @@ export const dashboardApi = {
     const { data } = await api.get('/api/dashboard/me');
     return data;
   },
+  getAdmin: async () => {
+    const { data } = await api.get('/api/admin/dashboard');
+    return data;
+  },
 };
 
 
@@ -439,6 +443,10 @@ export const consultationApi = {
 
 
 export const adminApi = {
+  getDashboard: async () => {
+    const { data } = await api.get('/api/admin/dashboard');
+    return data;
+  },
   getPendingAdvocates: async () => {
     const { data } = await api.get('/api/admin/advocates/pending');
     return data;

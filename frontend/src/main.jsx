@@ -10,7 +10,7 @@ import './index.css';
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ThemeProvider>
-      <ErrorBoundary>
+      <ErrorBoundary fallbackTitle="An unexpected application error occurred.">
         <BrowserRouter>
           <App />
         </BrowserRouter>
