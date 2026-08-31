@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.domain import EvidenceFile, CaseObject
 
-router = APIRouter(prefix="/api/evidence", tags=["Evidence"])
+router = APIRouter(prefix="/evidence", tags=["Evidence"])
 
 
 def _classify_evidence(filename: str, content_type: str) -> str:
