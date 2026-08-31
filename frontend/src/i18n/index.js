@@ -141,7 +141,7 @@ const resources = {
         placeholder: 'Type your legal question',
         asking: 'Asking...',
         ask: 'Ask',
-        errorMsg: 'I could not reach the backend legal assistant. Please check that FastAPI is running on port 8000 and try again.',
+        errorMsg: 'I could not reach the legal assistant service. Please check your connection and try again.',
       },
 
       // ── Legal Categories ──
@@ -596,7 +596,7 @@ const resources = {
         placeholder: 'ನಿಮ್ಮ ಕಾನೂನು ಪ್ರಶ್ನೆ ಟೈಪ್ ಮಾಡಿ',
         asking: 'ಕೇಳಲಾಗುತ್ತಿದೆ...',
         ask: 'ಕೇಳಿ',
-        errorMsg: 'ಬ್ಯಾಕೆಂಡ್ ಕಾನೂನು ಸಹಾಯಕವನ್ನು ತಲುಪಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. FastAPI ಪೋರ್ಟ್ 8000 ನಲ್ಲಿ ಚಾಲನೆಯಲ್ಲಿದೆ ಎಂದು ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+        errorMsg: 'ಕಾನೂನು ಸಹಾಯಕ ಸೇವೆಯನ್ನು ತಲುಪಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಸಂಪರ್ಕವನ್ನು ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
       },
 
       // ── ಕಾನೂನು ವಿಭಾಗಗಳು ──

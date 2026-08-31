@@ -13,7 +13,17 @@ class Settings(BaseSettings):
     jwt_secret: str = "change-me-in-production"
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60
-    cors_origins: list[str] = ["http://localhost:5173", "http://localhost:3000", "https://smart-ka-nyaya.onrender.com"]
+    cors_origins: list[str] = [
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "http://localhost:8000",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:8000",
+        "https://smart-ka-nyaya.onrender.com",
+        "https://smart_ka_nyaya.onrender.com",
+    ]
+
 
     # AI Providers
     ai_provider: str = "mock"
