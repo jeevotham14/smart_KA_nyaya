@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { RequestAdvocateMatches, MyBroadcastRequests, AdvocateBroadcastInbox } from './broadcasts/BroadcastFeature.jsx';
 import { isAdvocate as checkIsAdvocate } from '../utils/roleUtils.js';
 
 export default function ConsultationBroadcasts() {
     const role = localStorage.getItem('role');
     const isAdvocate = checkIsAdvocate(role);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+    const handleSuccess = () => setRefreshTrigger(prev => prev + 1);
 
     if (role === 'citizen') {
         return (
@@ -12,11 +15,11 @@ export default function ConsultationBroadcasts() {
                 <h1 className="text-2xl font-bold mb-4 text-slate-800">Consultation Broadcasts</h1>
                 <div className="grid gap-8 grid-cols-1 lg:grid-cols-2">
                     <div className="border border-slate-300 p-6 rounded-lg shadow-sm bg-white">
-                        <RequestAdvocateMatches />
+                        <RequestAdvocateMatches onSuccess={handleSuccess} />
                     </div>
                     <div className="border border-slate-300 p-6 rounded-lg shadow-sm bg-white">
                         <h2 className="text-xl font-bold mb-4">My Broadcasts</h2>
-                        <MyBroadcastRequests />
+                        <MyBroadcastRequests refreshTrigger={refreshTrigger} />
                     </div>
                 </div>
             </div>

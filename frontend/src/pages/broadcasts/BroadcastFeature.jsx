@@ -32,7 +32,7 @@ const PrivacyWarning = () => (
 );
 
 // ── Request Advocate Matches (Citizen) ────────────────────────────────────────
-export const RequestAdvocateMatches = () => {
+export const RequestAdvocateMatches = ({ onSuccess }) => {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -63,6 +63,7 @@ export const RequestAdvocateMatches = () => {
     try {
       await consultationApi.createBroadcast(formData);
       setSuccess(true);
+      if (onSuccess) onSuccess();
     } catch (err) {
       setError(getApiError(err));
     } finally {
@@ -182,7 +183,7 @@ export const RequestAdvocateMatches = () => {
 };
 
 // ── My Broadcast Requests (Citizen) ──────────────────────────────────────────
-export const MyBroadcastRequests = () => {
+export const MyBroadcastRequests = ({ refreshTrigger }) => {
   const [broadcasts, setBroadcasts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -191,11 +192,12 @@ export const MyBroadcastRequests = () => {
   const [loadingResponses, setLoadingResponses] = useState({});
 
   useEffect(() => {
+    setLoading(true);
     consultationApi.listBroadcasts()
       .then(data => setBroadcasts(data || []))
       .catch(err => setError(getApiError(err)))
       .finally(() => setLoading(false));
-  }, []);
+  }, [refreshTrigger]);
 
   const loadResponses = async (broadcastId) => {
     if (responses[broadcastId]) { setExpandedId(broadcastId); return; }
