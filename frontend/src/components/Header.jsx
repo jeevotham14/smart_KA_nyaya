@@ -39,16 +39,16 @@ export default function Header() {
   // ── Citizen & Public Navigation Items ──
   let navItems = [
     ['nav.home', '/'],
-    ['nav.aiGuidance', '/ai-legal-guidance'],
-    ['Case Outcome', '/case-outcome'],
-    ['Consult an Advocate', '/advocates'],
+    [isKn ? 'AI ಕಾನೂನು ಮಾರ್ಗದರ್ಶನ' : 'AI Legal Guidance', '/ai-legal-guidance'],
+    [isKn ? 'ಪ್ರಕರಣದ ಫಲಿತಾಂಶ' : 'Case Outcome', '/case-outcome'],
+    [isKn ? 'ವಕೀಲರನ್ನು ಸಂಪರ್ಕಿಸಿ' : 'Consult an Advocate', '/advocates'],
   ];
 
   if (isCitizen(role)) {
     navItems.push(
-      ['My Consultations', '/consultations'],
-      ['My Broadcast Requests', '/consultation-broadcasts'],
-      ['Dashboard', '/dashboard']
+      [isKn ? 'ನನ್ನ ಸಮಾಲೋಚನೆಗಳು' : 'My Consultations', '/consultations'],
+      [isKn ? 'ನನ್ನ ವಿನಂತಿಗಳು' : 'My Broadcast Requests', '/consultation-broadcasts'],
+      [isKn ? 'ಡ್ಯಾಶ್‌ಬೋರ್ಡ್' : 'Dashboard', '/dashboard']
     );
   }
 
@@ -59,7 +59,7 @@ export default function Header() {
     ['nav.docsResources', '/document-generator'],
     ['nav.locator', '/directory'],
     ['nav.tracker', '/case-tracker'],
-    ['Emergency', '/emergency'],
+    [isKn ? 'ತುರ್ತು ಸಹಾಯ' : 'Emergency', '/emergency'],
     ['nav.about', '/about'],
     ['nav.contact', '/contact']
   );
