@@ -76,7 +76,7 @@ def create_profile(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    if current_user.role != "advocate":
+    if current_user.role not in ("advocate", "lawyer_advisor"):
         raise HTTPException(status_code=403, detail="Only advocates can create an advocate profile")
 
     existing = db.query(AdvocateProfile).filter(AdvocateProfile.user_id == current_user.user_id).first()

@@ -81,7 +81,7 @@ def get_matched_broadcasts(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    if current_user.role != "advocate":
+    if current_user.role not in ("advocate", "lawyer_advisor"):
         raise HTTPException(status_code=403, detail="Only advocates")
         
     advocate = db.query(AdvocateProfile).filter(AdvocateProfile.user_id == current_user.user_id).first()
@@ -119,7 +119,7 @@ def express_interest(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    if current_user.role != "advocate":
+    if current_user.role not in ("advocate", "lawyer_advisor"):
         raise HTTPException(status_code=403, detail="Only advocates")
         
     advocate = db.query(AdvocateProfile).filter(AdvocateProfile.user_id == current_user.user_id).first()

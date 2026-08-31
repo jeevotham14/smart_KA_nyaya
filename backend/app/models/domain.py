@@ -245,6 +245,7 @@ class AdvocateProfile(Base, TimestampMixin):
     bio: Mapped[str | None] = mapped_column(Text, nullable=True)
     profile_image: Mapped[str | None] = mapped_column(String(255), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
 
     user = relationship("User", backref="advocate_profile")

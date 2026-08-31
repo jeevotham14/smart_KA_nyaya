@@ -221,6 +221,14 @@ KARNATAKA_STATUTES = [
 
 
 def seed_database(db: Session) -> None:
+    # Safe migration for new columns
+    try:
+        from sqlalchemy import text
+        db.execute(text("ALTER TABLE advocate_profiles ADD COLUMN is_demo BOOLEAN DEFAULT 0"))
+        db.commit()
+    except Exception:
+        db.rollback()
+
     # ── Admin user ───────────────────────────────────────────────────────────
     if not db.scalar(select(User).where(User.email == "admin@smartnyaya.local")):
         db.add(User(
@@ -265,3 +273,9 @@ def seed_database(db: Session) -> None:
         ))
 
     db.commit()
+
+    # ── Conditional Demo Advocates Seeding (TASK 11) ──────────────────────────
+    import os
+    if os.getenv("ENABLE_DEMO_ADVOCATES", "false").strip().lower() in ("true", "1", "yes"):
+        from app.scripts.seed_demo_advocates import seed_demo_advocates
+        seed_demo_advocates(db=db, force=True)

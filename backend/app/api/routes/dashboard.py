@@ -39,7 +39,7 @@ def get_my_dashboard(user: User = Depends(get_current_user), db: Session = Depen
     uid = user.user_id
 
     # If the user is an advocate, return advocate dashboard metrics
-    if user.role == "advocate":
+    if user.role in ("advocate", "lawyer_advisor"):
         return get_advocate_dashboard(user=user, db=db)
 
     # Citizen dashboard metrics
@@ -173,7 +173,7 @@ def get_advocate_dashboard(user: User = Depends(get_current_user), db: Session =
     """
     Returns real operational metrics and consultation pipelines for authenticated advocate.
     """
-    if user.role != "advocate":
+    if user.role not in ("advocate", "lawyer_advisor"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access restricted to registered advocates"

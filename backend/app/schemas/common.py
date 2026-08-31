@@ -15,9 +15,9 @@ class Token(BaseModel):
 
 class UserCreate(BaseModel):
     name: str = Field(min_length=2, max_length=160)
-    email: EmailStr
+    email: str
     phone: str | None = None
-    password: str = Field(min_length=8, max_length=128)
+    password: str = Field(min_length=6, max_length=128)
     language_pref: str = "English"
     district: str | None = None
     taluk: str | None = None
@@ -25,21 +25,20 @@ class UserCreate(BaseModel):
 
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    email: str
     password: str
 
 
 class UserRead(ORMModel):
     user_id: UUID
     name: str
-    email: EmailStr
+    email: str
     phone: str | None = None
     language_pref: str
     role: str
     district: str | None = None
     taluk: str | None = None
-    role: str | None = None
-    dlsa_eligible: bool
+    dlsa_eligible: bool = False
     created_at: datetime
 
 

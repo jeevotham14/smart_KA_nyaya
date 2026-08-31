@@ -20,6 +20,7 @@ class AdvocateProfileBase(ORMModel):
     pro_bono_available: bool = False
     bio: Optional[str] = None
     profile_image: Optional[str] = None
+    is_demo: Optional[bool] = False
 
 
 class AdvocateProfileCreate(AdvocateProfileBase):
