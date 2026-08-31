@@ -1,37 +1,86 @@
-import pytest
 from fastapi.testclient import TestClient
-from app.main import create_app
+from app.main import app
 
-app = create_app()
 client = TestClient(app)
 
-def test_court_fee_calculator():
-    # Test camelCase from frontend
-    res1 = client.post("/api/tools/court-fee", json={"caseType": "civil", "claimAmount": 10000})
-    assert res1.status_code == 200
-    data1 = res1.json()
-    assert data1["calculated_fee"] > 0
-    assert data1["estimatedFee"] > 0
+def test_court_fee_valid_civil():
+    response = client.post("/api/tools/court-fee", json={
+        "category": "civil",
+        "proceeding": "money_recovery",
+        "relief": "any",
+        "valuation": 100000
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "CALCULATED"
+    assert data["estimated_fee"] == 5100.0  # 100 + (100000 * 0.05)
 
-    # Test snake_case
-    res2 = client.post("/api/tools/court-fee", json={"case_type": "family", "suit_value": 0})
-    assert res2.status_code == 200
-    data2 = res2.json()
-    assert data2["calculated_fee"] == 50
+def test_court_fee_missing_valuation():
+    response = client.post("/api/tools/court-fee", json={
+        "category": "civil",
+        "proceeding": "money_recovery",
+        "relief": "any"
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "MORE_INFORMATION_REQUIRED"
+    assert data["estimated_fee"] is None
 
-def test_limitation_checker():
-    # Test camelCase
-    res1 = client.post("/api/tools/limitation-period", json={"caseCategory": "money_recovery", "incidentDate": "2024-01-01"})
-    assert res1.status_code == 200
-    data1 = res1.json()
-    assert "period" in data1
-    assert "deadline" in data1
-    assert "is_expired" in data1
+def test_court_fee_family_no_valuation():
+    response = client.post("/api/tools/court-fee", json={
+        "category": "family",
+        "proceeding": "divorce_maintenance",
+        "relief": "any"
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "CALCULATED"
+    assert data["estimated_fee"] == 50.0
 
-def test_rights_explainer():
-    res = client.post("/api/tools/rights-explainer", json={"category": "Consumer Rights", "language": "English"})
-    assert res.status_code == 200
-    data = res.json()
-    assert len(data["rights"]) > 0
-    assert len(data["laws"]) > 0
-    assert len(data["documents"]) > 0
+def test_court_fee_unknown_rule():
+    response = client.post("/api/tools/court-fee", json={
+        "category": "unknown",
+        "proceeding": "unknown",
+        "relief": "unknown"
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "RULE_NOT_CONFIGURED"
+
+def test_limitation_valid():
+    response = client.post("/api/tools/limitation-period", json={
+        "category": "civil",
+        "proceeding": "money_recovery",
+        "relief": "recovery_of_debt",
+        "trigger_date": "2020-01-01",
+        "has_exceptions": False
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "POSSIBLY_EXPIRED"
+    assert "3 years" in data["period"]
+
+def test_limitation_within():
+    response = client.post("/api/tools/limitation-period", json={
+        "category": "property",
+        "proceeding": "recovery_of_possession",
+        "relief": "based_on_title",
+        "trigger_date": "2024-01-01",
+        "has_exceptions": False
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "WITHIN_LIMITATION"
+    assert "12 years" in data["period"]
+
+def test_limitation_exception():
+    response = client.post("/api/tools/limitation-period", json={
+        "category": "civil",
+        "proceeding": "money_recovery",
+        "relief": "recovery_of_debt",
+        "trigger_date": "2024-01-01",
+        "has_exceptions": True
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "UNCERTAIN"

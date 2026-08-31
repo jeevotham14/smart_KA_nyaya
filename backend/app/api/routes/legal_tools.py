@@ -1,24 +1,26 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import Optional, Any
+from typing import Optional, Any, List
 from datetime import datetime
-from app.services.legal_tools_data import KARNATAKA_COURT_FEES, LIMITATION_PERIODS, RIGHTS_INFO
+from app.services.legal_tools_data import RIGHTS_INFO
+from app.services.court_fee_rules import find_court_fee_rule
+from app.services.limitation_rules import find_limitation_rule
 
 # Router prefix is /tools because main.py mounts all routers under settings.api_prefix (/api)
 router = APIRouter(prefix="/tools", tags=["Legal Tools"])
 
 class CourtFeeRequest(BaseModel):
-    case_type: Optional[str] = None
-    caseType: Optional[str] = None
-    suit_value: Optional[float] = None
-    claimAmount: Optional[float] = None
-    court_level: Optional[str] = "district"
+    category: str
+    proceeding: str
+    relief: str
+    valuation: Optional[float] = None
 
 class LimitationPeriodRequest(BaseModel):
-    case_type: Optional[str] = None
-    caseCategory: Optional[str] = None
-    incident_date: Optional[str] = None
-    incidentDate: Optional[str] = None
+    category: str
+    proceeding: str
+    relief: str
+    trigger_date: str
+    has_exceptions: Optional[bool] = False
 
 class RightsExplainerRequest(BaseModel):
     category: str
@@ -26,88 +28,108 @@ class RightsExplainerRequest(BaseModel):
 
 @router.post("/court-fee")
 async def calculate_court_fee(request: CourtFeeRequest):
-    # Support either snake_case or camelCase
-    raw_type = (request.case_type or request.caseType or "civil").strip().lower().replace(" ", "_")
-    suit_val = request.suit_value if request.suit_value is not None else (request.claimAmount or 0.0)
+    rule = find_court_fee_rule(request.category, request.proceeding, request.relief)
+    
+    if not rule:
+        return {
+            "status": "RULE_NOT_CONFIGURED",
+            "estimated_fee": None,
+            "calculation_summary": "The court fee for this specific combination is not configured.",
+            "legal_basis": None,
+            "disclaimer": "This checker provides estimates based on limited rules. Please verify the applicable fee with the court registry or a qualified advocate."
+        }
 
-    # Normalize aliases
-    if raw_type in ("civil", "civil_suit", "money", "damages"):
-        norm_key = "civil"
-    elif raw_type in ("family", "family_court", "matrimonial", "divorce", "maintenance"):
-        norm_key = "family"
-    elif raw_type in ("appeal", "first_appeal", "rfa"):
-        norm_key = "appeal"
-    elif raw_type in ("property", "property_dispute", "land", "partition", "injunction"):
-        norm_key = "property"
-    else:
-        norm_key = "civil"
+    if rule["valuation_required"] and (request.valuation is None or request.valuation < 0):
+        return {
+            "status": "MORE_INFORMATION_REQUIRED",
+            "estimated_fee": None,
+            "calculation_summary": f"Valuation is required for this rule.",
+            "legal_basis": rule["legal_basis"],
+            "disclaimer": "This is an estimated court fee for informational purposes. Actual court fees may depend on the exact relief, valuation method, applicable amendments, exemptions, and court procedure. Verify with the court registry or a qualified advocate before filing."
+        }
 
-    fee_data = KARNATAKA_COURT_FEES.get(norm_key, KARNATAKA_COURT_FEES["civil"])
-    calculated_fee = fee_data["base_fee"] + (suit_val * fee_data["percentage"])
-    final_fee = min(calculated_fee, fee_data["max_fee"])
+    final_fee = 0.0
+    calculation_summary = rule["notes"]
+    if rule["calculation_type"] == "fixed":
+        final_fee = float(rule["fixed_fee"])
+    elif rule["calculation_type"] == "percentage":
+        base_fee = rule.get("base_fee", 0)
+        percentage = rule.get("percentage", 0.0)
+        calc = base_fee + (request.valuation * percentage)
+        final_fee = float(min(calc, rule.get("max_fee", float('inf'))))
 
     return {
-        "case_type": norm_key,
-        "suit_value": suit_val,
-        "calculated_fee": round(final_fee, 2),
-        "estimatedFee": round(final_fee, 2),
-        "fee": round(final_fee, 2),
+        "status": "CALCULATED",
+        "estimated_fee": round(final_fee, 2),
         "currency": "INR",
-        "details": fee_data.get("details", f"Estimated court fee based on {fee_data.get('schedule', 'Karnataka Court Fees Act, 1958')}."),
-        "schedule": fee_data.get("schedule", ""),
-        "name": fee_data.get("name", "")
+        "calculation_summary": calculation_summary,
+        "legal_basis": rule["legal_basis"],
+        "disclaimer": "This is an estimated court fee for informational purposes. Actual court fees may depend on the exact relief, valuation method, applicable amendments, exemptions, and court procedure. Verify with the court registry or a qualified advocate before filing."
     }
 
 @router.post("/limitation-period")
 async def check_limitation_period(request: LimitationPeriodRequest):
-    raw_type = (request.case_type or request.caseCategory or "money_recovery").strip().lower().replace(" ", "_")
-    raw_date = (request.incident_date or request.incidentDate or "").strip()
+    rule = find_limitation_rule(request.category, request.proceeding, request.relief)
 
-    if not raw_date:
-        raise HTTPException(status_code=400, detail="Date of incident is required (YYYY-MM-DD format).")
+    if not rule:
+        return {
+            "status": "RULE_NOT_CONFIGURED",
+            "period": None,
+            "start_date": None,
+            "estimated_deadline": None,
+            "legal_basis": None,
+            "notes": ["Limitation rule not configured for this specific proceeding."],
+            "disclaimer": "This checker provides an estimated limitation period based on the information entered. Actual limitation may depend on the precise cause of action, relief sought, statutory exclusions, acknowledgments, continuing causes, condonation provisions, and judicial interpretation. Verify with a qualified advocate before relying on the deadline."
+        }
 
-    # Normalize aliases
-    if "money" in raw_type or "loan" in raw_type or "debt" in raw_type:
-        norm_key = "money_recovery"
-    elif "contract" in raw_type or "breach" in raw_type or "agreement" in raw_type:
-        norm_key = "breach_of_contract"
-    elif "prop" in raw_type or "land" in raw_type or "possession" in raw_type:
-        norm_key = "property_dispute"
-    elif "defam" in raw_type or "tort" in raw_type or "slander" in raw_type or "libel" in raw_type:
-        norm_key = "tort_defamation"
-    else:
-        norm_key = "money_recovery"
-
-    try:
-        incident_date = datetime.strptime(raw_date, "%Y-%m-%d")
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid date format. Please use YYYY-MM-DD.")
-
-    period_data = LIMITATION_PERIODS.get(norm_key, LIMITATION_PERIODS["money_recovery"])
-    period_years = period_data["period_years"]
+    if not request.trigger_date:
+        return {
+            "status": "MORE_INFORMATION_REQUIRED",
+            "period": None,
+            "start_date": None,
+            "estimated_deadline": None,
+            "legal_basis": rule["legal_basis"],
+            "notes": ["Trigger date is required to calculate limitation."],
+            "disclaimer": "This checker provides an estimated limitation period based on the information entered. Actual limitation may depend on the precise cause of action, relief sought, statutory exclusions, acknowledgments, continuing causes, condonation provisions, and judicial interpretation. Verify with a qualified advocate before relying on the deadline."
+        }
 
     try:
-        expiry_date = incident_date.replace(year=incident_date.year + period_years)
+        trigger_date = datetime.strptime(request.trigger_date, "%Y-%m-%d")
     except ValueError:
-        # handle Feb 29 leap year
-        expiry_date = incident_date.replace(year=incident_date.year + period_years, day=28)
+        return {
+            "status": "INVALID_INPUT",
+            "period": None,
+            "start_date": None,
+            "estimated_deadline": None,
+            "legal_basis": None,
+            "notes": ["Invalid date format."],
+            "disclaimer": ""
+        }
+
+    period_years = rule["period_years"]
+    try:
+        expiry_date = trigger_date.replace(year=trigger_date.year + period_years)
+    except ValueError:
+        # Handle leap year
+        expiry_date = trigger_date.replace(year=trigger_date.year + period_years, day=28)
 
     now = datetime.now()
-    is_expired = now > expiry_date
-    days_diff = (expiry_date - now).days
+    
+    if request.has_exceptions:
+        status = "UNCERTAIN"
+    elif now > expiry_date:
+        status = "POSSIBLY_EXPIRED"
+    else:
+        status = "WITHIN_LIMITATION"
 
     return {
-        "case_type": norm_key,
-        "incident_date": raw_date,
-        "limitation_period_years": period_years,
-        "period": f"{period_years} Years ({period_data.get('description', '')})",
-        "description": period_data["description"],
-        "expiry_date": expiry_date.strftime("%Y-%m-%d"),
-        "deadline": expiry_date.strftime("%d %B %Y"),
-        "is_expired": is_expired,
-        "isExpired": is_expired,
-        "days_remaining": max(0, days_diff) if not is_expired else 0,
-        "notes": period_data.get("notes", "Limitation periods are strictly enforced in civil courts.")
+        "status": status,
+        "period": f"{period_years} years",
+        "start_date": trigger_date.strftime("%d %B %Y"),
+        "estimated_deadline": expiry_date.strftime("%d %B %Y"),
+        "legal_basis": rule["legal_basis"],
+        "notes": [rule["exceptions_note"], "Actual limitation may be affected by acknowledgments, continuing causes of action, exclusions, disability, fraud, condonation provisions, or judicial interpretation."],
+        "disclaimer": "This checker provides an estimated limitation period based on the information entered. Actual limitation may depend on the precise cause of action, relief sought, statutory exclusions, acknowledgments, continuing causes, condonation provisions, and judicial interpretation. Verify with a qualified advocate before relying on the deadline."
     }
 
 @router.post("/rights-explainer")
