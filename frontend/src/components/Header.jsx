@@ -1,57 +1,90 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Languages, Menu, Scale, Search, Sparkles, X } from 'lucide-react';
+import { Languages, Menu, Scale, Search, Sparkles, X, LogOut, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-
+import NotificationBell from './NotificationBell.jsx';
+import { authApi } from '../services/api.js';
 
 export default function Header() {
-
-  const role = localStorage.getItem('role');
-  
-  let navItems = [
-    ['nav.home', '/'],
-    ['nav.about', '/about'],
-    ['nav.aiGuidance', '/ai-legal-guidance'],
-    ['Case Outcome', '/case-outcome'],
-  ];
-  
-  if (!role) {
-      navItems.push(['Consult an Advocate', '/advocates']);
-  } else if (role === 'citizen') {
-      navItems.push(['Consult an Advocate', '/advocates']);
-      navItems.push(['My Broadcast Requests', '/consultation-broadcasts']);
-      navItems.push(['My Consultations', '/consultations']);
-  } else if (role === 'advocate') {
-      navItems.push(['Advocate Dashboard', '/dashboard']);
-      navItems.push(['Broadcast Requests', '/consultation-broadcasts']);
-      navItems.push(['Direct Requests', '/consultations']);
-      navItems.push(['My Consultations', '/consultations']);
-  }
-  
-  navItems.push(
-    ['nav.women', '/women-protection'],
-    ['nav.aid', '/legal-aid'],
-    ['nav.docsResources', '/document-generator'],
-    ['nav.locator', '/directory'],
-    ['nav.tracker', '/case-tracker'],
-    ['Emergency', '/emergency'],
-    ['nav.contact', '/contact']
-  );
-  const [open, setOpen] = useState(false);
-  const [searchModalOpen, setSearchModalOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [scrolled, setScrolled] = useState(false);
-  
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const isKn = i18n.language === 'kn';
   const nextLang = i18n.language === 'en' ? 'kn' : 'en';
+
+  const [open, setOpen] = useState(false);
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [scrolled, setScrolled] = useState(false);
+
+  const token = localStorage.getItem('smartNyayaToken');
+  const role = localStorage.getItem('role');
+
+  let displayName = 'User';
+  try {
+    const rawUser = localStorage.getItem('user');
+    if (rawUser) {
+      const parsed = JSON.parse(rawUser);
+      displayName = parsed.name || parsed.full_name || 'User';
+    }
+  } catch {
+    displayName = 'User';
+  }
+
+  // ── Role-specific Navigation Items (TASK 23) ──
+  let navItems = [];
+
+  if (!token) {
+    // Unauthenticated
+    navItems = [
+      ['nav.home', '/'],
+      ['nav.aiGuidance', '/ai-legal-guidance'],
+      ['Consult an Advocate', '/advocates'],
+      ['nav.aid', '/legal-aid'],
+      ['nav.tracker', '/case-tracker'],
+      ['nav.about', '/about'],
+      ['nav.contact', '/contact'],
+    ];
+  } else if (role === 'citizen') {
+    // Citizen Navigation
+    navItems = [
+      ['nav.home', '/'],
+      ['nav.aiGuidance', '/ai-legal-guidance'],
+      ['Consult an Advocate', '/advocates'],
+      ['My Consultations', '/consultations'],
+      ['My Broadcast Requests', '/consultation-broadcasts'],
+      ['Dashboard', '/dashboard'],
+      ['nav.aid', '/legal-aid'],
+      ['nav.tracker', '/case-tracker'],
+    ];
+  } else if (role === 'advocate') {
+    // Advocate Navigation
+    navItems = [
+      ['Advocate Dashboard', '/advocate/dashboard'],
+      ['Direct Requests', '/consultations'],
+      ['Broadcast Requests', '/consultation-broadcasts'],
+      ['My Consultations', '/consultations'],
+      ['nav.tracker', '/case-tracker'],
+    ];
+  } else if (role === 'admin') {
+    // Admin Navigation
+    navItems = [
+      ['Admin Dashboard', '/admin'],
+      ['Legal Directory', '/directory'],
+      ['nav.tracker', '/case-tracker'],
+    ];
+  }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  const handleLogout = () => {
+    authApi.logout();
+    setOpen(false);
+    navigate('/login');
+  };
 
   const handleModalSearchSubmit = (e) => {
     e?.preventDefault();
@@ -99,6 +132,8 @@ export default function Header() {
                 <span className="block text-xs uppercase tracking-[0.18em] text-slate-300">{t('header.tagline')}</span>
               </span>
             </Link>
+
+            {/* Desktop Actions */}
             <div className="hidden items-center gap-3 lg:flex">
               <button
                 className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm font-semibold transition-all duration-300 hover:border-legalGold hover:text-legalGold hover:shadow-[0_0_15px_rgba(196,154,58,0.15)]"
@@ -108,6 +143,7 @@ export default function Header() {
                 <Languages className="h-4 w-4" aria-hidden="true" />
                 {i18n.language === 'en' ? 'ಕನ್ನಡ' : 'English'}
               </button>
+
               <button
                 onClick={() => setSearchModalOpen(true)}
                 className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 transition-all duration-300 hover:border-legalGold hover:text-legalGold hover:shadow-[0_0_15px_rgba(196,154,58,0.15)]"
@@ -116,47 +152,107 @@ export default function Header() {
               >
                 <Search className="h-4 w-4" />
               </button>
-              <Link
-                className="rounded-full bg-legalGold px-5 py-2 text-sm font-bold text-navy-900 transition-all duration-300 hover:shadow-[0_4px_15px_rgba(196,154,58,0.4)] hover:scale-105"
-                to="/login"
-              >
-                {t('login')}
-              </Link>
+
+              {token ? (
+                <div className="flex items-center gap-3">
+                  <NotificationBell />
+
+                  <Link
+                    to={role === 'advocate' ? '/advocate/dashboard' : role === 'admin' ? '/admin' : '/dashboard'}
+                    className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-white/20 transition-all border border-white/20"
+                    title={displayName}
+                  >
+                    <User className="h-3.5 w-3.5 text-legalGold" />
+                    <span className="max-w-[120px] truncate">{displayName}</span>
+                    <span className="rounded bg-legalGold/20 px-1.5 py-0.5 text-[10px] uppercase font-bold text-legalGold">
+                      {role === 'advocate' ? 'Adv' : role === 'admin' ? 'Admin' : 'Citizen'}
+                    </span>
+                  </Link>
+
+                  <button
+                    onClick={handleLogout}
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-slate-300 hover:text-alertRed hover:border-red-400/50 transition-all"
+                    title="Logout"
+                    type="button"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  className="rounded-full bg-legalGold px-5 py-2 text-sm font-bold text-navy-900 transition-all duration-300 hover:shadow-[0_4px_15px_rgba(196,154,58,0.4)] hover:scale-105"
+                  to="/login"
+                >
+                  {t('login')}
+                </Link>
+              )}
             </div>
-            <button className="lg:hidden" onClick={() => setOpen((v) => !v)} type="button" aria-label="Menu">
-              {open ? <X className="h-7 w-7" /> : <Menu className="h-7 w-7" />}
-            </button>
+
+            {/* Mobile Menu Button */}
+            <div className="flex items-center gap-2 lg:hidden">
+              {token && <NotificationBell />}
+              <button className="p-1" onClick={() => setOpen((v) => !v)} type="button" aria-label="Menu">
+                {open ? <X className="h-7 w-7" /> : <Menu className="h-7 w-7" />}
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* Navigation Bar */}
         <nav className={`${open ? 'block' : 'hidden'} border-b border-white/10 bg-navy-800/95 backdrop-blur-md lg:block`}>
           <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
             <div className="grid gap-3 md:grid-cols-2 lg:flex lg:flex-wrap lg:gap-x-5 lg:gap-y-2">
               {navItems.map(([label, path]) => (
                 <NavLink key={path} to={path} className={navLinkClass} onClick={() => setOpen(false)}>
-                  {t(label)}
+                  {t(label) || label}
                 </NavLink>
               ))}
             </div>
-            <div className="flex gap-3 lg:hidden">
-              <button
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-white/20 px-3 py-2 text-sm font-bold"
-                onClick={() => i18n.changeLanguage(nextLang)}
-                type="button"
-              >
-                <Languages className="h-4 w-4" aria-hidden="true" />
-                {i18n.language === 'en' ? 'ಕನ್ನಡ' : 'English'}
-              </button>
-              <button
-                onClick={() => { setOpen(false); setSearchModalOpen(true); }}
-                className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-white/20 transition-all duration-300 hover:border-legalGold hover:text-legalGold"
-                aria-label="Global Search"
-                type="button"
-              >
-                <Search className="h-4 w-4" />
-              </button>
-              <Link className="flex-1 rounded-full bg-legalGold px-4 py-2 text-center text-sm font-bold text-navy-900" to="/login">
-                {t('login')}
-              </Link>
+
+            {/* Mobile Actions in Drawer */}
+            <div className="flex flex-col gap-3 lg:hidden pt-3 border-t border-white/10">
+              <div className="flex gap-2">
+                <button
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-white/20 px-3 py-2 text-xs font-bold"
+                  onClick={() => i18n.changeLanguage(nextLang)}
+                  type="button"
+                >
+                  <Languages className="h-4 w-4" aria-hidden="true" />
+                  {i18n.language === 'en' ? 'ಕನ್ನಡ' : 'English'}
+                </button>
+
+                <button
+                  onClick={() => { setOpen(false); setSearchModalOpen(true); }}
+                  className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-white/20 transition-all duration-300 hover:border-legalGold hover:text-legalGold"
+                  aria-label="Global Search"
+                  type="button"
+                >
+                  <Search className="h-4 w-4" />
+                </button>
+              </div>
+
+              {token ? (
+                <div className="flex items-center justify-between pt-2">
+                  <span className="text-xs text-slate-300 truncate font-semibold">
+                    {displayName} ({role})
+                  </span>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-1 text-xs text-alertRed font-bold hover:underline"
+                    type="button"
+                  >
+                    <LogOut className="h-3.5 w-3.5" /> Logout
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  onClick={() => setOpen(false)}
+                  className="rounded-full bg-legalGold px-4 py-2 text-center text-sm font-bold text-navy-900"
+                  to="/login"
+                >
+                  {t('login')}
+                </Link>
+              )}
             </div>
           </div>
         </nav>

@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout.jsx';
 import LoadingSpinner from './components/LoadingSpinner.jsx';
+import { CitizenRoute, AdvocateRoute, AdminRoute } from './components/RouteGuards.jsx';
 
 const About = lazy(() => import('./pages/About.jsx'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard.jsx'));
@@ -14,7 +15,12 @@ const DocumentGenerator = lazy(() => import('./pages/DocumentGenerator.jsx'));
 const GuidedIntake = lazy(() => import('./pages/GuidedIntake.jsx'));
 const Home = lazy(() => import('./pages/Home.jsx'));
 const LegalAid = lazy(() => import('./pages/LegalAid.jsx'));
-const LoginRegister = lazy(() => import('./pages/LoginRegister.jsx'));
+const PortalSelection = lazy(() => import('./pages/PortalSelection.jsx'));
+const CitizenLogin = lazy(() => import('./pages/CitizenLogin.jsx'));
+const CitizenRegister = lazy(() => import('./pages/CitizenRegister.jsx'));
+const AdvocateLogin = lazy(() => import('./pages/AdvocateLogin.jsx'));
+const AdvocateRegister = lazy(() => import('./pages/AdvocateRegister.jsx'));
+const AdvocateDashboard = lazy(() => import('./pages/AdvocateDashboard.jsx'));
 const AdvocateOnboarding = lazy(() => import('./pages/AdvocateOnboarding.jsx'));
 const Resources = lazy(() => import('./pages/Resources.jsx'));
 const UserDashboard = lazy(() => import('./pages/UserDashboard.jsx'));
@@ -65,10 +71,48 @@ export default function App() {
           <Route path="search" element={<GlobalSearch />} />
           <Route path="resources" element={<Navigate to="/document-generator" replace />} />
           <Route path="contact" element={<Contact />} />
-          <Route path="login" element={<LoginRegister />} />
-          <Route path="advocate/onboarding" element={<AdvocateOnboarding />} />
-          <Route path="dashboard" element={<UserDashboard />} />
-          <Route path="admin" element={<AdminDashboard />} />
+
+          {/* ── Phase Q: Portal & Auth Routes ── */}
+          <Route path="login" element={<PortalSelection />} />
+          <Route path="citizen/login" element={<CitizenLogin />} />
+          <Route path="citizen/register" element={<CitizenRegister />} />
+          <Route path="advocate/login" element={<AdvocateLogin />} />
+          <Route path="advocate/register" element={<AdvocateRegister />} />
+
+          {/* ── Protected Portals ── */}
+          <Route
+            path="dashboard"
+            element={
+              <CitizenRoute>
+                <UserDashboard />
+              </CitizenRoute>
+            }
+          />
+          <Route
+            path="advocate/dashboard"
+            element={
+              <AdvocateRoute>
+                <AdvocateDashboard />
+              </AdvocateRoute>
+            }
+          />
+          <Route
+            path="advocate/onboarding"
+            element={
+              <AdvocateRoute>
+                <AdvocateOnboarding />
+              </AdvocateRoute>
+            }
+          />
+          <Route
+            path="admin"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

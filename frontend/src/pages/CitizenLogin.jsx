@@ -1,0 +1,165 @@
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { User, Lock, Mail, Loader2, AlertCircle, ArrowRight, ShieldCheck } from 'lucide-react';
+import { authApi, getApiError } from '../services/api.js';
+
+export default function CitizenLogin() {
+  const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const isKn = i18n.language === 'kn';
+
+  const [form, setForm] = useState({ email: '', password: '' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [roleMismatch, setRoleMismatch] = useState(false);
+
+  const handleChange = (e) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    if (error) setError('');
+    if (roleMismatch) setRoleMismatch(false);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.email || !form.password) {
+      setError(isKn ? 'ದಯವಿಟ್ಟು ಇಮೇಲ್ ಮತ್ತು ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ' : 'Please enter your email and password');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setRoleMismatch(false);
+
+    try {
+      await authApi.login(form);
+      const user = await authApi.me();
+
+      // Check role policy
+      if (user.role === 'advocate') {
+        // Block advocate from citizen dashboard
+        authApi.logout();
+        setRoleMismatch(true);
+        setError(isKn ? 'ಈ ಖಾತೆಯು ವಕೀಲರ ಪೋರ್ಟಲ್‌ಗೆ ಸೇರಿದೆ.' : 'This account belongs to the Advocate Portal.');
+        return;
+      }
+
+      // Citizen success
+      navigate('/dashboard');
+    } catch (err) {
+      setError(getApiError(err) || (isKn ? 'ಅಮಾನ್ಯ ರುಜುವಾತುಗಳು. ದಯವಿಟ್ಟು ಪರಿಶೀಲಿಸಿ.' : 'Invalid credentials. Please verify your email and password.'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 dark:bg-navy-950 py-16 px-4 sm:px-6 lg:px-8 flex items-center justify-center transition-colors">
+      <div className="max-w-md w-full">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 mb-4 border border-blue-200 dark:border-blue-800">
+            <User className="h-7 w-7" />
+          </div>
+          <h1 className="text-3xl font-serif font-black text-navy-900 dark:text-white tracking-tight">
+            {isKn ? 'ನಾಗರಿಕ ಲಾಗಿನ್' : 'Citizen Login'}
+          </h1>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+            {isKn ? 'ನಿಮ್ಮ ಕಾನೂನು ಸೇವೆಗಳು ಮತ್ತು ಪ್ರಕರಣಗಳನ್ನು ಪ್ರವೇಶಿಸಿ' : 'Access your legal guidance, cases, and consultations'}
+          </p>
+        </div>
+
+        {/* Card */}
+        <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 p-8 shadow-sm glass-panel">
+          {error && (
+            <div className="mb-6 rounded-2xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 p-4 text-xs sm:text-sm font-semibold text-alertRed dark:text-red-400">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 shrink-0" />
+                <span>{error}</span>
+              </div>
+
+              {roleMismatch && (
+                <div className="mt-3 pt-3 border-t border-red-200 dark:border-red-900/50">
+                  <Link
+                    to="/advocate/login"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-navy-900 dark:bg-legalGold px-4 py-2 text-xs font-bold text-white dark:text-navy-950 hover:bg-navy-800 transition-all shadow"
+                  >
+                    <span>{isKn ? 'ವಕೀಲರ ಲಾಗಿನ್‌ಗೆ ಹೋಗಿ' : 'Go to Advocate Login'}</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                {isKn ? 'ಇಮೇಲ್ ವಿಳಾಸ' : 'Email Address'}
+              </label>
+              <div className="relative flex items-center">
+                <Mail className="absolute left-3.5 h-4 w-4 text-slate-400" />
+                <input
+                  type="email"
+                  name="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  required
+                  placeholder="name@example.com"
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-navy-950 text-navy-900 dark:text-white pl-10 pr-4 py-3 text-sm focus:border-legalGold focus:ring-2 focus:ring-legalGold/20 outline-none transition-all"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                {isKn ? 'ಪಾಸ್‌ವರ್ಡ್' : 'Password'}
+              </label>
+              <div className="relative flex items-center">
+                <Lock className="absolute left-3.5 h-4 w-4 text-slate-400" />
+                <input
+                  type="password"
+                  name="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  required
+                  placeholder="••••••••"
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-navy-950 text-navy-900 dark:text-white pl-10 pr-4 py-3 text-sm focus:border-legalGold focus:ring-2 focus:ring-legalGold/20 outline-none transition-all"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full mt-2 rounded-xl bg-navy-900 hover:bg-navy-800 dark:bg-legalGold dark:hover:bg-yellow-500 text-white dark:text-navy-950 py-3.5 text-sm font-bold shadow-md transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (isKn ? 'ಲಾಗಿನ್ ಮಾಡಿ' : 'Login')}
+            </button>
+          </form>
+
+          <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 text-center space-y-3">
+            <p className="text-xs text-slate-600 dark:text-slate-400">
+              {isKn ? 'ಖಾತೆ ಇಲ್ಲವೇ?' : "Don't have a citizen account?"}{' '}
+              <Link
+                to="/citizen/register"
+                className="font-bold text-legalGold hover:underline"
+              >
+                {isKn ? 'ನಾಗರಿಕ ಖಾತೆ ತೆರೆಯಿರಿ' : 'Create Citizen Account'}
+              </Link>
+            </p>
+
+            <div>
+              <Link
+                to="/login"
+                className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+              >
+                {isKn ? '← ಪೋರ್ಟಲ್ ಆಯ್ಕೆಗೆ ಹಿಂತಿರುಗಿ' : '← Back to Portal Selection'}
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

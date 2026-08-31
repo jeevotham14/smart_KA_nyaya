@@ -30,7 +30,12 @@ export default function UserDashboard() {
   useEffect(() => {
     const token = localStorage.getItem("smartNyayaToken");
     if (!token) {
-      navigate("/login");
+      navigate("/citizen/login");
+      return;
+    }
+
+    if (role === 'advocate') {
+      navigate("/advocate/dashboard");
       return;
     }
 
@@ -41,26 +46,13 @@ export default function UserDashboard() {
       })
       .catch((err) => {
         if (err.response?.status === 401) {
-          navigate("/login");
+          navigate("/citizen/login");
           return;
         }
         console.error("Dashboard error:", err);
         setError(true);
       })
       .finally(() => setLoading(false));
-
-
-    if (role === 'advocate') {
-      setProfileLoading(true);
-      advocateApi.getMyProfile()
-        .then(setProfile)
-        .catch((err) => {
-          if (err.response?.status === 404) {
-            navigate('/advocate/onboarding');
-          }
-        })
-        .finally(() => setProfileLoading(false));
-    }
   }, [role, navigate]);
 
   const quickLinks = [

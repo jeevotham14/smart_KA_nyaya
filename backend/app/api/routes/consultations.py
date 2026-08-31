@@ -362,6 +362,17 @@ async def upload_document(
         description=description,
     )
     db.add(doc)
+
+    # Notify assigned advocate that a document has been uploaded (privacy-safe, no sensitive text)
+    adv = db.query(AdvocateProfile).filter(AdvocateProfile.id == appointment.advocate_id).first()
+    if adv and adv.user_id:
+        _create_notification(
+            db,
+            adv.user_id,
+            "New Document Uploaded",
+            "A supporting document was uploaded to your confirmed consultation."
+        )
+
     audit(db, request, "consultations.upload_document", current_user.user_id)
     db.commit()
     db.refresh(doc)

@@ -96,6 +96,10 @@ export const dashboardApi = {
     const { data } = await api.get('/api/dashboard/me');
     return data;
   },
+  getAdvocateDashboard: async () => {
+    const { data } = await api.get('/api/dashboard/advocate');
+    return data;
+  },
   getAdmin: async () => {
     const { data } = await api.get('/api/admin/dashboard');
     return data;
@@ -316,19 +320,30 @@ export const legalApi = {
 };
 
 export const notificationApi = {
-  fetchForUser: async (userId) => {
-    const { data } = await api.get(`/api/notifications/user/${userId}`);
+  getNotifications: async (limit = 50) => {
+    const { data } = await api.get('/api/notifications', { params: { limit } });
+    return data;
+  },
+  getUnreadCount: async () => {
+    const { data } = await api.get('/api/notifications/unread-count');
     return data;
   },
   markRead: async (notificationId) => {
     const { data } = await api.patch(`/api/notifications/${notificationId}/read`);
     return data;
   },
-  markAllRead: async (userId) => {
-    const notifications = await notificationApi.fetchForUser(userId);
-    const unread = notifications.filter((n) => !n.read_status);
-    await Promise.all(unread.map((n) => notificationApi.markRead(n.notification_id)));
-    return { marked: unread.length };
+  markAllRead: async () => {
+    const { data } = await api.patch('/api/notifications/read-all');
+    return data;
+  },
+  fetchForUser: async (userId) => {
+    try {
+      const { data } = await api.get('/api/notifications');
+      return data;
+    } catch {
+      const { data } = await api.get(`/api/notifications/user/${userId}`);
+      return data;
+    }
   },
 };
 

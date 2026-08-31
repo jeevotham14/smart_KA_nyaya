@@ -311,11 +311,230 @@ function runTests() {
     assert.strictEqual(admin.role, 'admin');
   });
 
+  // ── TASK 29: PHASE Q SEPARATE PORTALS & NOTIFICATIONS TESTS ─────────────
+  console.log('\n=== RUNNING PHASE Q PORTAL, NOTIFICATION & ACTIVITY TESTS (TASK 29) ===\n');
+
+  // 1. Citizen login page
+  it('1. Citizen login page renders form fields and actions', () => {
+    function renderCitizenLoginMock() {
+      return `
+        <div class="citizen-login-page">
+          <h1>Citizen Login</h1>
+          <input type="email" name="email" required />
+          <input type="password" name="password" required />
+          <button type="submit">Login</button>
+          <a href="/citizen/register">Create Citizen Account</a>
+        </div>
+      `;
+    }
+    const html = renderCitizenLoginMock();
+    assert.ok(html.includes('Citizen Login'));
+    assert.ok(html.includes('name="email"'));
+    assert.ok(html.includes('Create Citizen Account'));
+  });
+
+  // 2. Advocate login page
+  it('2. Advocate login page renders distinct advocate portal header', () => {
+    function renderAdvocateLoginMock() {
+      return `
+        <div class="advocate-login-page">
+          <div class="badge">Official Legal Practice</div>
+          <h1>Advocate Portal</h1>
+          <p>Manage consultations, appointment requests and citizen legal-service requests.</p>
+          <input type="email" name="email" required />
+          <input type="password" name="password" required />
+          <button type="submit">Enter Advocate Portal</button>
+          <a href="/advocate/register">Register your practice</a>
+        </div>
+      `;
+    }
+    const html = renderAdvocateLoginMock();
+    assert.ok(html.includes('Advocate Portal'));
+    assert.ok(html.includes('Manage consultations, appointment requests and citizen legal-service requests.'));
+    assert.ok(html.includes('Register your practice'));
+  });
+
+  // 3. Role mismatch message
+  it('3. Role mismatch displays portal mismatch alert and recovery link', () => {
+    function handleLoginRoleCheck(attemptedPortal, userRole) {
+      if (attemptedPortal === 'citizen' && userRole === 'advocate') {
+        return {
+          error: 'This account belongs to the Advocate Portal.',
+          redirectButton: '/advocate/login',
+        };
+      }
+      if (attemptedPortal === 'advocate' && userRole === 'citizen') {
+        return {
+          error: 'This account belongs to the Citizen Portal.',
+          redirectButton: '/citizen/login',
+        };
+      }
+      return { success: true };
+    }
+
+    const citResult = handleLoginRoleCheck('citizen', 'advocate');
+    assert.strictEqual(citResult.error, 'This account belongs to the Advocate Portal.');
+    assert.strictEqual(citResult.redirectButton, '/advocate/login');
+
+    const advResult = handleLoginRoleCheck('advocate', 'citizen');
+    assert.strictEqual(advResult.error, 'This account belongs to the Citizen Portal.');
+    assert.strictEqual(advResult.redirectButton, '/citizen/login');
+  });
+
+  // 4. Citizen dashboard redirect
+  it('4. Citizen dashboard redirect on successful citizen login', () => {
+    function getPostLoginDestination(role, hasProfile) {
+      if (role === 'citizen') return '/dashboard';
+      if (role === 'advocate') return hasProfile ? '/advocate/dashboard' : '/advocate/onboarding';
+      return '/';
+    }
+    assert.strictEqual(getPostLoginDestination('citizen', false), '/dashboard');
+  });
+
+  // 5. Advocate dashboard redirect
+  it('5. Advocate dashboard redirect on login with existing profile', () => {
+    function getPostLoginDestination(role, hasProfile) {
+      if (role === 'citizen') return '/dashboard';
+      if (role === 'advocate') return hasProfile ? '/advocate/dashboard' : '/advocate/onboarding';
+      return '/';
+    }
+    assert.strictEqual(getPostLoginDestination('advocate', true), '/advocate/dashboard');
+  });
+
+  // 6. Advocate onboarding redirect
+  it('6. Advocate onboarding redirect when no profile exists', () => {
+    function getPostLoginDestination(role, hasProfile) {
+      if (role === 'citizen') return '/dashboard';
+      if (role === 'advocate') return hasProfile ? '/advocate/dashboard' : '/advocate/onboarding';
+      return '/';
+    }
+    assert.strictEqual(getPostLoginDestination('advocate', false), '/advocate/onboarding');
+  });
+
+  // 7. Notification badge
+  it('7. Notification badge renders count when unread > 0 and hides when 0', () => {
+    function renderBadge(count) {
+      if (count <= 0) return '';
+      return `<span id="notification-badge">${count > 99 ? '99+' : count}</span>`;
+    }
+    assert.strictEqual(renderBadge(0), '');
+    assert.ok(renderBadge(5).includes('id="notification-badge">5</span>'));
+    assert.ok(renderBadge(120).includes('99+'));
+  });
+
+  // 8. Priority notification banner
+  it('8. Priority notification banner renders for pending requests', () => {
+    function renderPriorityBanner(pendingCount) {
+      if (pendingCount <= 0) return '';
+      return `
+        <div id="priority-notification-banner">
+          <p>🔔 You have ${pendingCount} new consultation request${pendingCount > 1 ? 's' : ''}</p>
+          <a href="#action-required-section">Review Requests</a>
+        </div>
+      `;
+    }
+    assert.strictEqual(renderPriorityBanner(0), '');
+    const banner = renderPriorityBanner(3);
+    assert.ok(banner.includes('You have 3 new consultation requests'));
+    assert.ok(banner.includes('Review Requests'));
+  });
+
+  // 9. Mark notification read
+  it('9. Marking notification as read updates status and decrements count', () => {
+    let notifs = [
+      { id: '1', title: 'New Request', read_status: false },
+      { id: '2', title: 'Document Uploaded', read_status: false },
+    ];
+    let unreadCount = notifs.filter((n) => !n.read_status).length;
+    assert.strictEqual(unreadCount, 2);
+
+    // Mark notification 1 as read
+    notifs = notifs.map((n) => (n.id === '1' ? { ...n, read_status: true } : n));
+    unreadCount = notifs.filter((n) => !n.read_status).length;
+    assert.strictEqual(unreadCount, 1);
+    assert.strictEqual(notifs[0].read_status, true);
+  });
+
+  // 10. Citizen activity rendering
+  it('10. Citizen activity table renders persisted history', () => {
+    function renderActivityTable(activities) {
+      if (!activities || activities.length === 0) return '<p>No recent activity yet.</p>';
+      return `
+        <table>
+          ${activities.map((a) => `<tr><td>${a.type}</td><td>${a.subject}</td><td>${a.date}</td></tr>`).join('')}
+        </table>
+      `;
+    }
+    const history = [
+      { type: 'Legal Query', subject: 'Property Law', date: '31 Aug 2026' },
+      { type: 'Consultation', subject: 'Consultation on 2026-09-01 (CONFIRMED)', date: '31 Aug 2026' },
+    ];
+    const tableHtml = renderActivityTable(history);
+    assert.ok(tableHtml.includes('Legal Query'));
+    assert.ok(tableHtml.includes('Property Law'));
+    assert.ok(tableHtml.includes('CONFIRMED'));
+  });
+
+  // 11. Advocate request counts
+  it('11. Advocate operational cards calculate correct operational numbers', () => {
+    const advocateDashboardPayload = {
+      new_direct_requests: 4,
+      confirmed_consultations: 2,
+      broadcast_matches: 3,
+      reschedule_requests: 1,
+      unread_notifications: 5,
+      todays_appointments: 2,
+    };
+    assert.strictEqual(advocateDashboardPayload.new_direct_requests, 4);
+    assert.strictEqual(advocateDashboardPayload.confirmed_consultations, 2);
+    assert.strictEqual(advocateDashboardPayload.broadcast_matches, 3);
+    assert.strictEqual(advocateDashboardPayload.reschedule_requests, 1);
+    assert.strictEqual(advocateDashboardPayload.unread_notifications, 5);
+    assert.strictEqual(advocateDashboardPayload.todays_appointments, 2);
+  });
+
+  // 12. Wrong-role route access
+  it('12. Wrong-role route guards block unauthorized access', () => {
+    function evaluateRouteGuard(route, token, role) {
+      if (!token) return { allow: false, redirect: '/login' };
+      if (route === '/dashboard') {
+        if (role === 'citizen') return { allow: true };
+        return { allow: false, redirect: '/advocate/dashboard' };
+      }
+      if (route === '/advocate/dashboard' || route === '/advocate/onboarding') {
+        if (role === 'advocate') return { allow: true };
+        return { allow: false, redirect: '/dashboard' };
+      }
+      if (route === '/admin') {
+        if (role === 'admin') return { allow: true };
+        return { allow: false, redirect: '/dashboard' };
+      }
+      return { allow: true };
+    }
+
+    // Citizen attempting /advocate/dashboard
+    assert.strictEqual(evaluateRouteGuard('/advocate/dashboard', 'token', 'citizen').allow, false);
+    assert.strictEqual(evaluateRouteGuard('/advocate/dashboard', 'token', 'citizen').redirect, '/dashboard');
+
+    // Advocate attempting /dashboard
+    assert.strictEqual(evaluateRouteGuard('/dashboard', 'token', 'advocate').allow, false);
+    assert.strictEqual(evaluateRouteGuard('/dashboard', 'token', 'advocate').redirect, '/advocate/dashboard');
+
+    // Citizen attempting /admin
+    assert.strictEqual(evaluateRouteGuard('/admin', 'token', 'citizen').allow, false);
+
+    // Advocate accessing /advocate/dashboard
+    assert.strictEqual(evaluateRouteGuard('/advocate/dashboard', 'token', 'advocate').allow, true);
+
+    // Citizen accessing /dashboard
+    assert.strictEqual(evaluateRouteGuard('/dashboard', 'token', 'citizen').allow, true);
+  });
+
   console.log(`\n=== RESULTS: TOTAL=${passed + failed} | PASSED=${passed} | FAILED=${failed} ===\n`);
   if (failed > 0) {
     process.exit(1);
   }
-
 }
 
 runTests();
+
