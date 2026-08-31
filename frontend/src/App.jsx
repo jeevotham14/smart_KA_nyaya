@@ -22,6 +22,8 @@ const AdvocateLogin = lazy(() => import('./pages/AdvocateLogin.jsx'));
 const AdvocateRegister = lazy(() => import('./pages/AdvocateRegister.jsx'));
 const AdvocateDashboard = lazy(() => import('./pages/AdvocateDashboard.jsx'));
 const AdvocateOnboarding = lazy(() => import('./pages/AdvocateOnboarding.jsx'));
+const AdvocateAvailability = lazy(() => import('./pages/AdvocateAvailability.jsx'));
+const AdvocateProfilePage = lazy(() => import('./pages/AdvocateProfilePage.jsx'));
 const Resources = lazy(() => import('./pages/Resources.jsx'));
 const UserDashboard = lazy(() => import('./pages/UserDashboard.jsx'));
 const WomenProtection = lazy(() => import('./pages/WomenProtection.jsx'));
@@ -101,6 +103,22 @@ export default function App() {
             element={
               <AdvocateRoute>
                 <AdvocateOnboarding />
+              </AdvocateRoute>
+            }
+          />
+          <Route
+            path="advocate/availability"
+            element={
+              <AdvocateRoute>
+                <AdvocateAvailability />
+              </AdvocateRoute>
+            }
+          />
+          <Route
+            path="advocate/profile"
+            element={
+              <AdvocateRoute>
+                <AdvocateProfilePage />
               </AdvocateRoute>
             }
           />

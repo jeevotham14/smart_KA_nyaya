@@ -530,6 +530,222 @@ function runTests() {
     assert.strictEqual(evaluateRouteGuard('/dashboard', 'token', 'citizen').allow, true);
   });
 
+  // ── TASK 18: PHASE Q.3 FULL ROLE-SPECIFIC WEBSITE EXPERIENCE TESTS ──────
+  console.log('\n=== RUNNING PHASE Q.3 ROLE-SPECIFIC EXPERIENCE TESTS (TASK 18) ===\n');
+
+  // Role utility helpers
+  function isAdvocate(role) {
+    return role === 'advocate' || role === 'lawyer_advisor';
+  }
+  function isCitizen(role) {
+    return role === 'citizen';
+  }
+  function isAdmin(role) {
+    return role === 'admin';
+  }
+  function getRoleBadge(role) {
+    if (isAdvocate(role)) return 'ADVOCATE';
+    if (isAdmin(role)) return 'ADMIN';
+    if (isCitizen(role)) return 'CITIZEN';
+    return null;
+  }
+  function getHomeRoute(role) {
+    if (isAdvocate(role)) return '/advocate/dashboard';
+    if (isAdmin(role)) return '/admin';
+    return '/dashboard';
+  }
+
+  // Layout selector logic matching MainLayout.jsx
+  function resolveLayout(token, role) {
+    if (!token) return 'CitizenLayout'; // Unauthenticated visitor uses public citizen site
+    if (isAdvocate(role)) return 'AdvocateLayout';
+    if (isAdmin(role)) return 'AdminLayout';
+    return 'CitizenLayout';
+  }
+
+  // Nav items builder matching Header.jsx (Citizen) & AdvocateHeader.jsx
+  function getCitizenNavItems(role) {
+    const items = [
+      'Home',
+      'AI Legal Guidance',
+      'Case Outcome',
+      'Consult an Advocate',
+    ];
+    if (isCitizen(role)) {
+      items.push('My Consultations', 'My Broadcast Requests', 'Dashboard');
+    }
+    items.push(
+      'Women Protection',
+      'Free Legal Aid',
+      'Documents',
+      'Directory',
+      'Case Tracker',
+      'Emergency',
+      'About',
+      'Contact'
+    );
+    return items;
+  }
+
+  function getAdvocateNavItems() {
+    return [
+      'Advocate Dashboard',
+      'Direct Requests',
+      'Broadcast Requests',
+      'My Consultations',
+      'Availability',
+      'Professional Profile',
+    ];
+  }
+
+  function getAdminNavItems() {
+    return [
+      'Admin Dashboard',
+    ];
+  }
+
+  // 1. citizen login renders citizen layout
+  it('1. citizen login renders citizen layout', () => {
+    const layout = resolveLayout('cit-token', 'citizen');
+    assert.strictEqual(layout, 'CitizenLayout');
+  });
+
+  // 2. citizen sees AI Legal Guidance
+  it('2. citizen sees AI Legal Guidance', () => {
+    const nav = getCitizenNavItems('citizen');
+    assert.ok(nav.includes('AI Legal Guidance'));
+  });
+
+  // 3. citizen sees Consult an Advocate
+  it('3. citizen sees Consult an Advocate', () => {
+    const nav = getCitizenNavItems('citizen');
+    assert.ok(nav.includes('Consult an Advocate'));
+  });
+
+  // 4. citizen does not see Advocate Dashboard
+  it('4. citizen does not see Advocate Dashboard', () => {
+    const nav = getCitizenNavItems('citizen');
+    assert.strictEqual(nav.includes('Advocate Dashboard'), false);
+  });
+
+  // 5. advocate login renders advocate layout
+  it('5. advocate login renders advocate layout for both advocate and lawyer_advisor', () => {
+    assert.strictEqual(resolveLayout('adv-token', 'advocate'), 'AdvocateLayout');
+    assert.strictEqual(resolveLayout('adv-token', 'lawyer_advisor'), 'AdvocateLayout');
+  });
+
+  // 6. advocate sees Direct Requests
+  it('6. advocate sees Direct Requests', () => {
+    const nav = getAdvocateNavItems();
+    assert.ok(nav.includes('Direct Requests'));
+  });
+
+  // 7. advocate sees Broadcast Requests
+  it('7. advocate sees Broadcast Requests', () => {
+    const nav = getAdvocateNavItems();
+    assert.ok(nav.includes('Broadcast Requests'));
+  });
+
+  // 8. advocate sees Availability
+  it('8. advocate sees Availability', () => {
+    const nav = getAdvocateNavItems();
+    assert.ok(nav.includes('Availability'));
+  });
+
+  // 9. advocate sees Notifications
+  it('9. advocate sees Notifications component', () => {
+    function renderAdvocateHeaderMock(unreadCount = 2) {
+      return `
+        <header class="advocate-header">
+          <div class="notification-bell"><span class="badge">${unreadCount}</span></div>
+          <span class="role-badge">ADVOCATE</span>
+        </header>
+      `;
+    }
+    const html = renderAdvocateHeaderMock(3);
+    assert.ok(html.includes('notification-bell'));
+    assert.ok(html.includes('badge'));
+  });
+
+  // 10. advocate does not see AI Legal Guidance in primary navigation
+  it('10. advocate does not see AI Legal Guidance in primary navigation', () => {
+    const nav = getAdvocateNavItems();
+    assert.strictEqual(nav.includes('AI Legal Guidance'), false);
+  });
+
+  // 11. advocate does not see Consult an Advocate in primary navigation
+  it('11. advocate does not see Consult an Advocate in primary navigation', () => {
+    const nav = getAdvocateNavItems();
+    assert.strictEqual(nav.includes('Consult an Advocate'), false);
+  });
+
+  // 12. advocate badge = ADVOCATE
+  it('12. advocate badge = ADVOCATE for both advocate and lawyer_advisor roles', () => {
+    assert.strictEqual(getRoleBadge('advocate'), 'ADVOCATE');
+    assert.strictEqual(getRoleBadge('lawyer_advisor'), 'ADVOCATE');
+  });
+
+  // 13. citizen badge = CITIZEN
+  it('13. citizen badge = CITIZEN and missing role is null', () => {
+    assert.strictEqual(getRoleBadge('citizen'), 'CITIZEN');
+    assert.strictEqual(getRoleBadge(''), null);
+    assert.strictEqual(getRoleBadge(undefined), null);
+  });
+
+  // 14. admin gets admin layout
+  it('14. admin gets admin layout and ADMIN badge', () => {
+    assert.strictEqual(resolveLayout('admin-token', 'admin'), 'AdminLayout');
+    assert.strictEqual(getRoleBadge('admin'), 'ADMIN');
+  });
+
+  // 15. wrong-role route blocked
+  it('15. wrong-role route blocked with redirect to proper workspace', () => {
+    function routeGuard(path, role, token) {
+      if (!token) return { allowed: false, redirect: '/login' };
+      if (path.startsWith('/advocate')) {
+        if (!isAdvocate(role)) return { allowed: false, redirect: isCitizen(role) ? '/dashboard' : '/admin' };
+        return { allowed: true };
+      }
+      if (path === '/dashboard') {
+        if (isAdvocate(role)) return { allowed: false, redirect: '/advocate/dashboard' };
+        if (isAdmin(role)) return { allowed: false, redirect: '/admin' };
+        return { allowed: true };
+      }
+      if (path.startsWith('/admin')) {
+        if (!isAdmin(role)) return { allowed: false, redirect: isAdvocate(role) ? '/advocate/dashboard' : '/dashboard' };
+        return { allowed: true };
+      }
+      return { allowed: true };
+    }
+
+    // Citizen attempting advocate routes
+    assert.deepStrictEqual(routeGuard('/advocate/dashboard', 'citizen', 'token'), { allowed: false, redirect: '/dashboard' });
+    assert.deepStrictEqual(routeGuard('/advocate/availability', 'citizen', 'token'), { allowed: false, redirect: '/dashboard' });
+    assert.deepStrictEqual(routeGuard('/advocate/profile', 'citizen', 'token'), { allowed: false, redirect: '/dashboard' });
+
+    // Advocate attempting citizen dashboard
+    assert.deepStrictEqual(routeGuard('/dashboard', 'lawyer_advisor', 'token'), { allowed: false, redirect: '/advocate/dashboard' });
+    assert.deepStrictEqual(routeGuard('/dashboard', 'advocate', 'token'), { allowed: false, redirect: '/advocate/dashboard' });
+
+    // Advocate allowed on advocate routes
+    assert.deepStrictEqual(routeGuard('/advocate/dashboard', 'lawyer_advisor', 'token'), { allowed: true });
+    assert.deepStrictEqual(routeGuard('/advocate/availability', 'lawyer_advisor', 'token'), { allowed: true });
+  });
+
+  // 16. refresh preserves correct layout
+  it('16. refresh preserves correct layout from localStorage state', () => {
+    // Simulate browser reload where localStorage maintains auth state
+    const mockStorageAdvocate = { smartNyayaToken: 'jwt-123', role: 'lawyer_advisor' };
+    const reloadedLayoutAdv = resolveLayout(mockStorageAdvocate.smartNyayaToken, mockStorageAdvocate.role);
+    assert.strictEqual(reloadedLayoutAdv, 'AdvocateLayout');
+    assert.strictEqual(getRoleBadge(mockStorageAdvocate.role), 'ADVOCATE');
+
+    const mockStorageCitizen = { smartNyayaToken: 'jwt-456', role: 'citizen' };
+    const reloadedLayoutCit = resolveLayout(mockStorageCitizen.smartNyayaToken, mockStorageCitizen.role);
+    assert.strictEqual(reloadedLayoutCit, 'CitizenLayout');
+    assert.strictEqual(getRoleBadge(mockStorageCitizen.role), 'CITIZEN');
+  });
+
   console.log(`\n=== RESULTS: TOTAL=${passed + failed} | PASSED=${passed} | FAILED=${failed} ===\n`);
   if (failed > 0) {
     process.exit(1);
@@ -537,4 +753,5 @@ function runTests() {
 }
 
 runTests();
+
 

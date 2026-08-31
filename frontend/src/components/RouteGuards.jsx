@@ -1,10 +1,11 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
+import { isAdvocate, isAdmin, isCitizen } from '../utils/roleUtils.js';
 
 /**
  * Route guard for Citizen-only pages (/dashboard).
  * Unauthenticated -> /citizen/login
- * Advocate -> /advocate/dashboard
+ * Advocate (advocate OR lawyer_advisor) -> /advocate/dashboard
  * Admin -> /admin
  */
 export function CitizenRoute({ children }) {
@@ -16,11 +17,11 @@ export function CitizenRoute({ children }) {
     return <Navigate to="/citizen/login" state={{ from: location }} replace />;
   }
 
-  if (role === 'advocate') {
+  if (isAdvocate(role)) {
     return <Navigate to="/advocate/dashboard" replace />;
   }
 
-  if (role === 'admin') {
+  if (isAdmin(role)) {
     return <Navigate to="/admin" replace />;
   }
 
@@ -28,7 +29,8 @@ export function CitizenRoute({ children }) {
 }
 
 /**
- * Route guard for Advocate-only pages (/advocate/dashboard, /advocate/onboarding).
+ * Route guard for Advocate-only pages.
+ * Accepts both "advocate" and "lawyer_advisor" role values.
  * Unauthenticated -> /advocate/login
  * Citizen -> /dashboard
  * Admin -> /admin
@@ -42,12 +44,17 @@ export function AdvocateRoute({ children }) {
     return <Navigate to="/advocate/login" state={{ from: location }} replace />;
   }
 
-  if (role === 'citizen') {
+  if (isCitizen(role)) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  if (role === 'admin') {
+  if (isAdmin(role)) {
     return <Navigate to="/admin" replace />;
+  }
+
+  if (!isAdvocate(role)) {
+    // Unknown role — send to login
+    return <Navigate to="/login" replace />;
   }
 
   return children;
@@ -56,7 +63,7 @@ export function AdvocateRoute({ children }) {
 /**
  * Route guard for Admin-only pages (/admin).
  * Unauthenticated -> /login
- * Non-admin -> /dashboard or /advocate/dashboard
+ * Non-admin -> correct workspace
  */
 export function AdminRoute({ children }) {
   const location = useLocation();
@@ -67,9 +74,10 @@ export function AdminRoute({ children }) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (role !== 'admin') {
-    return <Navigate to={role === 'advocate' ? '/advocate/dashboard' : '/dashboard'} replace />;
+  if (!isAdmin(role)) {
+    return <Navigate to={isAdvocate(role) ? '/advocate/dashboard' : '/dashboard'} replace />;
   }
 
   return children;
 }
+

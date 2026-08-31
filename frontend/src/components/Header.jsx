@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import NotificationBell from './NotificationBell.jsx';
 import ErrorBoundary from './ErrorBoundary.jsx';
 import { authApi } from '../services/api.js';
+import { getRoleBadge, getHomeRoute, isAdvocate, isAdmin, isCitizen } from '../utils/roleUtils.js';
 
 export default function Header() {
   const { t, i18n } = useTranslation();
@@ -33,7 +34,9 @@ export default function Header() {
     displayName = 'User';
   }
 
-  // ── Navigation Items with All Platform Features ──
+  const roleBadge = getRoleBadge(role);
+
+  // ── Citizen & Public Navigation Items ──
   let navItems = [
     ['nav.home', '/'],
     ['nav.aiGuidance', '/ai-legal-guidance'],
@@ -41,22 +44,11 @@ export default function Header() {
     ['Consult an Advocate', '/advocates'],
   ];
 
-  if (role === 'citizen') {
+  if (isCitizen(role)) {
     navItems.push(
       ['My Consultations', '/consultations'],
       ['My Broadcast Requests', '/consultation-broadcasts'],
       ['Dashboard', '/dashboard']
-    );
-  } else if (role === 'advocate') {
-    navItems.push(
-      ['Advocate Dashboard', '/advocate/dashboard'],
-      ['Direct Requests', '/consultations'],
-      ['Broadcast Requests', '/consultation-broadcasts'],
-      ['My Consultations', '/consultations']
-    );
-  } else if (role === 'admin') {
-    navItems.push(
-      ['Admin Dashboard', '/admin']
     );
   }
 
@@ -166,15 +158,17 @@ export default function Header() {
                   </ErrorBoundary>
 
                   <Link
-                    to={role === 'advocate' ? '/advocate/dashboard' : role === 'admin' ? '/admin' : '/dashboard'}
+                    to={getHomeRoute(role)}
                     className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-white/20 transition-all border border-white/20"
                     title={displayName}
                   >
                     <User className="h-3.5 w-3.5 text-legalGold" />
                     <span className="max-w-[120px] truncate">{displayName}</span>
-                    <span className="rounded bg-legalGold/20 px-1.5 py-0.5 text-[10px] uppercase font-bold text-legalGold">
-                      {role === 'advocate' ? 'Adv' : role === 'admin' ? 'Admin' : 'Citizen'}
-                    </span>
+                    {roleBadge && (
+                      <span className="rounded bg-legalGold/20 px-1.5 py-0.5 text-[10px] uppercase font-bold text-legalGold">
+                        {roleBadge}
+                      </span>
+                    )}
                   </Link>
 
                   <button
@@ -294,9 +288,16 @@ export default function Header() {
 
               {token ? (
                 <div className="flex items-center justify-between pt-2">
-                  <span className="text-xs text-slate-300 truncate font-semibold">
-                    {displayName} ({role})
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-300 truncate font-semibold">
+                      {displayName}
+                    </span>
+                    {roleBadge && (
+                      <span className="rounded bg-legalGold/20 px-1.5 py-0.5 text-[9px] uppercase font-bold text-legalGold">
+                        {roleBadge}
+                      </span>
+                    )}
+                  </div>
                   <button
                     onClick={handleLogout}
                     className="flex items-center gap-1 text-xs text-alertRed font-bold hover:underline"

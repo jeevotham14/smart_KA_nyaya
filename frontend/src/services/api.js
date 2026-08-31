@@ -72,7 +72,8 @@ export const authApi = {
     try {
       const { data: me } = await api.get('/api/auth/me');
       window.localStorage.setItem('user', JSON.stringify(me));
-      window.localStorage.setItem('role', me.role || 'citizen');
+      // Store exact role — do NOT default to 'citizen' to avoid masking lawyer_advisor
+      if (me.role) window.localStorage.setItem('role', me.role);
     } catch {
       // ignore
     }
@@ -81,7 +82,7 @@ export const authApi = {
   me: async () => {
     const { data } = await api.get('/api/auth/me');
     window.localStorage.setItem('user', JSON.stringify(data));
-    window.localStorage.setItem('role', data.role || 'citizen');
+    if (data.role) window.localStorage.setItem('role', data.role);
     return data;
   },
   logout: () => {

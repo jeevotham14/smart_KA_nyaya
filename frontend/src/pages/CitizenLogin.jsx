@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { User, Lock, Mail, Loader2, AlertCircle, ArrowRight, ShieldCheck } from 'lucide-react';
 import { authApi, getApiError } from '../services/api.js';
+import { isAdvocate } from '../utils/roleUtils.js';
 
 export default function CitizenLogin() {
   const navigate = useNavigate();
@@ -35,9 +36,8 @@ export default function CitizenLogin() {
       await authApi.login(form);
       const user = await authApi.me();
 
-      // Check role policy
-      if (user.role === 'advocate') {
-        // Block advocate from citizen dashboard
+      // Check role policy — block both "advocate" and "lawyer_advisor" from citizen portal
+      if (isAdvocate(user.role)) {
         authApi.logout();
         setRoleMismatch(true);
         setError(isKn ? 'ಈ ಖಾತೆಯು ವಕೀಲರ ಪೋರ್ಟಲ್‌ಗೆ ಸೇರಿದೆ.' : 'This account belongs to the Advocate Portal.');
