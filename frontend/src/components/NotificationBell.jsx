@@ -22,8 +22,13 @@ export default function NotificationBell() {
         notificationApi.getNotifications(20),
         notificationApi.getUnreadCount(),
       ]);
-      setNotifications(notifs || []);
-      setUnreadCount(countData?.unread_count ?? (notifs || []).filter((n) => !n.read_status).length);
+      const safeNotifs = Array.isArray(notifs) ? notifs : [];
+      setNotifications(safeNotifs);
+      setUnreadCount(
+        typeof countData?.unread_count === 'number'
+          ? countData.unread_count
+          : safeNotifs.filter((n) => !n.read_status).length
+      );
     } catch (err) {
       // Fallback silently if unauthenticated or network hiccup
     }
@@ -134,7 +139,7 @@ export default function NotificationBell() {
           </div>
 
           <div className="max-h-96 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60">
-            {notifications.length === 0 ? (
+            {(!Array.isArray(notifications) || notifications.length === 0) ? (
               <div className="p-8 text-center text-sm text-slate-400">
                 {isKn ? 'ಯಾವುದೇ ಅಧಿಸೂಚನೆಗಳಿಲ್ಲ' : 'No notifications yet'}
               </div>
@@ -157,7 +162,7 @@ export default function NotificationBell() {
                       </p>
                     </div>
                     <span className="text-[10px] text-slate-400 whitespace-nowrap">
-                      {new Date(notif.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {notif.created_at ? new Date(notif.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                     </span>
                   </div>
                   <p className="mt-1 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">

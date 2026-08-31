@@ -3,6 +3,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { Languages, Menu, Scale, Search, Sparkles, X, LogOut, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import NotificationBell from './NotificationBell.jsx';
+import ErrorBoundary from './ErrorBoundary.jsx';
 import { authApi } from '../services/api.js';
 
 export default function Header() {
@@ -24,7 +25,8 @@ export default function Header() {
     const rawUser = localStorage.getItem('user');
     if (rawUser) {
       const parsed = JSON.parse(rawUser);
-      displayName = parsed.name || parsed.full_name || 'User';
+      const val = parsed?.name || parsed?.full_name;
+      displayName = typeof val === 'string' ? val : 'User';
     }
   } catch {
     displayName = 'User';
@@ -33,8 +35,8 @@ export default function Header() {
   // ── Role-specific Navigation Items (TASK 23) ──
   let navItems = [];
 
-  if (!token) {
-    // Unauthenticated
+  if (!token || !['citizen', 'advocate', 'admin'].includes(role)) {
+    // Unauthenticated or unknown role fallback
     navItems = [
       ['nav.home', '/'],
       ['nav.aiGuidance', '/ai-legal-guidance'],
@@ -155,7 +157,9 @@ export default function Header() {
 
               {token ? (
                 <div className="flex items-center gap-3">
-                  <NotificationBell />
+                  <ErrorBoundary fallback={null}>
+                    <NotificationBell />
+                  </ErrorBoundary>
 
                   <Link
                     to={role === 'advocate' ? '/advocate/dashboard' : role === 'admin' ? '/admin' : '/dashboard'}
@@ -190,7 +194,11 @@ export default function Header() {
 
             {/* Mobile Menu Button */}
             <div className="flex items-center gap-2 lg:hidden">
-              {token && <NotificationBell />}
+              {token && (
+                <ErrorBoundary fallback={null}>
+                  <NotificationBell />
+                </ErrorBoundary>
+              )}
               <button className="p-1" onClick={() => setOpen((v) => !v)} type="button" aria-label="Menu">
                 {open ? <X className="h-7 w-7" /> : <Menu className="h-7 w-7" />}
               </button>

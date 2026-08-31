@@ -7,6 +7,12 @@ import { ThemeProvider } from './context/ThemeContext.jsx';
 import './i18n/index.js';
 import './index.css';
 
+// Automatically handle Vite dynamic import / chunk load errors when new builds deploy
+window.addEventListener('vite:preloadError', (event) => {
+  console.warn('Vite preload error detected, reloading page for latest assets...', event);
+  window.location.reload();
+});
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ThemeProvider>
