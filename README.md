@@ -108,4 +108,4 @@ smart_KA_nyaya/
 ```
 
 ---
-*Built for democratizing justice and legal aid in Karnataka.*
+*Built for democratizing justice and legal aid in Karnataka.*                                                           by-Jeevotham Pai K
