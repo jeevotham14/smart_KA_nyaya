@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, FileText, Eye, Save, Sparkles, X, ChevronRight, ArrowLeft, ArrowRight,
@@ -143,8 +144,26 @@ export default function DocumentGenerator() {
   const [suggestions, setSuggestions] = useState(null);
   const [resourceSuggestions, setResourceSuggestions] = useState(null);
 
+  const [searchParams] = useSearchParams();
+  const typeParam = searchParams.get('type');
+
   // Selected Document & Drawer State
   const [selectedDoc, setSelectedDoc] = useState(null);
+
+  // Auto-select document if URL has ?type=...
+  useEffect(() => {
+    if (typeParam) {
+      const cleanType = typeParam.toLowerCase().replace(/[-_]/g, ' ').trim();
+      const match = DOCUMENT_CATALOG.find((d) => {
+        const idClean = d.id.toLowerCase().replace(/[-_]/g, ' ').trim();
+        const titleClean = d.title.toLowerCase().replace(/[-_]/g, ' ').trim();
+        return idClean === cleanType || titleClean === cleanType || idClean.includes(cleanType) || cleanType.includes(idClean);
+      });
+      if (match) {
+        setSelectedDoc(match);
+      }
+    }
+  }, [typeParam]);
 
   // AI Guided Interview Modal State
   const [interviewDoc, setInterviewDoc] = useState(null);

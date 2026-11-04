@@ -28,6 +28,36 @@ class ChatRequest(BaseModel):
     consent_to_store: bool = True
 
 
+class ActionWidget(BaseModel):
+    id: str
+    type: str  # draft_document | legal_aid | emergency_sos | court_fee | limitation | directory | case_tracker
+    title: str
+    title_kn: str
+    description: str
+    description_kn: str
+    target_url: str
+    action_label: str
+    action_label_kn: str
+    badge: str | None = None
+    icon: str | None = None
+
+
+class StatuteRef(BaseModel):
+    act: str
+    section: str
+    summary: str
+    summary_kn: str | None = None
+
+
+class DiagnosticScore(BaseModel):
+    strength_score: int
+    evidence_readiness: int
+    limitation_risk: str  # safe, warning, expired
+    missing_evidence: list[str] = []
+    recommended_step: str
+    recommended_step_kn: str | None = None
+
+
 class ChatResponse(BaseModel):
     answer: str
     provider: str
@@ -35,6 +65,9 @@ class ChatResponse(BaseModel):
     category: str | None = None
     urgency: str | None = None
     disclaimer: str
+    action_widgets: list[ActionWidget] = []
+    applicable_statutes: list[StatuteRef] = []
+    diagnostic_score: DiagnosticScore | None = None
 
 
 @router.post("/chat", response_model=ChatResponse)
@@ -47,6 +80,7 @@ def chat(
     """
     Primary AI chat endpoint.
     Routes to Groq (fast) with Gemini/OpenRouter fallback.
+    Returns structured action cards, statutory citations, and diagnostic scoring.
     Stores query in database if user is logged in and consents.
     """
     # Build conversation history for the LLM
@@ -59,8 +93,10 @@ def chat(
     if routed_result["provider"] == "system":
         classification = {"category": "case_tracking", "urgency_level": "normal"}
     else:
-        ai_service = get_ai_service()
-        classification = ai_service.classify_legal_issue(payload.message, payload.language)
+        classification = {
+            "category": routed_result.get("category", "general"),
+            "urgency_level": routed_result.get("urgency", "normal"),
+        }
 
     # Store in database if user consented
     if payload.consent_to_store:
@@ -83,7 +119,77 @@ def chat(
         category=classification["category"],
         urgency=classification["urgency_level"],
         disclaimer=LEGAL_DISCLAIMER,
+        action_widgets=routed_result.get("action_widgets", []),
+        applicable_statutes=routed_result.get("applicable_statutes", []),
+        diagnostic_score=routed_result.get("diagnostic_score"),
     )
+
+
+class DiagnosticQuizRequest(BaseModel):
+    category: str
+    incident_timeframe: str  # "recent", "within_1_year", "1_to_3_years", "over_3_years"
+    has_written_proof: bool
+    has_lodged_police_or_notice: bool
+    district: str = "Bengaluru Urban"
+    summary: str = ""
+
+
+@router.post("/diagnose", response_model=DiagnosticScore)
+def diagnose_case(payload: DiagnosticQuizRequest):
+    """
+    Interactive Legal Diagnostic Quiz:
+    Evaluates case strength, evidence readiness, limitation risk, and immediate statutory steps.
+    """
+    strength = 45
+    evidence = 25
+    missing = []
+
+    # Timeframe & Limitation
+    if payload.incident_timeframe == "over_3_years":
+        limitation_risk = "expired"
+        strength -= 25
+        missing.append("Section 5 Limitation Act (Condonation of Delay) Application")
+    elif payload.incident_timeframe == "1_to_3_years":
+        limitation_risk = "warning"
+        strength += 5
+    else:
+        limitation_risk = "safe"
+        strength += 20
+
+    # Evidence
+    if payload.has_written_proof:
+        evidence += 45
+        strength += 20
+    else:
+        missing.append("Written contract / receipts / payment transactions")
+
+    if payload.has_lodged_police_or_notice:
+        strength += 15
+        evidence += 20
+    else:
+        missing.append("Prior legal notice or police complaint acknowledgment")
+
+    if payload.category.lower() in ["property", "land", "tenancy"]:
+        missing.append("RTC / Pahani / Registered Agreement")
+        step = f"Approach the Sub-Divisional Officer (AC) or Civil Court in {payload.district} with certified title extracts."
+        step_kn = f"{payload.district} ಉಪವಿಭಾಗಾಧಿಕಾರಿಗಳು ಅಥವಾ ಸಿವಿಲ್ ನ್ಯಾಯಾಲಯಕ್ಕೆ ಪ್ರಮಾಣೀಕೃತ ದಾಖಲೆಗಳೊಂದಿಗೆ ಅರ್ಜಿ ಸಲ್ಲಿಸಿ."
+    elif payload.category.lower() in ["criminal", "theft", "assault", "cyber"]:
+        missing.append("CCTV or documentary evidence of fraud")
+        step = f"File an FIR under Section 173 BNSS at the nearest Police Station in {payload.district}."
+        step_kn = f"{payload.district} ವ್ಯಾಪ್ತಿಯ ಪೊಲೀಸ್ ಠಾಣೆಯಲ್ಲಿ ಬಿಎನ್‌ಎಸ್‌ಎಸ್ ಕಲಂ ೧೭೩ ರ ಅಡಿಯಲ್ಲಿ ಎಫ್‌ಐಆರ್ ದಾಖಲಿಸಿ."
+    else:
+        step = f"Visit the {payload.district} DLSA Legal Aid Clinic at the District Court for free advocate guidance."
+        step_kn = f"ಉಚಿತ ವಕೀಲರ ಮಾರ್ಗದರ್ಶನಕ್ಕಾಗಿ {payload.district} ಜಿಲ್ಲಾ ನ್ಯಾಯಾಲಯದಲ್ಲಿರುವ ಡಿಎಲ್‌ಎಸ್‌ಎ ಕ್ಲಿನಿಕ್‌ಗೆ ಭೇಟಿ ನೀಡಿ."
+
+    return DiagnosticScore(
+        strength_score=max(10, min(strength, 95)),
+        evidence_readiness=max(10, min(evidence, 95)),
+        limitation_risk=limitation_risk,
+        missing_evidence=missing,
+        recommended_step=step,
+        recommended_step_kn=step_kn,
+    )
+
 
 
 class TranslateRequest(BaseModel):

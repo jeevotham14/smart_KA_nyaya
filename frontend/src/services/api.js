@@ -140,8 +140,16 @@ export const legalApi = {
       urgency: data.urgency,
       provider: data.provider,
       model: data.model,
+      action_widgets: data.action_widgets || [],
+      applicable_statutes: data.applicable_statutes || [],
+      diagnostic_score: data.diagnostic_score || null,
+      disclaimer: data.disclaimer,
       raw: data,
     };
+  },
+  diagnoseQuiz: async (payload) => {
+    const { data } = await aiApi.post('/api/ai/diagnose', payload);
+    return data;
   },
   translate: async ({ text, sourceLang, targetLang }) => {
     const { data } = await aiApi.post('/api/ai/translate', {
@@ -526,4 +534,4 @@ export const adminApi = {
 
 api.dashboard = dashboardApi;
 
-export default api;
+export default api;

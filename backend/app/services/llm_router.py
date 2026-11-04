@@ -11,7 +11,6 @@ All responses are injected with a Karnataka-specific legal disclaimer.
 from __future__ import annotations
 
 import logging
-import re
 from enum import StrEnum
 from typing import Any
 
@@ -26,32 +25,30 @@ LEGAL_DISCLAIMER = (
     "For emergencies: call 112 (Police) or 181 (Women Helpline)."
 )
 
-KARNATAKA_LEGAL_SYSTEM_PROMPT = """You are a certified legal awareness assistant operating under the Karnataka State Legal Services Authority (KSLSA) and the Government of Karnataka.
+KARNATAKA_LEGAL_SYSTEM_PROMPT = """You are "Karnataka Nyaya Mitra", a certified AI legal awareness assistant operating under the Karnataka State Legal Services Authority (KSLSA) and the Government of Karnataka.
 
 Your strict operating rules:
 1. You ONLY provide legal AWARENESS — not legal advice or opinion.
 2. You ONLY cover matters relevant to Karnataka citizens and Karnataka law.
 3. Always reply in the SAME LANGUAGE the user wrote in. If they write in Kannada (ಕನ್ನಡ), reply in Kannada. If English, reply in English.
-4. Cite relevant Acts, Sections, and Karnataka-specific authorities where applicable.
-5. Always recommend consulting a qualified advocate, DLSA, or TLSC for official action.
-6. For urgent/emergency situations, always mention: Police (112) and Women Helpline (181).
-7. Be concise, clear, and accessible to citizens with limited legal literacy.
-8. Never generate false case citations or fabricate law.
-
-Relevant authorities you may reference:
-- Karnataka State Legal Services Authority (KSLSA)
-- District Legal Services Authority (DLSA) 
-- Taluk Legal Services Committee (TLSC)
-- Karnataka High Court
-- National Legal Services Authority (NALSA)
-- Karnataka Police (112)
-- Women Helpline (181), Childline (1098)
-
-Formatting rules:
-- Format your response with clean paragraphs, numbered steps, and bullet points.
-- Do NOT output HTML tags (never use <br>, <b>, <div>, etc.).
-- Do NOT output markdown pipe tables (do NOT use | column |). Use clean bullet lists instead.
-- Leave empty lines between numbered sections for easy reading."""
+4. STATUTORY CITATIONS:
+   - For criminal matters, ALWAYS cite the new Bharatiya Nyaya Sanhita (BNS, 2023) and Bharatiya Nagarik Suraksha Sanhita (BNSS, 2023). Do NOT cite outdated IPC or CrPC sections unless specifically comparing them.
+   - For civil, property, tenancy, revenue, or administrative matters in Karnataka, cite relevant Karnataka-specific legislation:
+     * Karnataka Land Revenue Act, 1964 (RTC, Pahani, mutation, boundary disputes)
+     * Karnataka Rent Act, 1999 (Tenant rights, security deposit refund, lawful eviction)
+     * Karnataka Court Fees and Suits Valuation Act, 1958
+     * Karnataka Sakala Services Act, 2011 (Guaranteed public services timeline)
+     * Protection of Women from Domestic Violence Act, 2005
+     * Legal Services Authorities Act, 1987 (Section 12 free legal aid)
+     * Consumer Protection Act, 2019
+5. STRUCTURE YOUR RESPONSE clearly with:
+   - **Key Legal Summary**
+   - **Applicable Laws & Sections** (Specify Act name & Section)
+   - **Your Legal Rights & Remedies**
+   - **Actionable Next Steps** (Chronological 1-2-3 steps)
+   - **Karnataka Authority to Approach** (DLSA, TLSC, Police, Court)
+6. For urgent/emergency situations (threat, violence, domestic abuse), prominently mention: Emergency Police (112), Women Helpline (181), Childline (1098), and Sakhi One-Stop Centres.
+7. Be concise, accessible, and structured. Never fabricate citations or law."""
 
 DOCUMENT_DRAFT_SYSTEM_PROMPT = """You are a legal document drafting assistant for the Karnataka State Legal Services Authority.
 
@@ -83,8 +80,8 @@ class LLMRouter:
     GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
     OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
-    GROQ_MODEL = "openai/gpt-oss-120b"
-    GEMINI_MODEL = "gemini-3.6-flash"
+    GROQ_MODEL = "llama-3.3-70b-versatile"
+    GEMINI_MODEL = "gemini-2.0-flash-lite"
     OPENROUTER_FALLBACK_MODEL = "meta-llama/llama-3.1-8b-instruct:free"
 
     def __init__(
@@ -223,32 +220,6 @@ class LLMRouter:
         result.extend(messages)
         return result
 
-    @staticmethod
-    def _clean_response_text(text: str) -> str:
-        if not text:
-            return ""
-        # Convert HTML line breaks to real newlines
-        text = re.sub(r"<br\s*/?>", "\n", text, flags=re.IGNORECASE)
-        # Remove leftover HTML tags
-        text = re.sub(r"</?(?:b|strong|i|em|p|div|span|ul|ol|li|small)>", "", text, flags=re.IGNORECASE)
-        # Clean up stray table pipes into clean bullet lists
-        cleaned_lines = []
-        for line in text.split("\n"):
-            stripped = line.strip()
-            # If line is markdown table divider |---|---|
-            if re.match(r"^\|?[\s\-:|]+\|?$", stripped) and "-" in stripped:
-                continue
-            # If line is a markdown table row | col1 | col2 |
-            if stripped.startswith("|") and stripped.endswith("|") and stripped.count("|") >= 2:
-                cells = [c.strip() for c in stripped.strip("|").split("|") if c.strip()]
-                if len(cells) == 1:
-                    cleaned_lines.append(f"• {cells[0]}")
-                elif len(cells) >= 2:
-                    cleaned_lines.append(f"• **{cells[0]}:** {' — '.join(cells[1:])}")
-                continue
-            cleaned_lines.append(line)
-        return "\n".join(cleaned_lines).strip()
-
     # ── Convenience methods ──────────────────────────────────────────────────
 
     def legal_chat(self, user_message: str, language: str = "English", history: list[dict] | None = None) -> dict[str, Any]:
@@ -256,7 +227,7 @@ class LLMRouter:
         messages = list(history or [])
         messages.append({"role": "user", "content": user_message})
         result = self.route(TaskType.CHAT, messages, KARNATAKA_LEGAL_SYSTEM_PROMPT)
-        result["text"] = self._clean_response_text(result.get("text", "")) + LEGAL_DISCLAIMER
+        result["text"] += LEGAL_DISCLAIMER
         return result
 
     def generate_document(self, doc_type: str, facts: dict, language: str = "English") -> dict[str, Any]:

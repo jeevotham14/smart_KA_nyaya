@@ -239,3 +239,20 @@ export const timeline = [
   'District desk review',
   'Authority response pending',
 ];
+
+
+export const dashboardCards = [
+  { label: 'Recent legal queries', value: '12', icon: Gavel, tone: 'navy' },
+  { label: 'Complaints / requests', value: '4', icon: ShieldAlert, tone: 'red' },
+  { label: 'Generated documents', value: '7', icon: FileText, tone: 'gold' },
+  { label: 'Legal aid applications', value: '3', icon: UserCheck, tone: 'green' },
+];
+
+export const adminStats = [
+  { label: 'Registered users', value: '2,480', icon: UserCheck, tone: 'navy' },
+  { label: 'Open complaints', value: '138', icon: ShieldAlert, tone: 'red' },
+  { label: 'Directory entries', value: '624', icon: Building2, tone: 'gold' },
+  { label: 'Legal aid cases', value: '419', icon: HeartHandshake, tone: 'green' },
+];
+
+export { karnatakaDistricts } from './karnatakaDistricts.js';

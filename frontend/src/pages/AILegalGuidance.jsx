@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   BookOpen, FileSearch, ShieldCheck, ArrowRight, Sparkles, Scale,
   Bot, AlertTriangle, FileText, CheckCircle2, Loader2, ArrowLeft,
-  FolderOpen, ShieldAlert
+  FolderOpen, ShieldAlert, Volume2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -274,6 +274,26 @@ export default function AILegalGuidance() {
                       <div className="prose dark:prose-invert max-w-none text-base leading-relaxed text-slate-800 dark:text-slate-200 whitespace-pre-line">
                         {analysisResult.guidance || analysisResult.answer}
                       </div>
+
+                      <button
+                        onClick={async () => {
+                          try {
+                            const text = analysisResult.guidance || analysisResult.answer;
+                            const res = await legalApi.textToSpeech({ text, language: isKn ? 'Kannada' : 'English' });
+                            if (res.audio_base64) {
+                              const audio = new Audio("data:audio/wav;base64," + res.audio_base64);
+                              audio.play();
+                            }
+                          } catch (err) {
+                            console.error('TTS failed', err);
+                          }
+                        }}
+                        className="mt-6 flex items-center gap-2 rounded-xl bg-legalGold/10 px-4 py-2 text-sm font-bold text-legalGold hover:bg-legalGold/20 transition-colors"
+                        title="Read aloud"
+                      >
+                        <Volume2 className="h-4 w-4" />
+                        {isKn ? '???? (Listen)' : 'Listen to Analysis'}
+                      </button>
 
 
                       <div className="mt-8 rounded-2xl bg-slate-50 dark:bg-navy-950 p-4 border border-slate-200 dark:border-slate-800 text-xs text-slate-500">
