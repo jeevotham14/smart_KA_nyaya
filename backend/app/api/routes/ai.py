@@ -118,7 +118,7 @@ def chat(
         model=routed_result["model"],
         category=classification["category"],
         urgency=classification["urgency_level"],
-        disclaimer=LEGAL_DISCLAIMER,
+        disclaimer="",
         action_widgets=routed_result.get("action_widgets", []),
         applicable_statutes=routed_result.get("applicable_statutes", []),
         diagnostic_score=routed_result.get("diagnostic_score"),

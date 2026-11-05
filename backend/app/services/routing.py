@@ -432,7 +432,7 @@ def route_chat_request(message: str, language: str, history: List[Dict[str, str]
             "model": "case-tracker-module",
             "category": "case_tracking",
             "urgency": "normal",
-            "disclaimer": LEGAL_DISCLAIMER,
+            "disclaimer": "",
             "action_widgets": action_widgets,
             "applicable_statutes": [
                 {
@@ -484,7 +484,7 @@ def route_chat_request(message: str, language: str, history: List[Dict[str, str]
             "model": result["model"],
             "category": category,
             "urgency": urgency,
-            "disclaimer": LEGAL_DISCLAIMER,
+            "disclaimer": "",
             "action_widgets": action_widgets,
             "applicable_statutes": applicable_statutes,
             "diagnostic_score": diagnostic_score
