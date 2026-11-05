@@ -26,11 +26,11 @@ class AIService:
     def provider_metadata(self) -> dict[str, Any]:
         providers = []
         if self.router.groq_key:
-            providers.append("groq/llama-3.3-70b-versatile")
+            providers.append(f"groq/{self.router.GROQ_MODEL}")
         if self.router.gemini_key:
-            providers.append("gemini/gemini-2.0-flash-lite")
+            providers.append(f"gemini/{self.router.GEMINI_MODEL}")
         if self.router.openrouter_key:
-            providers.append("openrouter/fallback")
+            providers.append(f"openrouter/{self.router.OPENROUTER_FALLBACK_MODEL}")
         return {
             "providers": providers,
             "provider_ready": self.provider_ready,
