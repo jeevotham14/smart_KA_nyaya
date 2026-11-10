@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   AlertCircle, Bell, BellOff, Calendar, CheckCheck, ChevronRight,
   ClipboardList, FileText, Gavel, Loader2, MapPin, Paperclip, Scale,
@@ -249,6 +249,7 @@ function DocumentList({ caseId, refreshTrigger }) {
 export default function CaseTracker() {
   const { t, i18n } = useTranslation();
   const isKn = i18n.language === 'kn';
+  const [searchParams] = useSearchParams();
 
   const [searchTab, setSearchTab] = useState('case_no');
   const [query, setQuery] = useState('');
@@ -257,6 +258,27 @@ export default function CaseTracker() {
   const [caseData, setCaseData] = useState(null);
   const [error, setError] = useState('');
   const [docRefresh, setDocRefresh] = useState(0);
+
+  // Auto-search if navigated with deep-link ?caseNumber=... or ?cnr=...
+  useEffect(() => {
+    const caseParam = searchParams.get('caseNumber') || searchParams.get('cnr');
+    const distParam = searchParams.get('district');
+    if (caseParam) {
+      const decodedDist = distParam || 'Bengaluru Urban';
+      setQuery(caseParam);
+      setDistrict(decodedDist);
+      setLoading(true);
+      setError('');
+      legalApi.getCaseStatus(caseParam.trim(), decodedDist)
+        .then((data) => {
+          setCaseData(data);
+        })
+        .catch((err) => {
+          setError(getApiError(err) || (isKn ? 'ಪ್ರಕರಣದ ವಿವರಗಳು ಕಂಡುಬಂದಿಲ್ಲ.' : 'Case details not found.'));
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [searchParams, isKn]);
 
   const activeTabObj = SEARCH_TABS.find((t) => t.id === searchTab);
 

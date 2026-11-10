@@ -47,6 +47,11 @@ class StatuteRef(BaseModel):
     section: str
     summary: str
     summary_kn: str | None = None
+    title: str | None = None
+    title_kn: str | None = None
+    gazette_ref: str | None = None
+    remedy: str | None = None
+    court: str | None = None
 
 
 class DiagnosticScore(BaseModel):
@@ -68,6 +73,8 @@ class ChatResponse(BaseModel):
     action_widgets: list[ActionWidget] = []
     applicable_statutes: list[StatuteRef] = []
     diagnostic_score: DiagnosticScore | None = None
+    quick_replies: list[str] = []
+    live_draft: dict | None = None
 
 
 @router.post("/chat", response_model=ChatResponse)
@@ -122,6 +129,8 @@ def chat(
         action_widgets=routed_result.get("action_widgets", []),
         applicable_statutes=routed_result.get("applicable_statutes", []),
         diagnostic_score=routed_result.get("diagnostic_score"),
+        quick_replies=routed_result.get("quick_replies", []),
+        live_draft=routed_result.get("live_draft"),
     )
 
 

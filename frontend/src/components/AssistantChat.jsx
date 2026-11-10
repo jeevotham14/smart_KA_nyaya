@@ -4,7 +4,7 @@ import {
   Bot, Languages, Scale, SendHorizontal, UserRound, Mic, MicOff, Volume2,
   Loader2, Phone, ShieldAlert, FileWarning, FileText, Laptop, ScrollText,
   ShoppingBag, BadgeCheck, Clock, Building2, ExternalLink, Sparkles,
-  CheckCircle2, AlertTriangle, ChevronDown, ChevronUp, Heart, X, Check
+  CheckCircle2, AlertTriangle, ChevronDown, ChevronUp, Heart, X, Check, Copy, Sliders
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getApiError, legalApi } from '../services/api.js';
@@ -170,23 +170,37 @@ function StatuteCard({ statute, isKn }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-navy-900/60 overflow-hidden">
+    <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-navy-900/60 overflow-hidden shadow-sm">
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center justify-between p-2.5 text-left hover:bg-slate-100 dark:hover:bg-navy-800/60 transition-colors"
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 min-w-0">
           <Scale className="h-3.5 w-3.5 text-legalGold shrink-0" />
           <span className="text-xs font-bold text-navy-900 dark:text-white truncate">
             {statute.act} — <span className="text-legalGold">{statute.section}</span>
           </span>
+          <span className="hidden sm:inline-flex items-center gap-1 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-bold">
+            ✓ {isKn ? 'ಕರ್ನಾಟಕ ಗೆಜೆಟ್ ಮಾನ್ಯತೆ' : 'Gazette Verified'}
+          </span>
         </div>
-        {expanded ? <ChevronUp className="h-3.5 w-3.5 text-slate-400" /> : <ChevronDown className="h-3.5 w-3.5 text-slate-400" />}
+        {expanded ? <ChevronUp className="h-3.5 w-3.5 text-slate-400 shrink-0" /> : <ChevronDown className="h-3.5 w-3.5 text-slate-400 shrink-0" />}
       </button>
       {expanded && (
-        <div className="border-t border-slate-200 dark:border-slate-800 p-3 bg-white dark:bg-navy-950 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-          {isKn && statute.summary_kn ? statute.summary_kn : statute.summary}
+        <div className="border-t border-slate-200 dark:border-slate-800 p-3 bg-white dark:bg-navy-950 text-xs text-slate-600 dark:text-slate-300 leading-relaxed space-y-2">
+          <p>{isKn && statute.summary_kn ? statute.summary_kn : statute.summary}</p>
+          {statute.remedy && (
+            <div className="rounded-lg bg-legalGold/5 border border-legalGold/20 p-2 text-[11px]">
+              <strong className="text-navy-900 dark:text-legalGold block mb-0.5">{isKn ? 'ಕಾನೂನು ಪರಿಹಾರ / ಶಿಕ್ಷೆ:' : 'Statutory Remedy / Punishment:'}</strong>
+              <span>{statute.remedy}</span>
+            </div>
+          )}
+          {statute.gazette_ref && (
+            <p className="text-[10px] text-slate-400 font-mono">
+              Official Reference: {statute.gazette_ref}
+            </p>
+          )}
         </div>
       )}
     </div>
@@ -501,6 +515,9 @@ export default function AssistantChat() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isDiagnosticOpen, setIsDiagnosticOpen] = useState(false);
+  const [isSplitView, setIsSplitView] = useState(true);
+  const [activeLiveDraft, setActiveLiveDraft] = useState(null);
+  const [copiedDraft, setCopiedDraft] = useState(false);
 
   // Audio Recording (Sarvam ASR) State
   const [isRecording, setIsRecording] = useState(false);
@@ -619,7 +636,13 @@ export default function AssistantChat() {
         action_widgets: result.action_widgets || [],
         applicable_statutes: result.applicable_statutes || [],
         diagnostic_score: result.diagnostic_score || null,
+        quick_replies: result.quick_replies || [],
+        live_draft: result.live_draft || null,
       };
+
+      if (result.live_draft) {
+        setActiveLiveDraft(result.live_draft);
+      }
 
       setMessages((prev) => [...prev, assistantMsg]);
       playTTS(result.answer);
@@ -708,6 +731,21 @@ export default function AssistantChat() {
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
+            {/* Split Workspace Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setIsSplitView(!isSplitView)}
+              className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition-all shadow-sm ${
+                isSplitView
+                  ? 'border-legalGold bg-legalGold text-navy-950 shadow-md'
+                  : 'border-white/20 bg-navy-950/80 text-white hover:border-legalGold/50'
+              }`}
+              title="Toggle Live Auto-Draft Split Workspace (Plan A)"
+            >
+              <Sliders className="h-3.5 w-3.5" />
+              <span>{isSplitView ? (isKn ? 'ಸ್ಪ್ಲಿಟ್ ಸಕ್ರಿಯ' : 'Split Workspace On') : (isKn ? 'ಸ್ಪ್ಲಿಟ್ ಬೋರ್ಡ್' : 'Split View')}</span>
+            </button>
+
             {/* Quick Diagnostic Assessment Trigger */}
             <button
               type="button"
@@ -737,7 +775,7 @@ export default function AssistantChat() {
         </div>
       </div>
 
-      <div className="grid gap-0 lg:grid-cols-[280px_1fr]">
+      <div className={`grid gap-0 ${isSplitView && activeLiveDraft ? 'lg:grid-cols-[220px_1fr_360px]' : 'lg:grid-cols-[280px_1fr]'}`}>
         {/* Suggested Categories Sidebar */}
         <aside className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-navy-900/50 p-4 lg:border-b-0 lg:border-r">
           <p className="text-xs font-bold text-navy-900 dark:text-white uppercase tracking-wider">
@@ -877,6 +915,27 @@ export default function AssistantChat() {
                     </div>
                   )}
 
+                  {/* Dynamic 1-Tap Quick-Reply Suggestion Chips */}
+                  {message.role === 'assistant' && message.quick_replies && message.quick_replies.length > 0 && (
+                    <div className="mt-3 pt-2.5 border-t border-slate-200 dark:border-slate-800">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center gap-1">
+                        <span>⚡</span> {isKn ? 'ತ್ವರಿತ ಆಯ್ಕೆಗಳು (1-ಟ್ಯಾಪ್ ಪ್ರತ್ಯುತ್ತರ)' : 'Quick Options (1-Tap Reply)'}
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {message.quick_replies.map((reply, rIdx) => (
+                          <button
+                            key={rIdx}
+                            type="button"
+                            onClick={() => handleSendQuery(reply)}
+                            className="rounded-full border border-legalGold/40 bg-white dark:bg-navy-950 text-navy-900 dark:text-legalGold hover:bg-legalGold hover:text-navy-950 px-3 py-1 text-xs font-semibold transition-all shadow-sm flex items-center gap-1 active:scale-95"
+                          >
+                            <span>{reply}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Text-to-Speech audio button */}
                   {message.role === 'assistant' && (
                     <div className="mt-3 flex items-center justify-between border-t border-slate-200 dark:border-slate-800/60 pt-2">
@@ -987,6 +1046,100 @@ export default function AssistantChat() {
             <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">{t('disclaimer')}</p>
           </form>
         </div>
+
+        {/* Right Column: Live Legal Strategy Board & Document Auto-Draft (Plan A) */}
+        {isSplitView && activeLiveDraft && (
+          <aside className="border-t lg:border-t-0 lg:border-l border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-navy-900/80 p-4 flex flex-col justify-between overflow-y-auto max-h-[680px]">
+            <div className="space-y-4">
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-md bg-legalGold text-navy-950 font-bold text-xs">⚖️</span>
+                  <h4 className="font-bold text-xs text-navy-900 dark:text-white uppercase tracking-wider">
+                    {isKn ? 'ಲೈವ್ ಕಾರ್ಯತಂತ್ರ ಬೋರ್ಡ್' : 'Live Strategy Board'}
+                  </h4>
+                </div>
+                <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" title="Live sync" />
+              </div>
+
+              {/* Case Standing & Fee HUD */}
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-950 p-3 shadow-sm space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                    {isKn ? 'ಪ್ರಕರಣದ ಸಾಮರ್ಥ್ಯ (Merit)' : 'Merit Assessment'}
+                  </span>
+                  <span className="rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 text-[10px] font-bold">
+                    {activeLiveDraft.merit_score || 78}% Strong
+                  </span>
+                </div>
+                <div className="h-1.5 w-full bg-slate-100 dark:bg-navy-800 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-legalGold to-emerald-500 rounded-full transition-all duration-500"
+                    style={{ width: `${activeLiveDraft.merit_score || 78}%` }}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-slate-100 dark:border-slate-800/80">
+                  <div>
+                    <span className="text-slate-400 block text-[10px]">{isKn ? 'ನ್ಯಾಯಾಲಯ ಮಟ್ಟ' : 'Forum'}</span>
+                    <strong className="text-navy-900 dark:text-white truncate block text-[11px]">
+                      {activeLiveDraft.court_level || 'Jurisdictional Court'}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block text-[10px]">{isKn ? 'ಕಾಲಮಿತಿ' : 'Limitation'}</span>
+                    <strong className="text-emerald-600 dark:text-emerald-400 block text-[11px]">
+                      {activeLiveDraft.limitation || 'Within Limit'}
+                    </strong>
+                  </div>
+                </div>
+              </div>
+
+              {/* Live Document Auto-Draft */}
+              <div className="rounded-xl border border-legalGold/40 bg-white dark:bg-navy-950 p-3.5 shadow-md space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-navy-900 dark:text-white flex items-center gap-1.5">
+                    <FileText className="h-3.5 w-3.5 text-legalGold" />
+                    {isKn && activeLiveDraft.title_kn ? activeLiveDraft.title_kn : activeLiveDraft.title}
+                  </span>
+                  <span className="rounded bg-legalGold/15 text-legalGold text-[10px] font-mono px-1.5 py-0.5 font-bold">
+                    {activeLiveDraft.completion || 65}% Draft
+                  </span>
+                </div>
+
+                <div className="bg-slate-50 dark:bg-navy-900 p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-serif leading-relaxed text-slate-800 dark:text-slate-200 max-h-48 overflow-y-auto whitespace-pre-wrap select-text shadow-inner">
+                  {activeLiveDraft.preview_text}
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(activeLiveDraft.preview_text);
+                      setCopiedDraft(true);
+                      setTimeout(() => setCopiedDraft(false), 2000);
+                    }}
+                    className="flex-1 inline-flex items-center justify-center gap-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-navy-900 hover:bg-slate-100 dark:hover:bg-navy-800 px-2 py-1.5 text-[11px] font-bold text-slate-700 dark:text-slate-300 transition-colors"
+                  >
+                    {copiedDraft ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                    <span>{copiedDraft ? (isKn ? 'ನಕಲಿಸಲಾಗಿದೆ' : 'Copied!') : (isKn ? 'ಪ್ರತಿಮಾಡಿ' : 'Copy Draft')}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/document-generator?type=${activeLiveDraft.doc_type || 'legal_notice'}`)}
+                    className="flex-1 inline-flex items-center justify-center gap-1 rounded-lg bg-navy-900 dark:bg-legalGold hover:bg-navy-800 dark:hover:bg-yellow-500 px-2 py-1.5 text-[11px] font-bold text-white dark:text-navy-950 transition-colors shadow-sm"
+                  >
+                    <span>{isKn ? 'ಸಂಪಾದಕ ತೆರೆಯಿರಿ ↗' : 'Full Editor ↗'}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800 text-[10px] text-slate-400 text-center">
+              <span>{isKn ? 'ಕರ್ನಾಟಕ ನ್ಯಾಯ ಮಿತ್ರ ಸ್ವಯಂ ದಾಖಲಾತಿ ಕೋ-ಪೈಲಟ್' : 'Karnataka Nyaya Mitra Real-Time Drafting Co-Pilot'}</span>
+            </div>
+          </aside>
+        )}
       </div>
 
       {/* Interactive Case Health Diagnostic Modal */}

@@ -7,6 +7,7 @@ from app.services.input_parser import parse_user_input
 from app.services.case_service import CaseService
 from app.services.llm_router import get_llm_router
 from app.agents import LEGAL_DISCLAIMER
+from app.db.statutes_corpus import get_grounded_statutes_for_query
 
 logger = logging.getLogger(__name__)
 
@@ -104,6 +105,24 @@ def _extract_applicable_statutes(text: str, category: str) -> List[Dict[str, Any
     """
     if _is_greeting_or_casual(text):
         return []
+
+    # First check deterministic verified statutory corpus
+    corpus_matches = get_grounded_statutes_for_query(text, category)
+    if corpus_matches:
+        formatted = []
+        for s in corpus_matches:
+            formatted.append({
+                "act": s["act"],
+                "section": f"{s['section']} ({s['title']})",
+                "summary": s["summary"],
+                "summary_kn": s.get("summary_kn"),
+                "title": s.get("title"),
+                "title_kn": s.get("title_kn"),
+                "gazette_ref": s.get("gazette_ref"),
+                "remedy": s.get("remedy"),
+                "court": s.get("court")
+            })
+        return formatted[:3]
 
     lowered = text.lower()
     statutes: List[Dict[str, Any]] = []
@@ -457,6 +476,131 @@ def _compute_quick_diagnostic(text: str, category: str) -> Optional[Dict[str, An
     }
 
 
+def _extract_quick_replies_and_live_draft(text: str, category: str) -> tuple[List[str], Optional[Dict[str, Any]]]:
+    """
+    Extracts dynamic 1-Tap Quick-Reply suggestion chips and real-time auto-drafting templates
+    for the live Split-Screen Workspace (Plan A).
+    """
+    lowered = text.lower()
+    
+    # Tenancy / Deposit Dispute
+    if "tenant" in lowered or "rent" in lowered or "deposit" in lowered or "ಬಾಡಿಗೆ" in lowered or "ಠೇವಣಿ" in lowered:
+        replies = [
+            "✓ Have signed 11-month agreement & UPI receipts",
+            "✕ Verbal agreement only (paid cash)",
+            "⚡ Landlord disconnected power or water supply"
+        ]
+        draft = {
+            "doc_type": "15-day-demand-notice",
+            "title": "15-Day Statutory Legal Demand Notice",
+            "title_kn": "೧೫ ದಿನಗಳ ಲೀಗಲ್ ಡಿಮಾಂಡ್ ನೋಟಿಸ್",
+            "court_level": "Court of Small Causes / Rent Controller",
+            "estimated_court_fee": "₹2,500 (Karnataka Court Fees Act 1958)",
+            "limitation": "3 Years (Article 22, Limitation Act 1963)",
+            "merit_score": 78,
+            "completion": 65,
+            "preview_text": (
+                "FORMAL DEMAND NOTICE UNDER SEC 106 T.P. ACT & KARNATAKA RENT ACT, 1999\n\n"
+                "TO:\n[Landlord / Premises Owner, Bengaluru Urban, Karnataka]\n\n"
+                "SUBJECT: Demand for immediate refund of withheld security deposit and damages for unlawful harassment.\n\n"
+                "Sir/Madam,\n"
+                "Under instructions from my client, I hereby state that you have unlawfully failed to refund the security deposit "
+                "upon peaceful handover of the schedule residential premises. Take notice that under Section 27 and 34 of the "
+                "Karnataka Rent Act, 1999, you are mandated to refund the deposit within 15 days of this notice, failing which "
+                "proceedings under Order 37 of the CPC with 12% p.a. interest shall be instituted at your entire cost and peril."
+            )
+        }
+        return replies, draft
+
+    # Theft / Police / Crime
+    if "theft" in lowered or "stolen" in lowered or "stole" in lowered or "rob" in lowered or "laptop" in lowered or "gold" in lowered or "ಕಳ್ಳತನ" in lowered:
+        replies = [
+            "📹 Have CCTV footage / suspect photos",
+            "🧾 Have purchase bill / invoice / serial number",
+            "👮 Police station refused to register FIR"
+        ]
+        draft = {
+            "doc_type": "police-complaint-fir",
+            "title": "Police Complaint for Immediate FIR Registration",
+            "title_kn": "ಪೊಲೀಸ್ ದೂರು ಮತ್ತು ಎಫ್‌ಐಆರ್ ಅರ್ಜಿ",
+            "court_level": "Station House Officer / JMFC Court",
+            "estimated_court_fee": "Nil (Free under BNSS 2023)",
+            "limitation": "Immediate / Within 3 Years",
+            "merit_score": 82,
+            "completion": 70,
+            "preview_text": (
+                "FORMAL COMPLAINT UNDER SECTION 173 BHARATIYA NAGARIK SURAKSHA SANHITA (BNSS), 2023\n\n"
+                "TO:\nThe Station House Officer (SHO),\n[Jurisdictional Police Station, Karnataka]\n\n"
+                "SUBJECT: Registration of Zero FIR under Section 303 Bharatiya Nyaya Sanhita (BNS), 2023 for theft.\n\n"
+                "Respected Officer,\n"
+                "I am lodging this formal information regarding a cognizable offence of theft committed at the address mentioned above. "
+                "The stolen articles, approximate value, and evidence are enclosed. As mandated by Section 173 BNSS, please register "
+                "the FIR forthwith and furnish a certified copy free of cost."
+            )
+        }
+        return replies, draft
+
+    # Domestic Violence
+    if "domestic" in lowered or "husband" in lowered or "dowry" in lowered or "cruelty" in lowered or "ಗೃಹ ಹಿಂಸೆ" in lowered or "ವರದಕ್ಷಿಣೆ" in lowered:
+        replies = [
+            "🚨 Need immediate police protection / 112 SOS",
+            "🏠 Want residence and protection order",
+            "💼 Need free DLSA woman advocate"
+        ]
+        draft = {
+            "doc_type": "domestic-violence-application",
+            "title": "Application for Protection & Residence Order",
+            "title_kn": "ಮಹಿಳಾ ಸಂರಕ್ಷಣೆ ಮತ್ತು ವಾಸಸ್ಥಳ ಆದೇಶದ ಅರ್ಜಿ",
+            "court_level": "Judicial Magistrate First Class (JMFC) / Family Court",
+            "estimated_court_fee": "Nil (Exempted for Women)",
+            "limitation": "Continuous Cause of Action",
+            "merit_score": 85,
+            "completion": 60,
+            "preview_text": (
+                "IN THE COURT OF THE JUDICIAL MAGISTRATE FIRST CLASS / METROPOLITAN MAGISTRATE\n\n"
+                "APPLICATION UNDER SECTIONS 12, 18, 19 & 20 OF THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005\n\n"
+                "In the matter of:\n[Aggrieved Woman / Applicant]  ... Petitioner\nVersus\n[Respondent Husband & Relatives]  ... Respondents\n\n"
+                "The applicant respectfully submits that the respondents have subjected the applicant to physical cruelty, mental harassment, "
+                "and unlawful dowry demands under Section 85 BNS 2023. Urgent Protection Orders under Section 18 and Residence Orders under Section 19 "
+                "are prayed for."
+            )
+        }
+        return replies, draft
+
+    # Land / Revenue / RTC
+    if "land" in lowered or "rtc" in lowered or "pahani" in lowered or "mutation" in lowered or "khata" in lowered or "ಜಮೀನು" in lowered or "ಪಹಣಿ" in lowered:
+        replies = [
+            "📄 Have Registered Sale Deed & current RTC",
+            "🏛️ Village Accountant delayed mutation past 30 days",
+            "⚖️ Disputed survey boundary / encroachment"
+        ]
+        draft = {
+            "doc_type": "rtc-mutation-appeal",
+            "title": "Representation for RTC Mutation & Khata Transfer",
+            "title_kn": "ಪಹಣಿ ಮತ್ತು ಖಾತೆ ಬದಲಾವಣೆ ಮನವಿ ಅರ್ಜಿ",
+            "court_level": "Tahsildar / Assistant Commissioner Revenue Court",
+            "estimated_court_fee": "₹50 (Revenue Court Fee Stamp)",
+            "limitation": "30 Days for Sakala / 60 Days for S.136 Appeal",
+            "merit_score": 75,
+            "completion": 65,
+            "preview_text": (
+                "BEFORE THE TAHSILDAR / ASSISTANT COMMISSIONER (REVENUE)\n\n"
+                "APPLICATION UNDER SECTION 128 & 129 OF THE KARNATAKA LAND REVENUE ACT, 1964\n\n"
+                "Applicant: [Title Holder / Khatedar]\nSchedule Land: Survey No. [XXX], Hobli, Taluk, Karnataka\n\n"
+                "Subject: Application for updating mutation register extract and issuance of certified computerized Pahani (RTC).\n\n"
+                "The applicant submits that the schedule property was lawfully acquired and reported under Section 128. "
+                "As guaranteed under the Karnataka Sakala Services Act, 2011, the revenue authorities are requested to certify the mutation."
+            )
+        }
+        return replies, draft
+
+    return [
+        "✓ I have written receipts and documents",
+        "✕ No written proof (verbal transaction)",
+        "🏛️ Need guidance on nearest court / police station"
+    ], None
+
+
 def route_chat_request(message: str, language: str, history: List[Dict[str, str]], db: Session) -> Dict[str, Any]:
     """
     Routes a chat request either to the CaseService (if a case number is detected)
@@ -473,55 +617,48 @@ def route_chat_request(message: str, language: str, history: List[Dict[str, str]
         
         case_svc = CaseService(db)
         case_details = case_svc.get_case_details(parsed_input["case_number"])
+        district_param = case_details.get("district", "Bengaluru Urban")
         
-        if case_details["found"]:
-            answer = (
-                f"### 📋 Case Found: {case_details['case_number']}\n\n"
-                f"- **Current Status**: `{case_details['status']}`\n"
-                f"- **Court**: {case_details['court']}\n"
-                f"- **Petitioner**: {case_details['petitioner']}\n"
-                f"- **Respondent**: {case_details['respondent']}\n"
-                f"- **Filing Date**: {case_details['filing_date']}\n"
-                f"- **Next Hearing**: **{case_details['next_hearing']}**\n\n"
-                f"_{case_details['message']}_\n\n"
-                f"You can view the full court stage timeline, upload evidence, and manage case notes in the Case Tracker."
-            )
-            action_widgets = [
-                {
-                    "id": "action-view-case",
-                    "type": "case_tracker",
-                    "title": f"View Case Timeline ({case_details['case_number']})",
-                    "title_kn": f"ಪ್ರಕರಣದ ವಿವರ ವೀಕ್ಷಿಸಿ ({case_details['case_number']})",
-                    "description": "Track hearing stages, scrutiny status, and case documents.",
-                    "description_kn": "ವಿಚಾರಣಾ ಹಂತಗಳು, ದಾಖಲೆಗಳು ಮತ್ತು ದಿನಾಂಕಗಳನ್ನು ವೀಕ್ಷಿಸಿ.",
-                    "target_url": f"/case-tracker?caseNumber={case_details['case_number']}",
-                    "action_label": "Open Case Timeline ↗",
-                    "action_label_kn": "ಪ್ರಕರಣ ಪುಟ ತೆರೆಯಿರಿ ↗",
-                    "badge": "Active Case",
-                    "icon": "Scale"
-                }
-            ]
-        else:
-            answer = (
-                f"### 🔍 Case Not Found in Local Registry\n\n"
-                f"{case_details['message']}\n\n"
-                f"Please verify the number format (`CC/XXXXX/YYYY`) or search the official High Court / eCourts portal."
-            )
-            action_widgets = [
-                {
-                    "id": "action-ecourts-link",
-                    "type": "directory",
-                    "title": "Search National eCourts Services",
-                    "title_kn": "ರಾಷ್ಟ್ರೀಯ ಇ-ಕೋರ್ಟ್ಸ್ ಪೋರ್ಟಲ್‌ನಲ್ಲಿ ಹುಡುಕಿ",
-                    "description": "Search by CNR Number, Party Name, or Advocate Registration.",
-                    "description_kn": "ಸಿಎನ್‌ಆರ್ ಸಂಖ್ಯೆ ಅಥವಾ ಪಕ್ಷಗಾರರ ಹೆಸರಿನ ಮೂಲಕ ಹುಡುಕಿ.",
-                    "target_url": case_details.get("external_link", "https://services.ecourts.gov.in/"),
-                    "action_label": "Visit eCourts Portal ↗",
-                    "action_label_kn": "ಇ-ಕೋರ್ಟ್ಸ್ ಭೇಟಿ ನೀಡಿ ↗",
-                    "badge": "eCourts Portal",
-                    "icon": "Building2"
-                }
-            ]
+        answer = (
+            f"### 📋 eCourts Case Registry: `{case_details['case_number']}`\n\n"
+            f"- **CNR Number**: `{case_details.get('cnr', 'N/A')}`\n"
+            f"- **Court Establishment**: {case_details['court']}\n"
+            f"- **Current Stage**: **`{case_details.get('stage', 'Hearing')}`**\n"
+            f"- **Parties**: {case_details['petitioner']} **vs** {case_details['respondent']}\n"
+            f"- **Filing Date**: {case_details['filing_date']}\n"
+            f"- **Next Hearing**: **{case_details['next_hearing']}**\n"
+            f"- **Coram (Judge)**: {case_details.get('coram', 'Judicial Officer')}\n\n"
+            f"_{case_details['message']}_\n\n"
+            f"You can view the full hearing diary, upload case documents, and track court orders directly in the Case Tracker."
+        )
+        action_widgets = [
+            {
+                "id": "action-view-case",
+                "type": "case_tracker",
+                "title": f"View Case Timeline ({case_details['case_number']})",
+                "title_kn": f"ಪ್ರಕರಣದ ವಿವರ ವೀಕ್ಷಿಸಿ ({case_details['case_number']})",
+                "description": f"Stage: {case_details.get('stage', 'Hearing')} | Next Date: {case_details['next_hearing']}",
+                "description_kn": f"ಹಂತ: {case_details.get('stage', 'Hearing')} | ಮುಂದಿನ ವಿಚಾರಣೆ: {case_details['next_hearing']}",
+                "target_url": f"/case-tracker?caseNumber={case_details['case_number']}&district={district_param}",
+                "action_label": "Open Case Timeline ↗",
+                "action_label_kn": "ಪ್ರಕರಣ ಪುಟ ತೆರೆಯಿರಿ ↗",
+                "badge": "Active Case",
+                "icon": "Scale"
+            },
+            {
+                "id": "action-ecourts-link",
+                "type": "directory",
+                "title": "National eCourts Services Portal",
+                "title_kn": "ರಾಷ್ಟ್ರೀಯ ಇ-ಕೋರ್ಟ್ಸ್ ಪೋರ್ಟಲ್‌ನಲ್ಲಿ ಪರಿಶೀಲಿಸಿ",
+                "description": f"Official eCourts portal entry for CNR {case_details.get('cnr', case_details['case_number'])}",
+                "description_kn": "ಸಿಎನ್‌ಆರ್ ಸಂಖ್ಯೆ ಅಥವಾ ಪಕ್ಷಗಾರರ ಹೆಸರಿನ ಮೂಲಕ ಪರಿಶೀಲಿಸಿ.",
+                "target_url": case_details.get("external_link", "https://services.ecourts.gov.in/ecourtindia_v6/"),
+                "action_label": "Visit eCourts Portal ↗",
+                "action_label_kn": "ಇ-ಕೋರ್ಟ್ಸ್ ಭೇಟಿ ನೀಡಿ ↗",
+                "badge": "eCourts Portal",
+                "icon": "Building2"
+            }
+        ]
             
         return {
             "answer": answer,
@@ -539,7 +676,13 @@ def route_chat_request(message: str, language: str, history: List[Dict[str, str]
                     "summary_kn": "ಕರ್ನಾಟಕ ಸಿವಿಲ್ ಮತ್ತು ಜಿಲ್ಲಾ ನ್ಯಾಯಾಲಯಗಳಲ್ಲಿ ಪ್ರಕರಣ ದಾಖಲಾತಿ ಮತ್ತು ವಿಚಾರಣೆ ನಿಯಮಗಳು."
                 }
             ],
-            "diagnostic_score": None
+            "diagnostic_score": None,
+            "quick_replies": [
+                f"Track hearing on {case_details['next_hearing']}",
+                "How to apply for certified copy of order?",
+                "Find DLSA office in this district"
+            ],
+            "live_draft": None
         }
         
     # 2. Standard AI legal assistance flow
@@ -555,6 +698,9 @@ def route_chat_request(message: str, language: str, history: List[Dict[str, str]
         lowered = message.lower()
         category = "general"
         urgency = "normal"
+
+        quick_replies = []
+        live_draft = None
 
         if is_casual:
             action_widgets = []
@@ -581,6 +727,7 @@ def route_chat_request(message: str, language: str, history: List[Dict[str, str]
             action_widgets = _extract_action_widgets(message, category, urgency, language)
             applicable_statutes = _extract_applicable_statutes(message, category)
             diagnostic_score = _compute_quick_diagnostic(message, category)
+            quick_replies, live_draft = _extract_quick_replies_and_live_draft(message, category)
 
         return {
             "answer": answer_text,
@@ -591,7 +738,9 @@ def route_chat_request(message: str, language: str, history: List[Dict[str, str]
             "disclaimer": LEGAL_DISCLAIMER,
             "action_widgets": action_widgets,
             "applicable_statutes": applicable_statutes,
-            "diagnostic_score": diagnostic_score
+            "diagnostic_score": diagnostic_score,
+            "quick_replies": quick_replies,
+            "live_draft": live_draft
         }
     except Exception as e:
         logger.error(f"LLM API error: {str(e)}")

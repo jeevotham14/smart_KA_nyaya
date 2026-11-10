@@ -143,6 +143,8 @@ export const legalApi = {
       action_widgets: data.action_widgets || [],
       applicable_statutes: data.applicable_statutes || [],
       diagnostic_score: data.diagnostic_score || null,
+      quick_replies: data.quick_replies || [],
+      live_draft: data.live_draft || null,
       disclaimer: data.disclaimer,
       raw: data,
     };

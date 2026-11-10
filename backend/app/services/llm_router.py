@@ -358,7 +358,12 @@ class LLMRouter:
         messages = list(history or [])
         messages.append({"role": "user", "content": user_message})
         result = self.route(TaskType.CHAT, messages, KARNATAKA_LEGAL_SYSTEM_PROMPT)
-        # Disclaimer removed per user request
+        # Apply deterministic statutory grounding over Karnataka Gazette & BNS 2023
+        try:
+            from app.db.statutes_corpus import intercept_and_ground_statutes
+            result["text"] = intercept_and_ground_statutes(result["text"])
+        except Exception:
+            pass
         return result
 
     def generate_document(self, doc_type: str, facts: dict, language: str = "English") -> dict[str, Any]:
