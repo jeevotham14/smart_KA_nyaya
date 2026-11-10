@@ -11,11 +11,100 @@ from app.agents import LEGAL_DISCLAIMER
 logger = logging.getLogger(__name__)
 
 
+def _is_greeting_or_casual(text: str) -> bool:
+    """Detect greetings, pleasantries, brief acknowledgments, and meta questions."""
+    cleaned = re.sub(r"[^\w\s]", "", text.strip().lower())
+    words = cleaned.split()
+
+    if not words:
+        return True
+
+    casual_exact = {
+        "hi", "hello", "hey", "hlo", "helo", "hy", "hola",
+        "namaste", "namaskara", "namaskar", "namaskargalu", "vanakkam",
+        "good morning", "good evening", "good afternoon", "good night", "gm", "gn",
+        "how are you", "how r u", "who are you", "who r u", "what is your name",
+        "what can you do", "what do you do", "help", "help me", "menu",
+        "thanks", "thank you", "thank u", "thx", "dhanyavada", "dhanyavadagalu",
+        "ok", "okay", "k", "kk", "sure", "cool", "fine", "good", "nice", "great",
+        "got it", "understood", "yes", "no", "yep", "nope",
+        "bye", "goodbye", "see you", "tata",
+        "test", "testing"
+    }
+
+    if cleaned in casual_exact:
+        return True
+
+    if len(words) <= 3:
+        if any(w in {"hi", "hello", "hey", "hlo", "namaste", "namaskara", "ok", "okay", "thanks", "bye", "good"} for w in words):
+            legal_signals = [
+                "fir", "police", "court", "lawyer", "advocate", "rent", "tenant", "landlord",
+                "land", "property", "theft", "stolen", "stole", "cheat", "fraud", "scam", "assault",
+                "threat", "abuse", "dowry", "wage", "salary", "job", "bns", "bnss", "cheque",
+                "ದೂರು", "ಪೊಲೀಸ್", "ಆಸ್ತಿ", "ಬಾಡಿಗೆ", "ವಕೀಲ", "ಕಳ್ಳತನ", "ಹಲ್ಲೆ"
+            ]
+            if not any(k in cleaned for k in legal_signals):
+                return True
+
+    return False
+
+
+def _has_substantive_case_facts(text: str) -> bool:
+    """
+    Checks if the user is describing an actual factual legal grievance or requesting a case assessment.
+    Returns False for greetings, general knowledge inquiries (e.g. 'what is rti?'), or single-word queries.
+    """
+    lowered = text.lower()
+    cleaned = re.sub(r"[^\w\s]", "", lowered.strip())
+    words = cleaned.split()
+
+    # Explicit diagnostic request
+    if any(k in lowered for k in ["diagnose", "case health", "case strength", "viability", "case score", "ವಿಶ್ಲೇಷಣೆ", "ಸಾಮರ್ಥ್ಯ"]):
+        return True
+
+    # Needs some minimum substance
+    if len(words) < 3:
+        return False
+
+    # Keywords indicating an active dispute/grievance
+    grievance_indicators = [
+        # Crime / Police / Threat
+        "theft", "stolen", "stole", "steal", "robbed", "robbery", "snatch", "assault", "beat", "beating",
+        "hit", "attack", "threat", "threaten", "threatening", "knife", "police", "fir", "harass", "harassment",
+        "cheat", "cheated", "fraud", "scam", "cyber", "hacked", "blackmail", "extort",
+        "ಕಳ್ಳತನ", "ದೂರು", "ಹಲ್ಲೆ", "ಬೆದರಿಕೆ", "ವಂಚನೆ",
+        # Family / Domestic
+        "domestic violence", "dowry", "husband", "wife", "in-laws", "inlaws", "maintenance", "custody",
+        "divorce", "cruelty", "deserted", "abandoned", "ಗಂಡ", "ವರದಕ್ಷಿಣೆ", "ಗೃಹ ಹಿಂಸೆ",
+        # Tenancy / Housing
+        "tenant", "landlord", "rent", "deposit", "evict", "eviction", "vacate", "lease", "utilities",
+        "water cut", "electricity cut", "ಬಾಡಿಗೆ", "ಠೇವಣಿ", "ಖಾಲಿ",
+        # Land / Property
+        "land", "property", "rtc", "pahani", "mutation", "khata", "survey number", "boundary",
+        "partition", "ancestral", "encroachment", "sale deed", "gift deed", "title",
+        "ಪಹಣಿ", "ಆಸ್ತಿ", "ಜಮೀನು", "ಖಾತೆ",
+        # Labour / Employment
+        "salary", "wage", "wages", "unpaid", "employer", "boss", "terminated", "fired", "gratuity",
+        "pf", "provident fund", "overtime", "workplace harassment", "ವೇತನ", "ಉದ್ಯೋಗ",
+        # Consumer
+        "defective", "refund", "warranty", "damaged product", "expired product", "consumer court",
+        "consumer forum", "replacement", "ಗ್ರಾಹಕ",
+        # Financial / Cheque
+        "cheque bounce", "check bounce", "loan", "borrowed", "recovery", "dues", "debt", "interest",
+        "ಸಾಲ", "ಬಾಕಿ", "ಚೆಕ್"
+    ]
+
+    return any(k in lowered for k in grievance_indicators) and len(words) >= 4
+
+
 def _extract_applicable_statutes(text: str, category: str) -> List[Dict[str, Any]]:
     """
     Extracts relevant statutory references grounded in Bharatiya Nyaya Sanhita (BNS 2023),
     Bharatiya Nagarik Suraksha Sanhita (BNSS 2023), and Karnataka State legislation.
     """
+    if _is_greeting_or_casual(text):
+        return []
+
     lowered = text.lower()
     statutes: List[Dict[str, Any]] = []
 
@@ -118,8 +207,8 @@ def _extract_applicable_statutes(text: str, category: str) -> List[Dict[str, Any
             "summary_kn": "₹೧೦ ಕೋರ್ಟ್ ಫೀ ಸ್ಟಾಂಪ್ ನೊಂದಿಗೆ ಸಾರ್ವಜನಿಕ ಮಾಹಿತಿ ಅಧಿಕಾರಿಗೆ ಅರ್ಜಿ ಸಲ್ಲಿಸಿ ೩೦ ದಿನಗಳೊಳಗೆ ಮಾಹಿತಿ ಪಡೆಯುವ ಹಕ್ಕು."
         })
 
-    # 7. Section 12 Free Legal Aid default fallback if nothing matched
-    if not statutes:
+    # 7. Section 12 Free Legal Aid (when legal aid, free lawyer, or poverty is discussed)
+    if any(k in lowered for k in ["legal aid", "free lawyer", "free advocate", "dlsa", "kslsa", "afford a lawyer", "poor", "court fee waiver", "ಉಚಿತ ವಕೀಲ", "ಕಾನೂನು ನೆರವು"]):
         statutes.append({
             "act": "Legal Services Authorities Act, 1987",
             "section": "Section 12 (Eligibility for Free Legal Aid)",
@@ -135,6 +224,9 @@ def _extract_action_widgets(text: str, category: str, urgency: str, language: st
     Constructs contextual, interactive action cards linking to internal platform tools:
     Document Generator, Emergency Assistance, Legal Aid (DLSA), Calculators, and Directory.
     """
+    if _is_greeting_or_casual(text):
+        return []
+
     lowered = text.lower()
     widgets: List[Dict[str, Any]] = []
 
@@ -225,8 +317,8 @@ def _extract_action_widgets(text: str, category: str, urgency: str, language: st
             "badge": "RTI Act 2005",
             "icon": "FileText"
         })
-    else:
-        # General Complaint draft fallback
+    elif _has_substantive_case_facts(text):
+        # General Complaint draft fallback only for substantive grievances
         widgets.append({
             "id": "action-draft-general",
             "type": "draft_document",
@@ -286,29 +378,34 @@ def _extract_action_widgets(text: str, category: str, urgency: str, language: st
             "icon": "Scale"
         })
 
-    # 5. Directory Locator Widget
-    widgets.append({
-        "id": "action-directory",
-        "type": "directory",
-        "title": "Karnataka Legal Services Directory",
-        "title_kn": "ಕರ್ನಾಟಕ ಕಾನೂನು ಸೇವೆಗಳ ನಿರ್ದೇಶಿಕೆ",
-        "description": "Find your nearest DLSA office, Taluk Legal Services Committee (TLSC), or local police station.",
-        "description_kn": "ನಿಮ್ಮ ತಾಲ್ಲೂಕಿನ ಕಾನೂನು ಸೇವಾ ಸಮಿತಿ (TLSC), ಡಿಎಲ್‌ಎಸ್‌ಎ ಅಥವಾ ಪೊಲೀಸ್ ಠಾಣೆಯ ವಿಳಾಸ ಮತ್ತು ದೂರವಾಣಿ ಸಂಖ್ಯೆ ಪಡೆಯಿರಿ.",
-        "target_url": "/directory",
-        "action_label": "Find Local Authority ↗",
-        "action_label_kn": "ಸ್ಥಳೀಯ ಪ್ರಾಧಿಕಾರ ಹುಡುಕಿ ↗",
-        "badge": "31 Districts",
-        "icon": "Building2"
-    })
+    # 5. Directory Locator Widget (only if substantive grievance or asking for court/police/DLSA location)
+    if any(k in lowered for k in ["court", "station", "police station", "dlsa", "tlsc", "where", "location", "address", "phone", "contact", "office", "ಸ್ಥಳ", "ವಿಳಾಸ", "ಕಚೇರಿ"]) or _has_substantive_case_facts(text):
+        widgets.append({
+            "id": "action-directory",
+            "type": "directory",
+            "title": "Karnataka Legal Services Directory",
+            "title_kn": "ಕರ್ನಾಟಕ ಕಾನೂನು ಸೇವೆಗಳ ನಿರ್ದೇಶಿಕೆ",
+            "description": "Find your nearest DLSA office, Taluk Legal Services Committee (TLSC), or local police station.",
+            "description_kn": "ನಿಮ್ಮ ತಾಲ್ಲೂಕಿನ ಕಾನೂನು ಸೇವಾ ಸಮಿತಿ (TLSC), ಡಿಎಲ್‌ಎಸ್‌ಎ ಅಥವಾ ಪೊಲೀಸ್ ಠಾಣೆಯ ವಿಳಾಸ ಮತ್ತು ದೂರವಾಣಿ ಸಂಖ್ಯೆ ಪಡೆಯಿರಿ.",
+            "target_url": "/directory",
+            "action_label": "Find Local Authority ↗",
+            "action_label_kn": "ಸ್ಥಳೀಯ ಪ್ರಾಧಿಕಾರ ಹುಡುಕಿ ↗",
+            "badge": "31 Districts",
+            "icon": "Building2"
+        })
 
     return widgets[:4]
 
 
-def _compute_quick_diagnostic(text: str, category: str) -> Dict[str, Any]:
+def _compute_quick_diagnostic(text: str, category: str) -> Optional[Dict[str, Any]]:
     """
     Computes an instant Case Health Diagnostic Score:
     Evaluates factual clarity, evidence readiness, limitation risk, and next statutory steps.
+    Returns None for casual greetings, general informational questions, or non-dispute messages.
     """
+    if _is_greeting_or_casual(text) or not _has_substantive_case_facts(text):
+        return None
+
     lowered = text.lower()
     word_count = len(text.split())
 
@@ -432,7 +529,7 @@ def route_chat_request(message: str, language: str, history: List[Dict[str, str]
             "model": "case-tracker-module",
             "category": "case_tracking",
             "urgency": "normal",
-            "disclaimer": "",
+            "disclaimer": LEGAL_DISCLAIMER,
             "action_widgets": action_widgets,
             "applicable_statutes": [
                 {
@@ -454,29 +551,36 @@ def route_chat_request(message: str, language: str, history: List[Dict[str, str]
         answer_text = result["text"]
 
         # Determine category & urgency
+        is_casual = _is_greeting_or_casual(message)
         lowered = message.lower()
         category = "general"
         urgency = "normal"
-        if any(w in lowered for w in ["suicide", "kill", "attack", "violence", "threat", "emergency", "danger"]):
-            urgency = "emergency"
-            category = "women_protection"
-        elif any(w in lowered for w in ["domestic", "harassment", "dowry", "stalking", "cruelty", "wife", "husband"]):
-            category = "women_protection"
-            urgency = "high"
-        elif any(w in lowered for w in ["police", "fir", "theft", "stolen", "fraud", "scam", "cyber", "crime"]):
-            category = "criminal"
-            urgency = "high"
-        elif any(w in lowered for w in ["tenant", "landlord", "rent", "deposit", "evict", "property", "land", "rtc", "pahani"]):
-            category = "property"
-        elif any(w in lowered for w in ["consumer", "refund", "defective", "warranty"]):
-            category = "consumer"
-        elif any(w in lowered for w in ["wage", "salary", "job", "worker", "employment", "labour"]):
-            category = "labour"
 
-        # Generate contextual action cards & statutory references
-        action_widgets = _extract_action_widgets(message, category, urgency, language)
-        applicable_statutes = _extract_applicable_statutes(message, category)
-        diagnostic_score = _compute_quick_diagnostic(message, category)
+        if is_casual:
+            action_widgets = []
+            applicable_statutes = []
+            diagnostic_score = None
+        else:
+            if any(w in lowered for w in ["suicide", "kill", "attack", "violence", "threat", "emergency", "danger"]):
+                urgency = "emergency"
+                category = "women_protection"
+            elif any(w in lowered for w in ["domestic", "harassment", "dowry", "stalking", "cruelty", "wife", "husband"]):
+                category = "women_protection"
+                urgency = "high"
+            elif any(w in lowered for w in ["police", "fir", "theft", "stolen", "fraud", "scam", "cyber", "crime"]):
+                category = "criminal"
+                urgency = "high"
+            elif any(w in lowered for w in ["tenant", "landlord", "rent", "deposit", "evict", "property", "land", "rtc", "pahani"]):
+                category = "property"
+            elif any(w in lowered for w in ["consumer", "refund", "defective", "warranty"]):
+                category = "consumer"
+            elif any(w in lowered for w in ["wage", "salary", "job", "worker", "employment", "labour"]):
+                category = "labour"
+
+            # Generate contextual action cards & statutory references
+            action_widgets = _extract_action_widgets(message, category, urgency, language)
+            applicable_statutes = _extract_applicable_statutes(message, category)
+            diagnostic_score = _compute_quick_diagnostic(message, category)
 
         return {
             "answer": answer_text,
@@ -484,7 +588,7 @@ def route_chat_request(message: str, language: str, history: List[Dict[str, str]
             "model": result["model"],
             "category": category,
             "urgency": urgency,
-            "disclaimer": "",
+            "disclaimer": LEGAL_DISCLAIMER,
             "action_widgets": action_widgets,
             "applicable_statutes": applicable_statutes,
             "diagnostic_score": diagnostic_score
